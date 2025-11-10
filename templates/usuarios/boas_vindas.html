@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}
+Bem-vindo ao Sistema
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5" style="background-color: #f8f9fa;">
+    <div class="text-center mb-4">
+        <h1>Bem-vindo, {{ user.first_name }}!</h1>
+        <p class="lead mt-3">Estamos felizes em vê-lo novamente e prontos para ajudá-lo.</p>
+    </div>
+
+    <div class="d-flex justify-content-center">
+        <div class="card mx-2" style="width: 18rem;">
+            <div class="card-body text-center">
+                <h5 class="card-title">Perfil</h5>
+                <p class="card-text">Acesse seu perfil e atualize suas informações.</p>
+                <a href="{% url 'usuarios:perfil' %}" class="btn btn-primary">Seu Perfil</a>
+            </div>
+        </div>
+        <div class="card mx-2" style="width: 18rem;">
+            <div class="card-body text-center">
+                <h5 class="card-title">Fornecimento de Materiais</h5>
+                <p class="card-text">Gerar formulário de Fornecimento de Materiais.</p>
+                <a href="" class="btn btn-secondary">Formulário de Materiais</a>
+            </div>
+        </div>
+        <div class="card mx-2" style="width: 18rem;">
+            <div class="card-body text-center">
+                <h5 class="card-title">Cadastramento de Kits</h5>
+                <p class="card-text">Cadastre e atualizes os kits de materiais.</p>
+                <a href="" class="btn btn-secondary">Cadastrar Kits</a>
+            </div>
+        </div>
+        <!-- Adicione mais cartões conforme necessário -->
+    </div>
+
+    <div class="text-center mt-5">
+        <small class="text-muted">Manter suas informações atualizadas nos ajuda a oferecer um melhor serviço.</small>
+    </div>
+</div>
+{% endblock %}

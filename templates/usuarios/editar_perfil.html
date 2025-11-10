@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+Editar Perfil
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Editar Perfil</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="data_nascimento" class="form-label">Nome</label>
+                                <input type="text" class="form-control" name="first_name" value="{{ user.first_name }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="altura" class="form-label">Sobrenome</label>
+                                <input type="text"  class="form-control" name="last_name" value="{{ user.last_name }}" >
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="peso" class="form-label">Email</label>
+                                <input type="text" class="form-control" name="email" value="{{ user.email }}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="matricula" class="form-label">Matricula</label>
+                                <input type="text" class="form-control" name="matricula" value="{{ user.matricula }}">
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                <label for="foto_perfil" class="form-label">Foto de Perfil:</label>
+                                <input type="file" id="foto_perfil" name="foto_perfil" class="form-control">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">Salvar Alterações</button>
+                        <a href="{% url 'usuarios:perfil' %}" class="btn btn-secondary">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card mb-4" >
+                <div class="card-header">
+                    <h5 class="mb-0">Foto do Perfil</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div id="perfil-foto-container">
+                        <!-- Preenchido via JavaScript -->
+                        <img class="rounded-circle img-fluid mb-3" style="height: 170px;"src="{% if user.foto_perfil %}{{ user.foto_perfil.url }}{% else %}{% static 'assets/images/users/user-dummy-img.jpg' %}{% endif %}" alt="Header Avatar">
+                        
+                    </div>
+                    <span class="text-center ms-xl-2">
+                        <span class="d-none d-xl-inline-block ms-1 fw-medium user-name-text">{{user}}</span>
+                        <span class="d-none d-xl-block ms-1 fs-12 user-name-sub-text">{{user.username}}</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

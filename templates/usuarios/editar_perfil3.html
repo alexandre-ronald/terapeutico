@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Meu Perfil {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Perfil</h5>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        <div class="mt-3">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <form class="needs-validation" novalidate method="POST" action="{% url 'usuarios:editar_perfil' %}">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="data_nascimento" class="form-label">Nome</label>
+                                <input type="text" class="form-control" name="first_name" value="{{ user.first_name }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="altura" class="form-label">Sobrenome</label>
+                                <input type="text"  class="form-control" name="last_name" value="{{ user.last_name }}" >
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="peso" class="form-label">Email</label>
+                                <input type="text" class="form-control" name="email" value="{{ user.email }}">
+                            </div>
+                        </div>
+                    
+                        <div class="col-md-12 mb-3">
+                            <label for="foto" class="form-label">Foto de Perfil</label>
+                            <input type="file" class="form-control" id="foto" accept="image/*">
+                        </div>
+                    
+                        <button type="button" id="salvar-perfil-btn" class="btn btn-primary">Salvar Alterações</button>
+                        <a href="{% url 'usuarios:perfil' %}" class="btn btn-secondary">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card mb-4" >
+                <div class="card-header">
+                    <h5 class="mb-0">Informações do Usuário</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div id="perfil-foto-container">
+                        <!-- Preenchido via JavaScript -->
+                        <img src="https://via.placeholder.com/150" style="height: 170px;" alt="Foto de Perfil" class="rounded-circle img-fluid mb-3" id="perfil-foto">
+                    </div>
+                    <h5 id="perfil-nome">Carregando...</h5>
+                    <p class="text-muted" id="perfil-email">Carregando...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/usuarios/perfil.js' %}"></script>
+{% endblock %}

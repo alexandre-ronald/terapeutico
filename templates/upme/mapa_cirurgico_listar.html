@@ -1,0 +1,189 @@
+
+
+<!-- templates/entrevistas/lista_entrevistas.html -->
+{% extends "base.html" %}
+
+{% block title %}
+Listagem de mapa
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Mapas Cirúrgicos</h5>
+                </div>
+                <div class="card-body">
+                    <form id="form-filtro" method="GET" action="{% url 'upme:mapa_cirurgico_list' %}">
+                        <div class="row align-items-end">  <!-- `align-items-end` alinha os itens pela base -->
+                            
+                            <!-- Campo Nome -->
+                            <div class="form-group col-md-2 mb-0">
+                                <label for="nome" class="form-label">Data</label>
+                                <input type="date" class="form-control" name="data_mapa" placeholder="Data do Mapa" value="{{ request.GET.data_mapa }}">
+                            </div>
+                            
+                            <div class="form-group col-md-3 mb-0">
+                                
+                                <button type="submit" class="btn btn-primary btn-label right">
+                                    <i class="ri-search-line label-icon align-middle fs-16 ms-2"></i>Filtrar
+                                </button>
+                                
+                            </div>
+                            
+                           
+                           
+                        </div>
+                    </form>
+                    <div class="modal fade" id="modalCarregando" tabindex="-1" aria-labelledby="modalCarregandoLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                          <div class="modal-content text-center">
+                            <div class="modal-body">
+                              <div class="spinner-border text-primary mb-3" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                              </div>
+                              <h5 class="modal-title" id="modalCarregandoLabel">Consultando atualizações de cadastro no AGHU...</h5>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="card border mt-3">
+                            <div class="card-body">
+                  
+                                <table class="table table-striped mt-2">
+                                    <thead class='table-light'>
+                                        <tr>
+                                          <th>Prontuário</th>
+                                          <th>Nome</th>
+                                          
+                                          <th style="width: 200px;">Especialidade</th>
+                                          <th style="width: 400px;">Procedimento</th>
+                                          <th>Médico</th>
+                                          <th>Horário</th>
+                                          <th style="width: 100px;">Sala</th>
+                                          <th style="width: 115px;">Ações</th>
+                                          
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for mp in mapa %}
+                                        <tr>
+                                            <td>{{ mp.prontuario }}</td>
+                                            <td>{{ mp.nome_paciente }}</td>
+                                            
+                                            <td>{{ mp.especialidade }}</td>
+                                            <td>{{ mp.procedimento }}</td>
+                                            <td>{{ mp.medico }}</td>
+                                            <td>{{ mp.data_inicio_cirurgia|date:"H:i" }}</td>
+                                            <td>{{ mp.sala }}</td>
+
+                                            
+                                            
+                                            <td >
+                                                <form method="post" action="{% url 'upme:fornecimento_material' %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="prontuario" value="{{mp.prontuario}}">
+                                                    <input type="hidden" name="nome" value="{{mp.nome_paciente}}">
+                                                    <input type="hidden" name="data_nascimento" value="{{mp.data_nascimento|date:'d/m/Y'}}">
+                                                    <input type="hidden" name="especialidade" value="{{mp.especialidade}}">
+                                                    <input type="hidden" name="procedimento" value="{{mp.procedimento}}">
+                                                    <input type="hidden" name="data_cirurgia" value="{{ mp.data_inicio_cirurgia|date:'d/m/Y' }}">
+                                                    <input type="hidden" name="hora_cirurgia" value="{{ mp.data_inicio_cirurgia|date:'H:i' }}">
+                                                    <input type="hidden" name="sala" value="{{mp.sala}}">
+                                                    <input type="hidden" name="medico" value="{{mp.medico}}">
+                                                    
+                                                    <button type="submit" class="btn btn-primary btn-sm"> <i class="ri-user-3-line"></i>  Selecionar</button>
+                                                </form>
+                                            </td>
+                                            
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center">Nenhum paciente encontrado.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+
+                                <!-- Paginação -->
+                                
+                                <nav>
+                                    <ul class="pagination justify-content-center">
+                                        {% if mapa.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page=1{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">Primeira</a>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ mapa.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">Anterior</a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">Primeira</span>
+                                            </li>
+                                            <li class="page-item disabled">
+                                                <span class="page-link">Anterior</span>
+                                            </li>
+                                        {% endif %}
+                                
+                                        {% for num in mapa.paginator.page_range %}
+                                            {% if mapa.number == num %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ num }}</span>
+                                                </li>
+                                            {% elif num > mapa.number|add:'-5' and num < mapa.number|add:'5' %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ num }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">{{ num }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                
+                                        {% if mapa.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ mapa.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">Próxima</a>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ mapa.paginator.num_pages }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">Última</a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">Próxima</span>
+                                            </li>
+                                            <li class="page-item disabled">
+                                                <span class="page-link">Última</span>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('form-filtro');
+    
+        form.addEventListener('submit', function (e) {
+            e.preventDefault(); // Impede envio imediato
+    
+            // Mostra o modal
+            const modal = new bootstrap.Modal(document.getElementById('modalCarregando'));
+            modal.show();
+    
+            // Aguarda um pouco e envia o formulário
+            setTimeout(() => {
+                form.submit();
+            }, 100); // Pequeno atraso para exibir o modal antes do reload
+        });
+    });
+    </script>
+
+{% endblock %}
+

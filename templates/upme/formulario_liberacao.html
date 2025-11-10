@@ -1,0 +1,72 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulário de Liberação de Material para Cirurgia</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; }
+        .header { text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>HOSPITAL UNIVERSITÁRIO UNIVERSIDADE FEDERAL DO MARANHÃO</h1>
+        <h2>UNIDADE DE PROCESSAMENTO DE MATERIAIS ESTERILIZADOS – UPME/UPD</h2>
+        <h2>FORNECIMENTO DE MATERIAIS PROCESSADOS</h2>
+    </div>
+
+    <p><strong>CIRURGIA:</strong> {{ cirurgia.procedimento.nome }}</p>
+    <p><strong>DATA:</strong> {{ cirurgia.data|date:"d/m/y" }}</p>
+    <p><strong>MÉDICO:</strong> {{ cirurgia.medico }}</p>
+    <p><strong>HORA:</strong> {{ cirurgia.hora|default:"" }}</p>
+    <p><strong>PACIENTE:</strong> {{ cirurgia.paciente.nome }}</p>
+    <p><strong>NASC:</strong> {{ cirurgia.paciente.nascimento|date:"d/m/y" }}</p>
+    <p><strong>SALA:</strong> {{ cirurgia.sala|default:"" }}</p>
+
+    {% for cirurgiakit in cirurgia.cirurgiakit_set.all %}
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2">MATERIAIS ({{ cirurgiakit.kit.nome|upper }})</th>
+                    <th colspan="6">FORNECIMENTO</th>
+                    <th colspan="5">DEVOLUÇÃO</th>
+                </tr>
+                <tr>
+                    <th>QUANT SOLICITADA</th>
+                    <th>QUANT FORNECIDA</th>
+                    <th>DATA</th>
+                    <th>HORA</th>
+                    <th>ENTREGUE</th>
+                    <th>RECEBIDO</th>
+                    <th>QUANTIDADE</th>
+                    <th>DATA</th>
+                    <th>HORA</th>
+                    <th>ENTREGUE</th>
+                    <th>RECEBIDO</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for material in cirurgiakit.cirurgiamaterial_set.all %}
+                    <tr>
+                        <td>{{ material.material.nome }}</td>
+                        <td>{{ material.quantidade_solicitada }}</td>
+                        <td>{{ material.quantidade_fornecida }}</td>
+                        <td></td>  <!-- Campos vazios como no exemplo -->
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{{ material.quantidade_devolvida }}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
+</body>
+</html>

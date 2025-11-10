@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+Perfil do Usuário
+{% endblock %}
+
+{% block content %}
+<div class="">
+    <div class="row align-items-start">
+        <div class="form-group col-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    Informações da Conta
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-end">
+                        <div class="form-group col-md-2">
+                            <div class="text-center mb-2">
+                                {% if user.foto_perfil %}
+                                    <img src="{{ user.foto_perfil.url }}" alt="Foto de Perfil" class="img-thumbnail" style="max-width: 150px; max-height: 150px;">
+                                {% else %}
+                                    <img src="{% static 'assets/images/users/user-dummy-img.jpg' %}" alt="Foto de Perfil" class="img-thumbnail" style="max-width: 150px; max-height: 150px;">
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="form-group col-md-10">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><strong>Nome Completo:</strong> {{ user.first_name }} {{ user.last_name }}</li>
+                                <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
+                                <li class="list-group-item"><strong>Nome de Usuário:</strong> {{ user.username }}</li>
+                                <li class="list-group-item"><strong>Matrícula:</strong> {{ user.matricula }}</li>
+                                
+                                <!-- Outros campos de conta específicos podem ser adicionados aqui -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group col-6">
+            <!-- Informações de Contato -->
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    Informações de Contato
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Hospital:</strong> {{ user.profile.hospital }}</li>
+                        <li class="list-group-item"><strong>Área:</strong> {{ user.profile.area }}</li>
+                        <li class="list-group-item"><strong>Telefone:</strong> {{ user.profile.telefone }}</li>
+                        
+                        <!-- Incluir outros campos de contato relevantes -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botão de Edição de Perfil -->
+    <a href="{% url 'usuarios:editar_perfil' %}" class="btn btn-warning mt-3">Editar Perfil</a>
+</div>
+{% endblock %}

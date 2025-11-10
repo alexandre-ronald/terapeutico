@@ -1,0 +1,408 @@
+{% extends 'base.html' %}
+{% block title %}
+    Fornecimento de Material
+{% endblock %}
+
+{% block breadcrumb %}Cadastros{% endblock %}
+{% block page_title %}Fornecimento{% endblock %}
+
+{% block content %}
+<div class="alert alert-primary alert-dismissible alert-label-icon label-arrow fade show material-shadow" role="alert">
+    <div class="alert-message">
+        <i class="ri-user-3-line label-icon"></i>
+        Paciente: <strong>{{nome}}</strong> - 
+        Prontuário: <strong>{{prontuario}}</strong> - 
+        Data de Nascimento: <strong>{{dt_nascimento}}</strong>
+    </div>
+</div>
+<div class="card border">
+    <div class="card-body">
+        <div class="row align-items-start">
+            <div class="col-md-5">
+                <form method="post" id="cirurgiaForm">
+                    {% csrf_token %}
+                    <div class="card border mt-2">
+                        <div class="card-header">
+                            Preencha os dados da Cirurgia
+                        </div>
+                        <div class="card-body">
+                            <div class="row align-items-end">
+                                <div class="form-group col-md-12">
+                                    <label class="form-label">Especialidade:</label>
+                                    <select class="form-select" name="especialidade" id="id_especialidade" onchange="updateProcedimentosAndKits()">
+                                        <option value="">Selecione a Especialidade</option>
+                                        {% for esp in especialidades %}
+                                            <option value="{{ esp.id }}" {% if esp.id == especialidade_selecionada.id %}selected{% endif %}>{{ esp.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-12 mt-2">
+                                    <label class="form-label">Procedimento:</label>
+                                    <select class="form-select" name="procedimento" id="id_procedimento">
+                                        <option value="">Selecione o Procedimento</option>
+                                        {% for prod in procedimentos %}
+                                            <option value="{{ prod.id }}" {% if prod.id == procedimento_selecionado.id %}selected{% endif %}>{{ prod.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row align-items-end mt-2">
+                                <div class="form-group col-md-4">
+                                    <label class="form-label">Data Cirurgia:</label>
+                                    <input type="date" class="form-control" name="data_cirurgia" value="{{ data_cirurgia|date:'Y-m-d' }}">
+                                </div>
+                                <div class="form-group col-md-4 mt-2">
+                                    <label class="form-label">Hora Cirurgia:</label>
+                                    <input type="time" class="form-control" name="hora_cirurgia" value="{{ hora_cirurgia|default:'' }}">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label class="form-label">Sala:</label>
+                                    <input type="text" class="form-control" name="sala" value="{{ sala|default:'' }}">
+                                </div>
+                                <div class="form-group col-md-12 mt-2">
+                                    <label class="form-label">Médico:</label>
+                                    <input type="text" class="form-control" name="medico" value="{{ medico|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-7">
+                <div class="card border mt-2">
+                    <div class="card-header">
+                        Materiais Incluídos
+                    </div>
+                    <div class="card-body">
+                        <form method="post" id="materialForm">
+                            {% csrf_token %}
+                            <div class="row align-items-end">
+                                <div class="form-group col-md-8">
+                                    <label class="form-label">Material (Individual):</label>
+                                    <select class="form-select" name="material" id="id_material">
+                                        <option value="">Selecione o Material</option>
+                                        {% for mat in materiais %}
+                                            <option value="{{ mat.id }}" data-is-kit="false">{{ mat.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label class="form-label">Quantidade:</label>
+                                    <input type="number" class="form-control" name="quantidade_material" id="id_quantidade_material" value="1" min="1">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <button type="button" id="btn_incluir_material" class="btn btn-success btn-label left mt-4">
+                                        <i class="ri-inbox-archive-line label-icon align-middle fs-16 me-2"></i>Incluir Material
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="row align-items-end mt-2">
+                            <div class="form-group col-md-8">
+                                <label class="form-label">Kit:</label>
+                                <select class="form-select" name="kit" id="id_kit">
+                                    <option value="">Selecione o Kit</option>
+                                    {% for kit in kits %}
+                                        <option value="{{ kit.id }}" data-especialidade-id="{{ kit.especialidade.id|default:'' }}">{{ kit.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <button type="button" id="btn_incluir_kit" class="btn btn-primary btn-label left mt-4">
+                                    <i class="ri-keyboard-box-line label-icon align-middle fs-16 me-2"></i>Incluir Kit
+                                </button>
+                            </div>
+                        </div>
+                        <table class="table table-striped mt-2" id="materiaisTable">
+                            <thead>
+                                <tr>
+                                    <th>Material</th>
+                                    <th>Quantidade</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="materiaisBody">
+                                {% if not materiais_incluidos %}
+                                    <tr class="no-materials">
+                                        <td colspan="3" class="text-center">Nenhum material adicionado.</td>
+                                    </tr>
+                                {% else %}
+                                    {% for material in materiais_incluidos %}
+                                        <tr data-material-id="{{ material.material.id }}" data-is-kit="{{ material.cirurgia_kit_id|default:'false' }}" data-kit-id="{{ material.cirurgia_kit.kit.id|default:'' }}">
+                                            <td>{{ material.material.nome }}</td>
+                                            <td>
+                                                {% if material.cirurgia_kit %}
+                                                    {{ material.quantidade_solicitada }} (do kit {{ material.cirurgia_kit.kit.nome }})
+                                                {% else %}
+                                                    <input type="number" class="form-control quantidade-input" name="quantidade_{{ material.material.id }}" value="{{ material.quantidade_solicitada }}" min="1">
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-danger btn-sm remover-material" data-material-id="{{ material.material.id }}">
+                                                    <i class="ri-delete-bin-line"></i> Remover
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="d-flex align-items-start gap-3">
+            <button type="submit" form="cirurgiaForm" name="action" value="salvar_cirurgia" class="btn btn-primary btn-label right">
+                <i class="ri-save-line label-icon align-middle fs-16 me-2"></i>Salvar Cirurgia
+            </button>
+            <a onclick="history.back()" class="btn btn-success btn-label ms-auto">
+                <i class="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>Voltar para Lista de Pacientes
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Função para atualizar procedimentos e kits com base na especialidade selecionada
+    function updateProcedimentosAndKits() {
+        const especialidadeId = document.getElementById('id_especialidade').value;
+        updateProcedimentos(especialidadeId);
+        updateKits(especialidadeId);
+    }
+
+    // Atualizar procedimentos
+    function updateProcedimentos(especialidadeId) {
+        fetch(`/upme/get_procedimentos/?especialidade_id=${especialidadeId}`)
+            .then(response => response.json())
+            .then(data => {
+                const procedimentoSelect = document.getElementById('id_procedimento');
+                procedimentoSelect.innerHTML = '<option value="">Selecione o Procedimento</option>';
+                data.forEach(proc => {
+                    const option = document.createElement('option');
+                    option.value = proc.id;
+                    option.text = proc.nome;
+                    if (proc.id == {{ procedimento_selecionado.id|default:0 }}) {
+                        option.selected = true;
+                    }
+                    procedimentoSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching procedures:', error));
+    }
+
+    // Atualizar kits
+    function updateKits(especialidadeId) {
+        const kitSelect = document.getElementById('id_kit');
+        const options = kitSelect.options;
+        for (let option of options) {
+            const kitEspecialidadeId = option.getAttribute('data-especialidade-id');
+            if (especialidadeId === '' || kitEspecialidadeId === '' || kitEspecialidadeId === especialidadeId) {
+                option.style.display = 'block';
+            } else {
+                option.style.display = 'none';
+            }
+        }
+    }
+
+    // Incluir material individual
+    document.getElementById('btn_incluir_material').addEventListener('click', function() {
+        const materialSelect = document.getElementById('id_material');
+        const quantidadeInput = document.getElementById('id_quantidade_material');
+        const materialId = materialSelect.value;
+        const quantidade = quantidadeInput.value;
+
+        if (materialId && quantidade) {
+            const materialNome = materialSelect.options[materialSelect.selectedIndex].text;
+            addMaterialToTable(materialId, materialNome, quantidade, false, null);
+            materialSelect.value = '';
+            quantidadeInput.value = '1';
+            reorganizeTable();
+            updateNoMaterialsMessage();
+        }
+    });
+
+    // Incluir kit
+    document.getElementById('btn_incluir_kit').addEventListener('click', function() {
+        const kitSelect = document.getElementById('id_kit');
+        const kitId = kitSelect.value;
+        const kitNome = kitSelect.options[kitSelect.selectedIndex].text;
+
+        if (kitId) {
+            addKitHeaderToTable(kitId, kitNome);
+            fetch(`/upme/get_kit_materials/?kit_id=${kitId}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(item => {
+                        addMaterialToTable(item.material__nome, item.material__nome, item.quantidade, true, kitId, kitNome);
+                    });
+                    kitSelect.value = '';
+                    reorganizeTable();
+                    updateNoMaterialsMessage();
+                })
+                .catch(error => console.error('Error fetching kit materials:', error));
+        }
+    });
+
+    // Adicionar linha de cabeçalho do kit
+    function addKitHeaderToTable(kitId, kitNome) {
+        const tbody = document.getElementById('materiaisBody');
+        const existingHeader = Array.from(tbody.querySelectorAll('tr')).find(row => row.getAttribute('data-kit-id') === kitId && row.classList.contains('kit-header'));
+
+        if (!existingHeader) {
+            const row = document.createElement('tr');
+            row.setAttribute('data-kit-id', kitId);
+            row.classList.add('kit-header');
+            row.innerHTML = `
+                <td colspan="3" class="bg-light fw-bold">${kitNome}</td>
+            `;
+            tbody.appendChild(row); // Adiciona no final temporariamente
+        }
+    }
+
+    // Adicionar material à tabela
+    function addMaterialToTable(materialId, materialNome, quantidade, isKit, kitId = null, kitNome = null) {
+        const tbody = document.getElementById('materiaisBody');
+        const existingRow = Array.from(tbody.querySelectorAll('tr')).find(row => row.getAttribute('data-material-id') === materialId && !row.classList.contains('kit-header'));
+
+        if (!existingRow) {
+            const row = document.createElement('tr');
+            row.setAttribute('data-material-id', materialId);
+            row.setAttribute('data-is-kit', isKit);
+            if (isKit && kitId) row.setAttribute('data-kit-id', kitId);
+
+            row.innerHTML = `
+                <td>${materialNome}</td>
+                <td>${isKit ? `${quantidade} (do kit ${kitNome})` : `<input type="number" class="form-control quantidade-input" name="quantidade_${materialId}" value="${quantidade}" min="1">`}</td>
+                <td><button type="button" class="btn btn-danger btn-sm remover-material" data-material-id="${materialId}"><i class="ri-delete-bin-line"></i> Remover</button></td>
+            `;
+            tbody.appendChild(row); // Adiciona no final temporariamente
+        }
+    }
+
+    // Reorganizar a tabela para manter materiais individuais no topo e kits em ordem
+    function reorganizeTable() {
+        const tbody = document.getElementById('materiaisBody');
+        const rows = Array.from(tbody.querySelectorAll('tr')).filter(row => !row.classList.contains('no-materials'));
+        tbody.innerHTML = ''; // Limpa o tbody
+
+        // Agrupar linhas por kit ou individual
+        const individualRows = rows.filter(row => !row.getAttribute('data-is-kit') || row.getAttribute('data-is-kit') === 'false');
+        const kitHeaders = rows.filter(row => row.classList.contains('kit-header'));
+        const kitMaterials = rows.filter(row => row.getAttribute('data-is-kit') === 'true');
+
+        // Adicionar materiais individuais primeiro
+        individualRows.forEach(row => tbody.appendChild(row));
+
+        // Adicionar kits (header + materiais) na ordem de inclusão
+        kitHeaders.forEach(header => {
+            tbody.appendChild(header);
+            const kitId = header.getAttribute('data-kit-id');
+            const kitMaterialRows = kitMaterials.filter(row => row.getAttribute('data-kit-id') === kitId);
+            kitMaterialRows.forEach(row => tbody.appendChild(row));
+        });
+
+        // Adicionar mensagem "Nenhum material adicionado" se necessário
+        updateNoMaterialsMessage();
+    }
+
+    // Delegação de eventos para remover material
+    document.getElementById('materiaisBody').addEventListener('click', function(e) {
+        if (e.target.closest('.remover-material')) {
+            const button = e.target.closest('.remover-material');
+            const materialId = button.getAttribute('data-material-id');
+            const row = button.closest('tr');
+            const kitId = row.getAttribute('data-kit-id');
+            row.remove();
+
+            // Remover cabeçalho do kit se não houver mais materiais associados
+            if (kitId) {
+                const kitRows = Array.from(this.querySelectorAll('tr')).filter(r => r.getAttribute('data-kit-id') === kitId && !r.classList.contains('kit-header'));
+                if (kitRows.length === 0) {
+                    const kitHeader = this.querySelector(`tr.kit-header[data-kit-id="${kitId}"]`);
+                    if (kitHeader) kitHeader.remove();
+                }
+            }
+            reorganizeTable();
+            updateNoMaterialsMessage();
+        }
+    });
+
+    // Atualizar mensagem "Nenhum material adicionado"
+    function updateNoMaterialsMessage() {
+        const tbody = document.getElementById('materiaisBody');
+        const noMaterialsRow = tbody.querySelector('.no-materials');
+        const hasContent = tbody.querySelectorAll('tr').length > 0 && !Array.from(tbody.querySelectorAll('tr')).every(row => row.classList.contains('no-materials'));
+
+        if (noMaterialsRow) {
+            if (hasContent) {
+                noMaterialsRow.style.display = 'none';
+            } else {
+                noMaterialsRow.style.display = '';
+            }
+        } else if (!hasContent) {
+            const row = document.createElement('tr');
+            row.classList.add('no-materials');
+            row.innerHTML = '<td colspan="3" class="text-center">Nenhum material adicionado.</td>';
+            tbody.appendChild(row);
+        }
+    }
+
+    // Salvar cirurgia e materiais
+    document.querySelector('button[name="action"][value="salvar_cirurgia"]').addEventListener('click', function(e) {
+        e.preventDefault();
+        const form = document.getElementById('cirurgiaForm');
+        const formData = new FormData(form);
+        console.log('Form Data:', Object.fromEntries(formData)); // Depuração
+
+        const materiais = [];
+        document.querySelectorAll('#materiaisBody tr').forEach(row => {
+            if (!row.classList.contains('kit-header') && !row.classList.contains('no-materials')) {
+                const materialId = row.getAttribute('data-material-id');
+                const isKit = row.getAttribute('data-is-kit') === 'true';
+                const quantidade = isKit ? row.querySelector('td:nth-child(2)').textContent.match(/\d+/) : row.querySelector('.quantidade-input')?.value || 0;
+                if (materialId && quantidade) {
+                    materiais.push({ material_id: materialId, quantidade: quantidade, is_kit: isKit });
+                }
+            }
+        });
+        console.log('Materiais:', materiais); // Depuração
+        formData.append('materiais', JSON.stringify(materiais));
+
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => {
+            console.log('Response Status:', response.status); // Depuração
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response Data:', data); // Depuração
+            if (data.success) {
+                alert('Cirurgia e materiais salvos com sucesso!');
+                window.location.reload();
+            } else {
+                alert('Erro ao salvar: ' + (data.error || 'Erro desconhecido'));
+            }
+        })
+        .catch(error => {
+            console.error('Fetch Error:', error); // Depuração
+            alert('Erro ao salvar: Verifique o console para detalhes.');
+        });
+    });
+
+    // Inicializar ao carregar a página
+    document.addEventListener('DOMContentLoaded', function() {
+        const especialidadeId = document.getElementById('id_especialidade').value;
+        updateProcedimentos(especialidadeId);
+        updateKits(especialidadeId);
+        reorganizeTable();
+        updateNoMaterialsMessage();
+    });
+</script>
+{% endblock %}

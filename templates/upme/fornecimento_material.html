@@ -1,0 +1,587 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Fornecimento de Material{% endblock %}
+{% block breadcrumb %}Cadastros{% endblock %}
+{% block page_title %}Fornecimento{% endblock %}
+
+{% block head %}
+    <style>
+        .pagina-a4 { width: 200mm; height: 287mm; padding: 5mm; margin: 0 auto; background: white; font-family: 'Helvetica', Arial, sans-serif; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden; border: 1px solid #e0e0e0; }
+        .header-relatorio { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #d1d1d1; }
+        .texto-cabecalho { flex: 2; font-size: 16px; line-height: 1.5; text-align: center; }
+        .linha { display: flex; justify-content: space-between; border-bottom: 0.5px solid #d1d1d1; font-size: 14px; padding: 10px 0; line-height: 1.5; }
+        .coluna-esquerda, .coluna-direita { padding: 0; line-height: 1.5; }
+        .coluna-direita { width: 35%; }
+        .rodape-container { position: absolute; bottom: 5mm; width: 200mm; left: 5mm; border-top: 1px solid #d1d1d1; padding-top: 5px; }
+        .numero-pagina { font-size: 9px; text-align: right; margin-bottom: 5px; color: #555; }
+        hr { border-top: 1px solid #d1d1d1; margin: 5px 0; }
+        .conteudo-exames { max-height: 237mm; overflow: hidden; font-size: 11px; font-family: 'Courier', monospace; }
+        .vertical-text { transform: rotate(-90deg); white-space: nowrap; width: 15px; text-align: center; vertical-align: middle; height: 120px; }
+        th.vertical-text { padding: 0; line-height: 15px; }
+        .kit-header { background-color: #f8f9fa; font-weight: bold; }
+        .kit-item { padding-left: 20px; }
+        .tabela-conteudo{ font-size: 10px; }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="alert alert-primary alert-dismissible alert-label-icon label-arrow fade show material-shadow" role="alert">
+    <div class="alert-message">
+        <i class="ri-user-3-line label-icon"></i>
+        Paciente: <strong>{{nome}}</strong> - Prontuário: <strong>{{prontuario}}</strong> - Data de Nascimento: <strong>{{data_nascimento}}</strong>
+    </div>
+</div>
+<div class="card border">
+    <div class="card-body">
+        <div class="row align-items-start">
+            <div class="col-md-5">
+                <form method="post" id="cirurgiaForm" action="/upme/fornecimento_material/save/">
+                    {% csrf_token %}
+                    <input type="hidden" name="prontuario" value="{{prontuario}}">
+                    <input type="hidden" name="nome" value="{{nome}}">
+                    <input type="hidden" name="data_nascimento" value="{{data_nascimento}}">
+                    <div class="card border mt-2">
+                        <div class="card-header">Preencha os dados da Cirurgia</div>
+                        <div class="card-body">
+                            <div class="row align-items-end">
+                                <div class="form-group col-md-6">
+                                    <label class="form-label">Especialidade: </label>
+                                    <input type="text" class="form-control" name="especialidade" value="{{especialidade}}" readonly>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label class="form-label">Procedimento:</label>
+                                    <input type="text" class="form-control" name="procedimento" value="{{procedimento}}" readonly>
+                                </div>
+                            </div>
+                            <div class="row align-items-end mt-2">
+                                <div class="form-group col-md-4">
+                                    <label class="form-label">Data Cirurgia:</label>
+                                    <input type="text" class="form-control" name="data_cirurgia" value="{{data_cirurgia}}" readonly>
+                                </div>
+                                <div class="form-group col-md-4 mt-2">
+                                    <label class="form-label">Hora Cirurgia:</label>
+                                    <input type="text" class="form-control" name="hora_cirurgia" value="{{hora_cirurgia}}" readonly>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label class="form-label">Sala:</label>
+                                    <input type="text" class="form-control" name="sala" value="{{sala|default:''}}" readonly>
+                                </div>
+                                <div class="form-group col-md-12 mt-2">
+                                    <label class="form-label">Médico:</label>
+                                    <input type="text" class="form-control" name="medico" value="{{medico|default:''}}" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-7">
+                <div class="card border mt-2">
+                    <div class="card-header">Materiais Incluídos</div>
+                    <div class="card-body">
+                        <form method="post" id="materialForm" action="/upme/fornecimento_material/save/">
+                            {% csrf_token %}
+                            <div class="row align-items-end">
+                                <div class="form-group col-md-6">
+                                    <label class="form-label">Material (Individual):</label>
+                                    <select class="form-select" name="material" id="id_material">
+                                        <option value="">Selecione o Material</option>
+                                        {% for mat in materiais %}
+                                            <option value="{{ mat.id }}" data-is-kit="false">{{ mat.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label class="form-label">Quantidade:</label>
+                                    <input type="number" class="form-control" name="quantidade_material" id="id_quantidade_material" value="1" min="1">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <button type="button" id="btn_incluir_material" class="btn btn-success btn-label left mt-4">
+                                        <i class="ri-inbox-archive-line label-icon align-middle fs-16 me-2"></i>Incluir Material
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="row align-items-end mt-2">
+                            <div class="form-group col-md-8">
+                                <label class="form-label">Kit:</label>
+                                <select class="form-select" name="kit" id="id_kit">
+                                    <option value="">Selecione o Kit</option>
+                                    {% for kit in kits %}
+                                        <option value="{{ kit.id }}" data-especialidade-id="{{ kit.especialidade.id|default:'' }}">{{ kit.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <button type="button" id="btn_incluir_kit" class="btn btn-primary btn-label left mt-4">
+                                    <i class="ri-keyboard-box-line label-icon align-middle fs-16 me-2"></i>Incluir Kit
+                                </button>
+                            </div>
+                        </div>
+                        <table class="table table-striped mt-2" id="materiaisTable">
+                            <thead>
+                                <tr>
+                                    <th>Material</th>
+                                    <th>Quantidade</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="materiaisBody">
+                                {% if not materiais_agrupados %}
+                                    <tr class="no-materials">
+                                        <td colspan="3" class="text-center">Nenhum material adicionado.</td>
+                                    </tr>
+                                {% else %}
+                                    {% for kit_id, kit_data in materiais_agrupados.items %}
+                                        {% if kit_id != 'individual' %}
+                                            <tr class="kit-header" data-kit-id="{{ kit_id }}">
+                                                <td colspan="3" class="bg-light fw-bold">{{ kit_data.nome }}</td>
+                                            </tr>
+                                            {% for material in kit_data.itens %}
+                                                <tr data-material-id="{{ material.material.id }}" data-is-kit="true" {% if material.kit_material %}data-kit-id="{{ material.kit_material.kit.id|default:'' }}"{% endif %}>
+                                                    <td>{{ material.material.nome }}</td>
+                                                    <td><input type="number" class="form-control quantidade-input" name="quantidade_{{ material.material.id }}" value="{{ material.quantidade_solicitada }}" min="1"></td>
+                                                    <td><button type="button" class="btn btn-danger btn-sm remover-material" data-material-id="{{ material.material.id }}"><i class="ri-delete-bin-line"></i> Remover</button></td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if materiais_agrupados.individual.itens %}
+                                        <tr class="kit-header" data-kit-id="individual">
+                                            <td colspan="3" class="bg-light fw-bold">{{ materiais_agrupados.individual.nome }}</td>
+                                        </tr>
+                                        {% for material in materiais_agrupados.individual.itens %}
+                                            <tr data-material-id="{{ material.material.id }}" data-is-kit="false">
+                                                <td>{{ material.material.nome }}</td>
+                                                <td><input type="number" class="form-control quantidade-input" name="quantidade_{{ material.material.id }}" value="{{ material.quantidade_solicitada }}" min="1"></td>
+                                                <td><button type="button" class="btn btn-danger btn-sm remover-material" data-material-id="{{ material.material.id }}"><i class="ri-delete-bin-line"></i> Remover</button></td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="d-flex align-items-start gap-3">
+            <button type="submit" form="cirurgiaForm" name="action" value="salvar_cirurgia" class="btn btn-primary btn-label right">
+                <i class="ri-save-line label-icon align-middle fs-16 me-2"></i>Salvar Fornecimento
+            </button>
+            <button type="button" id="btn_visualizar_fornecimento" class="btn btn-info btn-label right">
+                <i class="ri-eye-line label-icon align-middle fs-16 me-2"></i>Visualizar Fornecimento
+            </button>
+            <a onclick="history.back()" class="btn btn-success btn-label ms-auto">
+                <i class="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i>Voltar para Lista de Pacientes
+            </a>
+        </div>
+    </div>
+
+    <div class="modal fade" id="visualizarModal" tabindex="-1" aria-labelledby="visualizarModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="visualizarModalLabel"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <div id="modalContent">
+                        <!-- Conteúdo gerado dinamicamente será inserido aqui -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="btn_imprimir" class="btn btn-success">
+                        <i class="ri-printer-line"></i> Imprimir
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const context = { nome: "{{ nome|escapejs }}", data_nascimento: "{{ data_nascimento|escapejs }}", prontuario: "{{ prontuario|escapejs }}" };
+
+    document.getElementById('btn_incluir_material').addEventListener('click', function() {
+        const materialSelect = document.getElementById('id_material');
+        const quantidadeInput = document.getElementById('id_quantidade_material');
+        const materialId = materialSelect.value;
+        const quantidade = quantidadeInput.value;
+        if (materialId && quantidade) {
+            const materialNome = materialSelect.options[materialSelect.selectedIndex].text;
+            addMaterialToTable(materialId, materialNome, quantidade, false, null, '');
+            materialSelect.value = ''; quantidadeInput.value = '1';
+            reorganizeTable(); updateNoMaterialsMessage();
+        }
+    });
+
+    document.getElementById('btn_incluir_kit').addEventListener('click', function() {
+        const kitSelect = document.getElementById('id_kit');
+        const kitId = kitSelect.value;
+        const kitNome = kitSelect.options[kitSelect.selectedIndex].text;
+        if (kitId) {
+            addKitHeaderToTable(kitId, kitNome);
+            fetch(`/upme/get_kit_materials/?kit_id=${kitId}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(item => {
+                        const materialId = item.material_id || item.id || item.material__id;
+                        addMaterialToTable(materialId, item.material__nome, item.quantidade, true, kitId, kitNome);
+                    });
+                    kitSelect.value = ''; reorganizeTable(); updateNoMaterialsMessage();
+                })
+                .catch(error => console.error('Error fetching kit materials:', error));
+        }
+    });
+
+    function addKitHeaderToTable(kitId, kitNome) {
+        const tbody = document.getElementById('materiaisBody');
+        if (!tbody.querySelector(`tr.kit-header[data-kit-id="${kitId}"]`)) {
+            const row = document.createElement('tr');
+            row.setAttribute('data-kit-id', kitId); row.classList.add('kit-header');
+            row.innerHTML = `<td colspan="3" class="bg-light fw-bold">${kitNome}</td>`;
+            tbody.appendChild(row);
+        }
+    }
+
+    function addMaterialToTable(materialId, materialNome, quantidade, isKit, kitId = null, kitNome = '') {
+        const tbody = document.getElementById('materiaisBody');
+        if (!tbody.querySelector(`tr[data-material-id="${materialId}"][data-is-kit="${isKit}"]`)) {
+            const row = document.createElement('tr');
+            row.setAttribute('data-material-id', materialId);
+            row.setAttribute('data-is-kit', isKit);
+            if (isKit && kitId) row.setAttribute('data-kit-id', kitId);
+            row.innerHTML = `
+                <td>${materialNome}</td>
+                <td><input type="number" class="form-control quantidade-input" name="quantidade_${materialId}" value="${quantidade}" min="1"></td>
+                <td><button type="button" class="btn btn-danger btn-sm remover-material" data-material-id="${materialId}"><i class="ri-delete-bin-line"></i> Remover</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+    }
+
+    function reorganizeTable() {
+        const tbody = document.getElementById('materiaisBody');
+        let rows = Array.from(tbody.querySelectorAll('tr')).filter(row => !row.classList.contains('no-materials'));
+        tbody.innerHTML = '';
+
+        // Adicionar materiais individuais
+        rows.filter(row => !row.getAttribute('data-is-kit') || row.getAttribute('data-is-kit') === 'false')
+            .forEach(row => tbody.appendChild(row));
+
+        // Adicionar kits (header + materiais)
+        const kitHeaders = rows.filter(row => row.classList.contains('kit-header'));
+        kitHeaders.forEach(header => {
+            const kitId = header.getAttribute('data-kit-id');
+            tbody.appendChild(header);
+            rows.filter(row => row.getAttribute('data-kit-id') === kitId && row.getAttribute('data-is-kit') === 'true')
+                .forEach(row => tbody.appendChild(row));
+        });
+
+        updateNoMaterialsMessage();
+    }
+
+    document.getElementById('materiaisBody').addEventListener('click', function(e) {
+        if (e.target.closest('.remover-material')) {
+            const button = e.target.closest('.remover-material');
+            const materialId = button.getAttribute('data-material-id');
+            const row = button.closest('tr');
+            const kitId = row.getAttribute('data-kit-id');
+            row.remove();
+            if (kitId) {
+                const kitRows = this.querySelectorAll(`tr[data-kit-id="${kitId}"][data-is-kit="true"]`);
+                if (kitRows.length === 0) {
+                    this.querySelector(`tr.kit-header[data-kit-id="${kitId}"]`)?.remove();
+                }
+            }
+            reorganizeTable();
+        }
+    });
+
+    function updateNoMaterialsMessage() {
+        const tbody = document.getElementById('materiaisBody');
+        const noMaterialsRow = tbody.querySelector('.no-materials');
+        const hasContent = tbody.querySelectorAll('tr').length > 0 && !Array.from(tbody.querySelectorAll('tr')).every(row => row.classList.contains('no-materials'));
+        if (noMaterialsRow) {
+            noMaterialsRow.style.display = hasContent ? 'none' : '';
+        } else if (!hasContent) {
+            const row = document.createElement('tr');
+            row.classList.add('no-materials');
+            row.innerHTML = '<td colspan="3" class="text-center">Nenhum material adicionado.</td>';
+            tbody.appendChild(row);
+        }
+    }
+
+    document.querySelector('button[name="action"][value="salvar_cirurgia"]').addEventListener('click', function(e) {
+        e.preventDefault();
+        const form = document.getElementById('cirurgiaForm');
+        const formData = new FormData(form);
+        formData.append('action', 'salvar_cirurgia');
+
+        const materiais = [];
+        document.querySelectorAll('#materiaisBody tr').forEach(row => {
+            if (!row.classList.contains('kit-header') && !row.classList.contains('no-materials')) {
+                const materialId = row.getAttribute('data-material-id');
+                const isKit = row.getAttribute('data-is-kit') === 'true';
+                const quantidade = row.querySelector('.quantidade-input')?.value || 0;
+                if (materialId && quantidade) {
+                    const materialObj = { material_id: materialId, quantidade: quantidade, is_kit: isKit };
+                    if (isKit) {
+                        const kitId = row.getAttribute('data-kit-id');
+                        const kitHeader = document.querySelector(`#materiaisBody tr.kit-header[data-kit-id="${kitId}"]`);
+                        const kitNome = kitHeader ? kitHeader.querySelector('td').textContent : '';
+                        materialObj.kit_id = kitId;
+                        materialObj.kit_nome = kitNome;
+                    }
+                    materiais.push(materialObj);
+                }
+            }
+        });
+        formData.append('materiais', JSON.stringify(materiais));
+
+        fetch('/upme/fornecimento_material/save/', {
+            method: 'POST',
+            body: formData,
+            headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value}
+        })
+        .then(response => { console.log('Response Status:', response.status); if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`); return response.json(); })
+        .then(data => { console.log('Response Data:', data); if (data.success) { alert('Cirurgia e materiais salvos com sucesso!'); window.location.reload(); } else { alert('Erro ao salvar: ' + (data.error || 'Erro desconhecido')); console.error('Server Error Details:', data.error || 'No error message provided'); } })
+        .catch(error => { console.error('Fetch Error:', error); alert('Erro ao salvar: Verifique o console para detalhes.'); });
+    });
+
+    document.getElementById('btn_visualizar_fornecimento').addEventListener('click', function() {
+        const form = document.getElementById('cirurgiaForm');
+        const formData = new FormData(form);
+        const materiais = [];
+        document.querySelectorAll('#materiaisBody tr').forEach(row => {
+            if (!row.classList.contains('kit-header') && !row.classList.contains('no-materials')) {
+                const materialId = row.getAttribute('data-material-id');
+                const isKit = row.getAttribute('data-is-kit') === 'true';
+                const quantidade = row.querySelector('.quantidade-input')?.value || 0;
+                const materialNome = row.querySelector('td:first-child').textContent;
+                const kitId = row.getAttribute('data-kit-id') || null;
+                const kitNome = kitId ? Array.from(document.querySelectorAll('#materiaisBody tr.kit-header')).find(header => header.getAttribute('data-kit-id') === kitId)?.querySelector('td')?.textContent || '' : '';
+                if (materialId && quantidade) materiais.push({ material_id: materialId, quantidade, is_kit: isKit, nome: materialNome, kit_id: kitId, kit_nome: kitNome });
+            }
+        });
+        const kits = {}; for (let item of materiais) if (item.is_kit && item.kit_id) (kits[item.kit_id] = kits[item.kit_id] || { nome: item.kit_nome, itens: [] }).itens.push(item);
+
+        let modalContent = `
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="header-relatorio">
+                            <div class="logo-esquerda"><img src="{% static 'assets/images/logo.jpg' %}" alt="Logo HU" height="70" onerror="this.style.display='none'"></div>
+                            <div class="texto-cabecalho">
+                            <div><strong>Hospital Universitário da Universidade Federal do Maranhão - HU-UFMA</strong></div>
+                            <div>Unidade de Processamento de Materiais Esterilizados – UPME/UPD</div>
+                            <div><strong>FORNECIMENTO DE MATERIAIS PROCESSADOS</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="linha">
+                    <div class="coluna-esquerda">
+                        <div><strong>Cirurgia:</strong> ${formData.get('procedimento') || ''}</div>
+                        <div><strong>Médico:</strong> ${formData.get('medico') || ''}</div>
+                        <div><strong>Paciente:</strong> ${context.nome || ''}</div>
+                    </div>
+                    <div class="coluna-direita">
+                        <div><strong>Data:</strong> ${formData.get('data_cirurgia') || ''} <strong>Hora:</strong> ${formData.get('hora_cirurgia') || ''}</div>
+                        <div><strong>Sala:</strong> ${formData.get('sala') || ''}</div>
+                        <div><strong>Data de Nascimento:</strong> ${context.data_nascimento || ''}</div>
+                    </div>
+                </div>
+                <table class="table table-bordered mt-3 border-dark">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="text-align: justify; width: 35%;">MATERIAIS</th>
+                            <th colspan="6" style="text-align: center; width: 35%;">FORNECIMENTO</th>
+                            <th colspan="5" style="text-align: center; width: 30%;">DEVOLUÇÃO</th>
+                        </tr>
+                        <tr>
+                            <th class="vertical-text">Quantidade<br>Solicitada</th>
+                            <th class="vertical-text">Quantidade<br>Fornecida</th>
+                            <th class="vertical-text">Data</th>
+                            <th class="vertical-text">Hora</th>
+                            <th class="vertical-text">Entregue</th>
+                            <th class="vertical-text">Recebido</th>
+                            <th class="vertical-text">Quantidade</th>
+                            <th class="vertical-text">Data</th>
+                            <th class="vertical-text">Hora</th>
+                            <th class="vertical-text">Entregue</th>
+                            <th class="vertical-text">Recebido</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${materiais.filter(item => !item.is_kit).map(item => `
+                        <tr>
+                            <td>${item.nome}</td>
+                            <td style="text-align: center;">${item.quantidade}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        `).join('')}${Object.values(kits).map(kit => `
+                        <tr class="kit-header">
+                            <td colspan="12">${kit.nome}</td>
+                        </tr>
+                        ${kit.itens.map(item => `
+                        <tr class="kit-item ">
+                            <td style="padding-left: 20px;">${item.nome}</td>
+                            <td style="text-align: center;">${item.quantidade}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        `).join('')}`).join('')}
+                    </tbody>
+                </table>
+                </div>
+                `;
+
+        document.getElementById('visualizarModalLabel').textContent = 'Visualização do Fornecimento de Materiais';
+        document.getElementById('modalContent').innerHTML = modalContent;
+        new bootstrap.Modal(document.getElementById('visualizarModal')).show();
+    });
+
+    document.getElementById('btn_imprimir').addEventListener('click', function() {
+        const modalContent = document.getElementById('modalContent').innerHTML;
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Impressão do Fornecimento</title>
+                <style>
+                    body {
+                        margin: 0;
+                        padding: 0;
+                        font-family: 'Helvetica', Arial, sans-serif;
+                    }
+                    .container {
+                        width: 210mm;
+                        height: 297mm;
+                        margin: 0 auto;
+                        padding: 10mm;
+                        box-sizing: border-box;
+                    }
+                    .header-relatorio {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 8px 0;
+                        border-bottom: 1px solid #d1d1d1;
+                    }
+                    .texto-cabecalho {
+                        flex: 2;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        text-align: center;
+                    }
+                    .linha {
+                        display: flex;
+                        justify-content: space-between;
+                        border-bottom: 0.5px solid #d1d1d1;
+                        font-size: 11px;
+                        padding: 10px 0;
+                        line-height: 0.8;
+                    }
+                    .coluna-esquerda, .coluna-direita {
+                        padding: 0;
+                        line-height: 1.5;
+                    }
+                    .coluna-direita {
+                        width: 35%;
+                    }
+                    table {
+                        width: 99%;
+                        border-collapse: collapse;
+                        margin-top: 10mm;
+                        table-layout: fixed;
+                    }
+                    th, td {
+                        border: 1px solid #000;
+                        padding: 0.5mm;
+                        padding-left: 5px;
+                        text-align: left;
+                        word-break: break-word;
+                        overflow-wrap: break-word;
+                        font-size: 11px;
+                    }
+                    th {
+                        background-color: #f8f9fa;
+                        
+                    }
+
+                    .vertical-text {
+                        writing-mode: sideways-lr;
+                        transform: none;
+                        text-align: center;
+                        vertical-align: middle;
+                        white-space: normal;
+                        font-size: 10px;
+                        padding: 4px 2px;
+                        line-height: 1.2;
+                        border: 1px solid #000 !important;
+                        box-sizing: border-box;
+                        background-color: #f8f9fa;
+                        word-wrap: break-word;
+                    }
+
+                    th.vertical-text {
+                        height: 120px;
+                        border: 1px solid #000 !important;
+                        background-color: #f8f9fa;
+                        overflow: visible;
+                    }
+
+                    .kit-header td {
+                        font-weight: bold;
+                        background-color: #f8f9fa;
+                        font-size: 11px;
+                    }
+                    .kit-item td:first-child {
+                        padding-left: 20px;
+                        font-size: 11px;
+                        line-height: 0.8;
+                    }
+                    @page {
+                        margin: 10mm;
+                        size: A4 portrait;
+                    }
+                    table td, table th {
+                        max-width: 0;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                </style>
+            </head>
+            <body onload="window.print(); window.close();">
+                ${modalContent}
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    });
+</script>
+{% endblock %}

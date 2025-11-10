@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Relatório{% endblock %}</title>
+    {% load static %}
+
+    <!-- Layout config Js -->
+    <script src="{% static 'assets/js/layout.js' %}"></script>
+    <!-- Bootstrap Css -->
+    <link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
+    <!-- Icons Css -->
+    <link href="{% static 'assets/css/icons.min.css' %}" rel="stylesheet" type="text/css">
+    <!-- App Css-->
+    <link href="{% static 'assets/css/app.min.css' %}" rel="stylesheet" type="text/css">
+    <!-- custom Css-->
+    <link href="{% static 'assets/css/custom.min.css' %}" rel="stylesheet" type="text/css">
+
+    <style>
+        @page {
+            size: A4;
+            margin: 5mm;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Helvetica', Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .topbar {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background-color: #ffffff;
+            border: 1px solid #d1d1d1;
+            border-radius: 4px;
+            padding: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .topbar a,
+        .topbar button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .topbar a:hover,
+        .topbar button:hover {
+            background-color: #0056b3;
+        }
+
+        .topbar .icon {
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        .navigation {
+            position: fixed;
+            top: 70px;
+            left: 10px;
+            z-index: 1000;
+            background-color: #ffffff;
+            border: 1px solid #d1d1d1;
+            border-radius: 4px;
+            padding: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .navigation button {
+            padding: 8px 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .navigation button:hover {
+            background-color: #218838;
+        }
+
+        .navigation button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .navigation .page-info {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .pagina-a4 {
+            display: none;
+        }
+
+        .pagina-a4.active {
+            display: block;
+        }
+
+        @media print {
+            body {
+                background-color: white;
+            }
+
+            .topbar,
+            .navigation {
+                display: none !important;
+            }
+
+            .pagina-a4 {
+                display: block !important;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <div class="topbar">
+        <a href="{% block pdf_url %}{% endblock %}" download>
+            <span class="icon">📄</span> Salvar PDF
+        </a>
+        <button onclick="window.print()">
+            <span class="icon">🖨️</span> Imprimir
+        </button>
+        <a href="{% block csv_url %}{% endblock %}">
+            <span class="icon">📊</span> Exportar CSV
+        </a>
+    </div>
+    
+    {% block content %}{% endblock %}
+    <script>
+        let currentPage = 1;
+        const totalPages = {{ paginas| length }};
+        const pages = document.querySelectorAll('.pagina-a4');
+
+        function updatePageDisplay() {
+            pages.forEach((page, index) => {
+                page.classList.toggle('active', index + 1 === currentPage);
+            });
+            document.getElementById('current-page').textContent = currentPage;
+            document.querySelector('.navigation button[onclick="previousPage()"]').disabled = currentPage === 1;
+            document.querySelector('.navigation button[onclick="nextPage()"]').disabled = currentPage === totalPages;
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePageDisplay();
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePageDisplay();
+            }
+        }
+
+        updatePageDisplay();
+    </script>
+    <script src="{% static 'assets/js/app.js' %}"></script>
+    <script src="{% static 'assets/libs/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+
+</html>

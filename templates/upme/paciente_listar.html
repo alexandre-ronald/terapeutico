@@ -1,0 +1,172 @@
+
+
+<!-- templates/entrevistas/lista_entrevistas.html -->
+{% extends "base.html" %}
+
+{% block title %}
+Listagem de Pacientes
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Pesquisar Profissionais</h5>
+                </div>
+                <div class="card-body">
+                    <form id="form-filtro" method="GET" action="{% url 'upme:paciente_list' %}">
+                        <div class="row align-items-end">  <!-- `align-items-end` alinha os itens pela base -->
+                            
+                            <!-- Campo Nome -->
+                            <div class="form-group col-md-3 mb-0">
+                                <label for="nome" class="form-label">Prontuário</label>
+                                <input type="text" class="form-control" name="prontuario" placeholder="Prontuário" value="{{ request.GET.prontuario }}">
+                            </div>
+                            <div class="form-group col-md-6 mb-0">
+                                <label for="nome" class="form-label">Nome</label>
+                                <input type="text" class="form-control" name="nome" placeholder="Nome do Paciente" value="{{ request.GET.nome }}">
+                            </div>
+                            <div class="form-group col-md-3 mb-0">
+                                
+                                <button type="submit" class="btn btn-primary btn-label right">
+                                    <i class="ri-search-line label-icon align-middle fs-16 ms-2"></i>Filtrar
+                                </button>
+                                
+                            </div>
+                            
+                           
+                           
+                        </div>
+                    </form>
+                    <div class="modal fade" id="modalCarregando" tabindex="-1" aria-labelledby="modalCarregandoLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                          <div class="modal-content text-center">
+                            <div class="modal-body">
+                              <div class="spinner-border text-primary mb-3" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                              </div>
+                              <h5 class="modal-title" id="modalCarregandoLabel">Consultando atualizações de cadastro no AGHU...</h5>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="card border mt-3">
+                            <div class="card-body">
+                  
+                                <table class="table table-striped mt-2">
+                                    <thead >
+                                        <tr>
+                                          <th>Prontuário</th>
+                                          <th>Nome</th>
+                                          <th>Data Nascimento</th>
+                                          <th>Nome da Mãe</th>
+                                          <th class="">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pac in pacientes %}
+                                        <tr>
+                                            <td>{{ pac.prontuario }}</td>
+                                            <td>{{ pac.nome }}</td>
+                                            <td>{{ pac.dt_nascimento|date:'d/m/Y' }}</td>
+                                            <td>{{ pac.nome_mae }}</td>
+                                            <td class="">
+                                                <form method="post" action="{% url 'upme:fornecimento_material_extra' %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="prontuario" value="{{pac.prontuario}}">
+                                                    <input type="hidden" name="nome" value="{{pac.nome}}">
+                                                    <input type="hidden" name="data_nascimento" value="{{pac.dt_nascimento|date:'d/m/Y'}}">
+                                                    <button type="submit" class="btn btn-primary btn-label left ms-auto btn-sm"><i class="ri-user-3-line label-icon align-middle fs-16 ms-2"></i>Selecionar Paciente</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center">Nenhum paciente encontrado.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+
+                                <!-- Paginação -->
+                                
+                                <nav>
+                                    <ul class="pagination justify-content-center">
+                                        {% if pacientes.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page=1{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">Primeira</a>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ pacientes.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">Anterior</a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">Primeira</span>
+                                            </li>
+                                            <li class="page-item disabled">
+                                                <span class="page-link">Anterior</span>
+                                            </li>
+                                        {% endif %}
+                                
+                                        {% for num in pacientes.paginator.page_range %}
+                                            {% if pacientes.number == num %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ num }}</span>
+                                                </li>
+                                            {% elif num > pacientes.number|add:'-5' and num < pacientes.number|add:'5' %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ num }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">{{ num }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                
+                                        {% if pacientes.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ pacientes.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">Próxima</a>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ pacientes.paginator.num_pages }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">Última</a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">Próxima</span>
+                                            </li>
+                                            <li class="page-item disabled">
+                                                <span class="page-link">Última</span>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('form-filtro');
+    
+        form.addEventListener('submit', function (e) {
+            e.preventDefault(); // Impede envio imediato
+    
+            // Mostra o modal
+            const modal = new bootstrap.Modal(document.getElementById('modalCarregando'));
+            modal.show();
+    
+            // Aguarda um pouco e envia o formulário
+            setTimeout(() => {
+                form.submit();
+            }, 100); // Pequeno atraso para exibir o modal antes do reload
+        });
+    });
+    </script>
+
+{% endblock %}
+

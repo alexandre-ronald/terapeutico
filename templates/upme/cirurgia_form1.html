@@ -1,0 +1,71 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulário de Cadastro de Cirurgia</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; }
+        .header { text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { font-weight: bold; }
+        select, input { width: 100%; padding: 5px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" style="width: 100px;">
+        <h1>HOSPITAL UNIVERSITÁRIO UNIVERSIDADE FEDERAL DO MARANHÃO</h1>
+        <h2>UNIDADE DE PROCESSAMENTO DE MATERIAIS ESTERILIZADOS – UPME/URD</h2>
+        <h2>FORNECIMENTO DE MATERIAIS PROCESSADOS</h2>
+    </div>
+
+    <form method="post" action="{% url 'upme:cirurgia_submit' %}">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td><label for="cirurgia">CIRURGIA</label></td>
+                <td colspan="3">
+                    <select name="procedimento" id="procedimento" required>
+                        <option value="">Selecione o Procedimento</option>
+                        {% for proc in procedimentos %}
+                            <option value="{{ proc.id }}">{{ proc.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td><label for="data">DATA</label></td>
+                <td><input type="date" name="data" id="data" required></td>
+            </tr>
+            <tr>
+                <td><label for="medico">MÉDICO</label></td>
+                <td colspan="3"><input type="text" name="medico" id="medico" required></td>
+                <td><label for="hora">HORA</label></td>
+                <td><input type="time" name="hora" id="hora"></td>
+            </tr>
+            <tr>
+                <td><label for="paciente">PACIENTE</label></td>
+                <td colspan="3"><input type="text" name="paciente" id="paciente" required></td>
+                <td><label for="nascimento">NASC</label></td>
+                <td><input type="date" name="nascimento" id="nascimento" required></td>
+            </tr>
+            <tr>
+                <td><label for="sala">SALA</label></td>
+                <td colspan="5"><input type="text" name="sala" id="sala"></td>
+            </tr>
+        </table>
+
+        <div class="form-group">
+            <label for="kits">KITS</label>
+            <select name="kits" id="kits" multiple required>
+                {% for kit in kits %}
+                    <option value="{{ kit.id }}">{{ kit.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit">Salvar</button>
+    </form>
+</body>
+</html>

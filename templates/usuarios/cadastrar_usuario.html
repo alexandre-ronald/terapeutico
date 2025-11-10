@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Cadastro de Usuário{% endblock %}
+{% block breadcrumb %}Usuários{% endblock %}
+{% block page_title %}Cadastro{% endblock %}
+
+{% block content %}
+
+<div class="">
+    <form method="post"> {% csrf_token %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card ">
+                    <div class="card-header">
+                        <h5 class="mb-0">Cadastrar Usuário</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-end">
+                            <input type="hidden" class="form-control" id="id" name="id" value="{{usuarios_selecionado.id}}">
+                            <div class="form-group col-md-2">
+                                <label for="username" class="form-label">Usuário</label>
+                                <input type="text" class="form-control" id="username" name="username" value="{{usuarios_selecionado.username}}">
+                                
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{usuarios_selecionado.email}}">
+                                
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label for="first_name" class="form-label">Nome</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" value="{{usuarios_selecionado.first_name}}">
+                                
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label for="last_name" class="form-label">Sobrenome</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name"  value="{{usuarios_selecionado.last_name}}">
+                                
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label for="perfil_acesso" class="form-label">Perfil de Acesso</label>
+                                <select class="form-select" id="perfil_acesso" name="perfil_acesso">
+                                    <option value="Administrativo" {% if  usuarios_selecionado.perfil_acesso == 'Administrativo'  %} selected {% endif%}>Administrativo</option>
+                                    <option value="Gestor" {% if  usuarios_selecionado.perfil_acesso == 'Gestor' %} selected {% endif%} >Gestor</option>
+                                    <option value="Administrador" {% if  usuarios_selecionado.perfil_acesso == 'Administrador' %} selected {% endif%}>Administrador</option>
+                                </select>
+                                
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label for="matricula" class="form-label">Matrícula</label>
+                                <input type="text" class="form-control" id="matricula" name="matricula"  value="{{usuarios_selecionado.matricula}}">
+                            </div>
+                            <div class="form-group col-md-2 mt-2">
+                                <input type="checkbox" class="form-check-input" id="ativo" name="ativo" {% if  usuarios_selecionado.ativo %} checked {% endif%}>
+                                <label class="form-check-label" for="ativo">Usuário Ativo</label>
+                            </div>
+                            
+                        </div>
+                        
+                        <div class="row align-items-end mt-2">
+                            <div class="form-group mt-2 ">
+                                <button type="submit" id="salvar-entrevista" class="btn btn-success btn-label right ms-auto">
+                                    <i class="ri-save-line label-icon align-middle fs-16 ms-2"></i>
+                                     {% if  usuarios_selecionado.id > 0 %} Salvar Usuário {%else%} Criar Usuário {% endif%}
+                                </button>
+                                <a href="{% url 'usuarios:perfil' %}" class="btn btn-secondary btn-label">
+                                    <i class="ri-close-line label-icon align-middle fs-16 me-2"></i>Cancelar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="col-md-12">
+        <div class="card border">
+            <div class="card-header">
+                <h6 class="mb-0">Usuarios Cadastrados</h6>
+            </div>
+            <div class="card-body">
+    
+                <table class="table table-striped mt-2">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Usuário</th>
+                            <th>Nome</th>
+                            <th>Sobrenome</th>
+                            <th>Email</th>
+                            <th>Perfil de Acesso</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr>
+                            <td>{{ usuario.id}}</td>
+                            <td>{{ usuario.username}}</td>
+                            <td>{{ usuario.first_name }}</td>
+                            <td>{{ usuario.last_name  }}</td>
+                            <td>{{ usuario.email }}</td>
+                            <td>{{ usuario.perfil_acesso }}</td>
+                            
+                            <td>
+                                <a href="{% url 'usuarios:editar_usuario' usuario.id %}" class="btn btn-success btn-label right ms-auto btn-sm"><i class="ri-shield-user-line label-icon align-middle fs-16 ms-2"></i> Editar </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">Nenhum paciente encontrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- Paginação -->
+                
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% if usuarios.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">Primeira</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ usuarios.previous_page_number }}">Anterior</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Primeira</span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">Anterior</span>
+                            </li>
+                        {% endif %}
+                
+                        {% for num in usuarios.paginator.page_range %}
+                            {% if usuarios.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > usuarios.number|add:'-5' and num < usuarios.number|add:'5' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                
+                        {% if usuarios.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ usuarios.next_page_number }}">Próxima</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ usuarios.paginator.num_pages }}">Última</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Próxima</span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">Última</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

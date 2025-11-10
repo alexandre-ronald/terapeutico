@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Cadastro de KITS
+{% endblock %}
+
+{% block breadcrumb %}Cadastros Básicos{% endblock %}
+{% block page_title %}Cadastro de Kits{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border">
+                
+                <div class="card-body">
+                    <form method="POST" action="">
+                        {% csrf_token %}
+                        <input hidden name="acao" value="cadastrar_kit">
+                        <div class="row align-items-end">  <!-- `align-items-end` alinha os itens pela base -->
+                            <!-- Campo Prontuário -->
+                            <div class="form-group col-md-5 mb-0">  <!-- `mb-0` remove margem inferior -->
+                                <label for="solicitacao" class="form-label">Espeialidade:</label>
+                                <select name="especialidade" class="form-select">
+                                    <option value="" disabled {% if not especialidade_selecionada %}selected{% endif %}>Selecione a Especialidade</option>
+                                    {% for esp in especialidades %}
+                                        <option value="{{ esp.pk }}" {% if esp.pk == especialidade_selecionada %}selected{% endif %}>{{ esp.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-2 mb-0">  <!-- `mb-0` remove margem inferior -->
+                                <label for="item" class="form-label">Nome do Kit</label>
+                                <input type="text" class="form-control" name="nome_kit" placeholder="Nome do Kit" value="">
+                            </div>
+                                                
+                            <div class="form-group col-md-4 mb-0">
+                                <button type="submit" id="salvar-entrevista" class="btn btn-primary btn-label right ms-auto">
+                                    <i class="ri-search-line label-icon align-middle fs-16 ms-2"></i>Cadastrar Novo Kit
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="card border">
+                <div class="card-header">
+                    <h5 class="mb-0 text-center">Configurar Kits</h5>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endif %}
+                    
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        <input hidden name="acao" value="atualizar_materiais_kit">
+                        <div class="row align-items-end">
+                            <!-- Seleciona Especialidade -->
+                            <div class="form-group col-md-6 mb-3">
+                                <label for="especialidade" class="form-label">Especialidade:</label>
+                                <select id="especialidade" name="especialidade" class="form-select">
+                                    <option value="" disabled {% if not especialidade_selecionada %}selected{% endif %}>Selecione a Especialidade</option>
+                                    {% for esp in especialidades %}
+                                        <option value="{{ esp.pk }}" {% if esp.pk == especialidade_selecionada %}selected{% endif %}>{{ esp.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <!-- Seleciona Kit -->
+                            <div class="form-group col-md-6 mb-3">
+                                <label for="kit" class="form-label">Kits:</label>
+                                <select id="kit" name="kit" class="form-select">
+                                    <option value="" disabled {% if not kit_selecionado %}selected{% endif %}>Selecione o Kit</option>
+                                    {% for kit in kits %}
+                                        <option value="{{ kit.pk }}" {% if kit.pk == kit_selecionado %}selected{% endif %}>{{ kit.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Lista de Materiais -->
+                        <div class="row">
+                            <div class="col-md-5">
+                                <label class="form-label">Materiais Disponíveis:</label>
+                                <select id="disponiveis" multiple class="form-control" style="height: 300px;">
+                                    {% if materiais_disponiveis %}
+                                        {% for mat in materiais_disponiveis %}
+                                            <option value="{{ mat.id }}">{{ mat.nome }}</option>
+                                        {% empty %}
+                                            <option disabled>Nenhum material disponível</option>
+                                        {% endfor %}
+                                    {% else %}
+                                        <option disabled>Selecione uma especialidade e um kit</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-2 d-flex flex-column justify-content-center align-items-center">
+                                <div class="mb-3 w-100 text-center">
+                                    <label class="form-label">Qtd:</label>
+                                    <input type="number" id="quantidade" class="form-control text-center" min="1" value="1">
+                                </div>
+                                <button type="button" id="add-selected" class="btn btn-primary mb-2 w-100">&gt;</button>
+                                <button type="button" id="add-all" class="btn btn-primary mb-2 w-100">&gt;&gt;</button>
+                                <button type="button" id="remove-selected" class="btn btn-danger mb-2 w-100">&lt;</button>
+                                <button type="button" id="remove-all" class="btn btn-danger w-100">&lt;&lt;</button>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">Materiais no Kit:</label>
+                                
+                                <select id="selecionados" name="materiais_selecionados" multiple class="form-control" style="height: 300px;">
+                                   
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="form-group col-md-12">
+                                <button type="submit" class="btn btn-success" name="action" value="salvar">
+                                    <i class="ri-save-line"></i> Salvar
+                                </button>
+                                <a href="{% url 'upme:cadastrar_kits' %}" class="btn btn-secondary">Cancelar</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(function() {
+    // Carregar kits quando mudar especialidade
+    $('#especialidade').on('change', function() {
+        var espId = $(this).val();
+        if (espId) {
+            $.get("{% url 'upme:get_kits_por_especialidade' %}", {especialidade_id: espId}, function(data) {
+                $('#kit').empty().append('<option disabled selected>Selecione o Kit</option>');
+                data.kits.forEach(function(kit) {
+                    $('#kit').append(`<option value="${kit.id}">${kit.nome}</option>`);
+                });
+            });
+        }
+    });
+
+    // Carregar materiais quando mudar kit
+    $('#kit').on('change', function() {
+        var kitId = $(this).val();
+        if (kitId) {
+            $.get("{% url 'upme:get_materiais_por_kit' %}", {kit_id: kitId}, function(data) {
+                $('#disponiveis').empty();
+                $('#selecionados').empty();
+
+                if (data.disponiveis.length > 0) {
+                    data.disponiveis.forEach(function(mat) {
+                        $('#disponiveis').append(`<option value="${mat.id} ">${mat.nome}</option>`);
+                    });
+                } else {
+                    $('#disponiveis').append('<option disabled>Nenhum material disponível</option>');
+                }
+
+                if (data.kit.length > 0) {
+                    data.kit.forEach(function(mat) {
+                        $('#selecionados').append(`<option value="${mat.material_id}"  data-quantidade="${mat.quantidade}">${mat.nome} (Qtd: ${mat.quantidade})</option>`);
+                    });
+                } else {
+                    $('#selecionados').append('<option disabled>Nenhum material no kit</option>');
+                }
+            });
+        }
+    });
+
+    // Botões de adicionar/remover
+    // Quando clicar em "Adicionar"
+    $('#add-selected').click(function() {
+        var qtd = parseInt($('#quantidade').val()) || 1;
+        $('#disponiveis option:selected').each(function() {
+            var nome = $(this).text();
+            var id = $(this).val();
+            // Adiciona ao select de selecionados com a quantidade
+            $('#selecionados').append(
+                `<option value="${id}" data-quantidade="${qtd}">${nome} (Qtd: ${qtd})</option>`
+            );
+            $(this).remove(); // remove do disponível
+        });
+    });
+    // Adicionar todos
+    $('#add-all').click(function() {
+        var qtd = parseInt($('#quantidade').val()) || 1;
+        $('#disponiveis option').each(function() {
+            var nome = $(this).text();
+            var id = $(this).val();
+            $('#selecionados').append(
+                `<option value="${id}" data-quantidade="${qtd}">${nome} (Qtd: ${qtd})</option>`
+            );
+        });
+        $('#disponiveis').empty();
+    });
+     // Remover selecionados
+    $('#remove-selected').click(function() {
+        $('#selecionados option:selected').each(function() {
+            var nome = $(this).text().split(' (Qtd:')[0];
+            var id = $(this).val();
+            $('#disponiveis').append(`<option value="${id}">${nome}</option>`);
+            $(this).remove();
+        });
+    });
+    // Remover todos
+    $('#remove-all').click(function() {
+        $('#selecionados option').each(function() {
+            var nome = $(this).text().split(' (Qtd:')[0];
+            var id = $(this).val();
+            $('#disponiveis').append(`<option value="${id}">${nome}</option>`);
+        });
+        $('#selecionados').empty();
+    });
+
+    // Antes de enviar, adiciona a quantidade como campo oculto
+    $('form').on('submit', function() {
+        $('#selecionados option').each(function(index) {
+            var id = $(this).val();
+            var qtd = $(this).data('quantidade');
+            $(this).prop('selected', true);
+            $('<input>').attr({
+                type: 'hidden',
+                name: 'quantidade_' + id,
+                value: qtd
+            }).appendTo('form');
+        });
+    });
+
+   
+});
+</script>
+{% endblock %}

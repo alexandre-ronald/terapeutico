@@ -1,0 +1,225 @@
+{% extends 'base_pdf.html' %}
+
+{% load static %}
+
+{% block title %}
+Formulário de Fornecimento de Materiais Esterilizados - HU-UFMA
+{% endblock %}
+
+
+{% block back_url %}
+
+{% endblock %}
+
+{% block extra_css %}
+    
+<style>
+    .vertical-text { 
+        transform: rotate(-90deg); 
+        white-space: nowrap; 
+        width: 20px; 
+        text-align: center; 
+        vertical-align: middle; 
+        height: 120px; 
+        font-size: 13px;
+    }
+
+    th.vertical-text { 
+        padding: 0; 
+        line-height: 20px; 
+    }
+    .kit-header { 
+        background-color: #f8f9fa; 
+        font-weight: bold; 
+    }
+    .kit-item { 
+        padding-left: 20px; 
+    }
+
+    .pagina-a4 {
+        width: 200mm;
+        height: 287mm;
+        padding: 5mm;
+        margin: 0 auto;
+        background: white;
+        font-family: 'Helvetica', Arial, sans-serif;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #e0e0e0;
+    }
+
+    .header-relatorio {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #d1d1d1;
+    }
+
+    .texto-cabecalho {
+        flex: 1;
+        font-size: 14px;
+        line-height: 1.5;
+        text-align: center;
+    }
+
+    .linha {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 0.5px solid #d1d1d1;
+        font-size: 13px;
+        padding: 8px 0;
+        line-height: 1.5;
+    }
+
+    .coluna-esquerda, .coluna-direita {
+        padding: 0;
+        line-height: 1.5;
+    }
+
+    .coluna-direita {
+        width: 35%;
+    }
+
+    .frase-final, .rodape-info {
+        font-size: 9px;
+        text-align: center;
+        line-height: 1.5;
+        font-style: italic;
+        color: #555;
+    }
+
+    .rodape-container {
+        position: absolute;
+        bottom: 5mm;
+        width: 200mm;
+        left: 5mm;
+        border-top: 1px solid #d1d1d1;
+        padding-top: 5px;
+    }
+
+    .numero-pagina {
+        font-size: 9px;
+        text-align: right;
+        margin-bottom: 5px;
+        color: #555;
+    }
+
+    hr {
+        border-top: 1px solid #d1d1d1;
+        margin: 5px 0;
+    }
+
+
+    @media print {
+        .pagina-a4 {
+            box-shadow: none;
+            border: none;
+            page-break-after: always;
+            margin: 0;
+        }
+
+        .pagina-a4:last-of-type {
+            page-break-after: auto;
+        }
+    }
+
+</style>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="pagina-a4{% if forloop.first %} active{% endif %}">
+  <header>
+    <div class="header-relatorio">
+      <div class="logo-esquerda">
+        <img src="{% static 'assets/images/logo.jpg' %}" alt="Logo HU" height="70" onerror="this.style.display='none'">
+      </div>
+      <div class="texto-cabecalho">
+        <div><strong>Hospital Universitário da Universidade Federal do Maranhão - HU-UFMA</strong></div>
+        <div>Unidade de Processamento de Materiais Esterilizados – UPME/UPD</div>
+        <div><strong>FORNECIMENTO DE MATERIAIS PROCESSADOS</strong></div>
+      </div>
+    </div>
+    <div class="linha">
+      <div class="coluna-esquerda">
+        <div><strong>Cirurgia:</strong> {{ paciente.nome }}</div>
+        <div><strong>Médico:</strong> {{ paciente.data_nascimento|date:"d/m/Y" }}</div>
+        <div><strong>Paciente:</strong> {{ hoje|date:"d/m/Y H:i:s" }}</div>
+      </div>
+      <div class="coluna-direita">
+        <div><strong>Data:</strong> Ambulatório <strong> Hora:</strong> {{ paciente.prontuario }} </div>
+
+        <div><strong>Sala:</strong> SUS</div>
+        <div><strong>Data de Nascimento:</strong> {{ paciente.cartao_sus|default:"00-0" }}</div>
+      </div>
+    </div>
+  </header>
+
+  <table class="table table-bordered mt-3 border-dark">
+    <thead>
+      <tr>
+        <th rowspan="2" style="text-align: justify;">MATERIAIS</th>
+        <th colspan="6" style="text-align: center;">FORNECIMENTO</th>
+        <th colspan="5" style="text-align: center;">DEVOLUÇÃO</th>
+      </tr>
+      <tr>
+        <th class="vertical-text">Quantidade<br>Solicitada</th>
+        <th class="vertical-text">Quantidade<br>Fornecida</th>
+        <th style="width: 60px;" class="vertical-text">Data</th>
+        <th style="width: 60px;" class="vertical-text">Hora</th>
+        <th class="vertical-text">Entregue</th>
+        <th class="vertical-text">Recebido</th>
+        <th class="vertical-text">Quantidade</th>
+        <th style="width: 60px;" class="vertical-text">Data</th>
+        <th style="width: 60px;" class="vertical-text">Hora</th>
+        <th class="vertical-text">Entregue</th>
+        <th class="vertical-text">Recebido</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{item.nome}}</td>
+        <td style="text-align: center;">{{item.quantidade}}</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr class="kit-header">
+        <td colspan="12">{{kit.nome}}</td>
+      </tr>
+      <tr class="kit-item">
+        <td style="padding-left: 20px;">{{item.nome}}</td>
+        <td style="text-align: center;">{{item.quantidade}}</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+
+  <div class="rodape-container">
+    <div class="numero-pagina">Página {{ pagina.numero }}</div>
+  </div>
+</div>
+
+
+{% endblock %}

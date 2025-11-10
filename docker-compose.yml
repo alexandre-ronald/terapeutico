@@ -1,0 +1,14 @@
+services:
+  web:
+    build: .
+    container_name: 
+      terapeutico_web
+    volumes:
+      - .:/app
+#    network_mode: "host"
+    ports:
+      - "9500:9500"
+    env_file:
+      - .env
+
+  

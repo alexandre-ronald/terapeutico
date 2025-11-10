@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Vincular Usuários à Àrea{% endblock %}
+{% block breadcrumb %}Usuários{% endblock %}
+{% block page_title %}Vínculos{% endblock %}
+
+{% block content %}
+
+<div class="">
+    
+        <div class="col-md-12">
+            <form method="post"> {% csrf_token %}
+            <div class="card ">
+                <div class="card-header">
+                    <h5 class="mb-0">Vincular Usuário</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-end">
+                        <input type="hidden" class="form-control" id="id" name="id" value="{{usuarios_selecionado.id}}">
+                        <div class="form-group col-md-7">
+                            <label for="username" class="form-label">Usuário</label>
+                            <select class="form-select" id="usuario" name="usuario" onchange="carregarVinculosPorUsuario(this.value)">
+                                <option value="" disabled selected>Selecione o usuário</option>
+                                {% for usuario in usuarios %}
+                                    <option value="{{usuario.id}}">{{usuario.first_name}} {{usuario.last_name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-5">
+                            <label for="first_name" class="form-label">Área</label>
+                            <select class="form-select" id="area" name="area">
+                                <option value="" disabled selected >Selecione a área</option>
+                                {% for area in areas %}
+                                    <option value="{{area.id}}">{{area.descricao}}</option>
+                                {% endfor %}
+                            </select>
+                            
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="row align-items-end mt-2">
+                        <div class="form-group mt-2 ">
+                            <button type="submit" id="salvar-entrevista" class="btn btn-success btn-label right ms-auto">
+                                <i class="ri-save-line label-icon align-middle fs-16 ms-2"></i>
+                                    {% if  usuarios_selecionado.id > 0 %} Salvar Usuário {%else%} Cadastrar Vínculo {% endif%}
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </form>
+        </div>
+            
+        
+        <div class="col-md-12">
+            <div class="card border">
+                <div class="card-header">
+                    <h6 class="mb-0">Áreas vinculadas com o usúario</h6>
+                </div>
+                <div class="card-body">
+        
+                    <table class="table table-striped mt-2">
+                        <thead>
+                            <tr>
+                                <th>Usuário</th>
+                                <th>Area</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" class="text-center">Nenhum vínculo encontrado.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    
+</div>
+
+<script>
+function carregarVinculosPorUsuario(usuarioId) {
+
+    if (!usuarioId) return;
+
+    fetch(`/usuarios/vinculos/${usuarioId}/`)
+        .then(response => response.json())
+        .then(data => {
+            const tabela = document.querySelector("table tbody");
+            tabela.innerHTML = "";
+
+            if (data.vinculos.length === 0) {
+                tabela.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center">Nenhum vínculo encontrado.</td>
+                    </tr>
+                `;
+            } else {
+                data.vinculos.forEach(v => {
+                    tabela.innerHTML += `
+                        <tr>
+                            
+                            <td>${v.usuario}</td>
+                            <td>${v.area}</td>
+                            <td>
+                                
+                                <a href="#" class="btn btn-danger btn-label btn-sm" onclick="excluirVinculo(${v.id}, this)">
+                                    Excluir</a>
+                                
+                                
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao buscar vínculos:', error);
+        });
+}
+</script>
+<script>
+function excluirVinculo(id, botao) {
+    if (!confirm("Deseja realmente excluir este vínculo?")) return;
+
+    fetch(`/usuarios/vinculos/excluir/${id}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove a linha da tabela
+            const linha = botao.closest('tr');
+            linha.remove();
+        } else {
+            alert("Erro ao excluir vínculo: " + (data.erro || ''));
+        }
+    })
+    .catch(error => {
+        console.error("Erro ao excluir vínculo:", error);
+    });
+}
+
+function getCSRFToken() {
+    const name = 'csrftoken';
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        let c = cookie.trim();
+        if (c.startsWith(name + '=')) {
+            return decodeURIComponent(c.substring(name.length + 1));
+        }
+    }
+    return '';
+}
+</script>
+{% endblock %}

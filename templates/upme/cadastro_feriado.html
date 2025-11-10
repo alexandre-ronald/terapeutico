@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}
+Cadastro de Feriados
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+        
+    <div class="col-md-12">
+        <div class="card border">
+
+            <div class="card-body">
+                <h5 class="card-title" id="modalMovimentacaoLabel">Feriados</h5>
+                <form method="post" action="">
+                    {% csrf_token %}
+                    <div class="row align-items-end">
+
+                        <div class="form-group col-md-2">
+                            <label class="form-label">Data</label>
+                            <input type="date" name="data_feriado" class="form-control" value="" required>
+                        </div>
+                        <div class="form-group col-md-8">
+                            <label class="form-label">Feriado</label>
+                            <input type="text" class="form-control" name="feriado" value="">
+                        </div>
+
+                        <div class="form-group col-md-2 text-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                Cadastrar Feriado
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-md-12">
+        <div class="card border">
+            <div class="card-body">
+                <span class="h5"> Feriados Cadastrados </span>
+                <table class="table table-striped">
+                    <thead >
+                        <tr>
+                            <th>Data</th>
+                            <th>Feriado</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fer in feriados %}
+                        <tr>
+                            <td>{{fer.data|date:'d/m/Y' }}</td>
+                            <td>{{fer.descricao}}</td>
+                            <td>
+                                <a href="{% url 'terapeutico:editar_troca_plantao' fer.id %}" class="btn-success">
+                                    <i class="align-middle" data-lucide="edit"></i>
+                                </a>
+                                <a href="{% url 'terapeutico:excluir_troca_plantao' fer.id %}" class="btn-danger" onclick="return confirm('Deseja realmente excluir esta movimentação?')">
+                                    <i class="align-middle text-danger" data-lucide="trash-2"></i>
+                                </a>
+                            </td>
+                            
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">Nenhum feriado cadastrada.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- Paginação -->
+                
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% if feriados.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">Primeira</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ feriados.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">Anterior</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Primeira</span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">Anterior</span>
+                            </li>
+                        {% endif %}
+                
+                        {% for num in feriados.paginator.page_range %}
+                            {% if feriados.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > feriados.number|add:'-5' and num < feriados.number|add:'5' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                
+                        {% if feriados.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ feriados.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">Próxima</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ feriados.paginator.num_pages }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">Última</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Próxima</span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">Última</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %} 
+{% endblock %}

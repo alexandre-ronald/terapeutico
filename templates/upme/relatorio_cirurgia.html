@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Relatório Cirúrgico - {{ cirurgia.procedimento.nome }}{% endblock %}
+
+{% block extra_head %}
+<style>
+/* Estilos para impressão/visual */
+.report-header {
+  border-bottom: 2px solid #333;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.tabela-conteudo {
+  font-size: 12px;
+}
+
+.report-hospital {
+  text-align: center;
+}
+.report-hospital h1 { margin: 0; font-size: 18px; letter-spacing: 1px; }
+.report-hospital h2 { margin: 0; font-size: 14px; font-weight: 600; }
+.report-metadata { margin-top: 8px; }
+.meta-table td { padding: 4px 8px; vertical-align: top; }
+.kit-title { background:#f5f5f5; padding:6px 10px; font-weight:600; margin-top:12px; }
+.table-materials th, .table-materials td { padding:6px; font-size:13px; }
+.signatures { margin-top:36px; }
+.sig-line { border-top:1px solid #000; width:80%; margin: 36px auto 6px auto; text-align:center; }
+@media print {
+  .no-print { display:none; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="report-header">
+    <div class="row align-items-center">
+      <div class="col-2">
+        {# Se tiver logo, coloque em static e descomente: #}
+        {# <img src="{% static 'images/logo_hospital.png' %}" alt="logo" style="max-width:100%;"> #}
+      </div>
+      <div class="col-8 report-hospital">
+        <h1>{{ hospital_name }}</h1>
+        <h2>{{ institution }}</h2>
+        <div style="font-weight:600; margin-top:6px;">{{ unit }}</div>
+        <div style="margin-top:8px; font-size:16px; font-weight:700;">{{ report_title }}</div>
+      </div>
+      <div class="col-2 text-end">
+        <small>Emitido: {{ now|default:None }}</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dados da cirurgia / paciente -->
+  <div class="report-metadata">
+    <table class="meta-table" width="100%">
+      <tr>
+        <td width="65%">
+          <strong>Procedimento:</strong> {{ cirurgia.procedimento.nome|default:"—" }}<br>
+          <strong>Médico:</strong> {{ cirurgia.medico|default:"—" }}<br>
+          <strong>Sala:</strong> {{ cirurgia.sala|default:"—" }}
+        </td>
+        <td width="35%">
+          <strong>Data:</strong> {{ cirurgia.data|date:"d/m/Y" }}<br>
+          <strong>Hora:</strong> {% if cirurgia.hora %}{{ cirurgia.hora|time:"H:i" }}{% else %}—{% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" style="padding-top:8px;">
+          <strong>Paciente:</strong> {{ cirurgia.paciente.nome|default:"—" }} &nbsp;&nbsp;
+          <strong>Prontuário:</strong> {{ cirurgia.paciente.prontuario|default:"—" }} &nbsp;&nbsp;
+          <strong>Nasc.:</strong> {% if cirurgia.paciente.nascimento %}{{ cirurgia.paciente.nascimento|date:"d/m/Y" }}{% else %}—{% endif %} &nbsp;&nbsp;
+          <strong>Idade:</strong> {{ idade|default:"—" }}
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Kits -->
+  <div class="kits-section">
+    <h5 class="mt-3">Kits Utilizados</h5>
+    <ul>
+      {% for k in kits %}
+        <li>{{ k.kit.nome }}</li>
+      {% empty %}
+        <li>Nenhum kit informado</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Materiais por kit -->
+  {% for k in kits %}
+    <div class="kit-block">
+      <div class="kit-title">{{ k.kit.nome }}</div>
+
+      <table class="table table-bordered table-materials" style="width:100%; border-collapse:collapse; margin-bottom:12px;">
+        <thead>
+          <tr>
+            <th>Material</th>
+            <th style="width:110px; text-align:center;">Qtd. Solicitada</th>
+            <th style="width:110px; text-align:center;">Qtd. Fornecida</th>
+            <th style="width:110px; text-align:center;">Qtd. Devolvida</th>
+            <th style="width:120px; text-align:center;">Data Entrega</th>
+            <th style="width:80px; text-align:center;">Hora</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if k.materiais %}
+            {% for m in k.materiais %}
+              <tr>
+                <td>{{ m.material.nome }}</td>
+                <td style="text-align:center;">{{ m.quantidade_solicitada|default:1 }}</td>
+                <td style="text-align:center;">{{ m.quantidade_fornecida|default:"-" }}</td>
+                <td style="text-align:center;">{{ m.quantidade_devolvida|default:"-" }}</td>
+                {# Caso você acrescente campos de data/hora no model, substitua os traços abaixo. #}
+                <td style="text-align:center;">-</td>
+                <td style="text-align:center;">-</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="6" class="text-center">Nenhum material registrado para este kit.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  {% endfor %}
+
+  <!-- Observações e OPME -->
+  <div class="row mt-3">
+    <div class="col-12">
+      <strong>Observações:</strong>
+      <div style="min-height:60px; border:1px solid #ddd; padding:8px;">&nbsp;</div>
+    </div>
+  </div>
+
+  <!-- Assinaturas -->
+  <div class="row signatures">
+    <div class="col-6 text-center">
+      <div class="sig-line"></div>
+      Encarregado UPME
+    </div>
+    <div class="col-6 text-center">
+      <div class="sig-line"></div>
+      Médico Cirurgião
+    </div>
+  </div>
+
+  <div class="row mt-2 no-print">
+    <div class="col text-end">
+      <a href="javascript:window.print();" class="btn btn-sm btn-primary">Imprimir relatório</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulário de Liberação de Materiais</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid black; padding: 5px; text-align: center; }
+        .header { text-align: center; }
+        .section-header { font-weight: bold; background-color: #f2f2f2; }
+        .row-span { vertical-align: top; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" style="width: 100px;">
+        <h1>HOSPITAL UNIVERSITÁRIO UNIVERSIDADE FEDERAL DO MARANHÃO</h1>
+        <h2>UNIDADE DE PROCESSAMENTO DE MATERIAIS ESTERILIZADOS – UPME/URD</h2>
+        <h2>FORNECIMENTO DE MATERIAIS PROCESSADOS</h2>
+    </div>
+
+    <table>
+        <tr>
+            <td><strong>CIRURGIA</strong></td>
+            <td colspan="3">AMPUTAÇÃO; DESARTICULAÇÃO DE DEDO</td>
+            <td><strong>DATA</strong></td>
+            <td>{{ cirurgia.data|date:"d/m/y" }}</td>
+        </tr>
+        <tr>
+            <td><strong>MÉDICO</strong></td>
+            <td colspan="3">{{ cirurgia.medico }}</td>
+            <td><strong>HORA</strong></td>
+            <td>{{ cirurgia.hora|default:"" }}</td>
+        </tr>
+        <tr>
+            <td><strong>PACIENTE</strong></td>
+            <td colspan="3">{{ cirurgia.paciente.nome }}</td>
+            <td><strong>NASC</strong></td>
+            <td>{{ cirurgia.paciente.nascimento|date:"d/m/y" }}</td>
+        </tr>
+        <tr>
+            <td><strong>SALA</strong></td>
+            <td colspan="5">{{ cirurgia.sala|default:"" }}</td>
+        </tr>
+    </table>
+
+    {% for cirurgiakit in cirurgia.cirurgiakit_set.all %}
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="8" class="section-header">MATERIAIS ({{ cirurgiakit.kit.nome|upper }})</th>
+                </tr>
+                <tr>
+                    <th rowspan="2"></th>
+                    <th colspan="6">FORNECIMENTO</th>
+                    <th colspan="2">DEVOLUÇÃO</th>
+                </tr>
+                <tr>
+                    <th>QUANT</th>
+                    <th>QUANT</th>
+                    <th>DATA</th>
+                    <th>HORA</th>
+                    <th>ENTREGUE</th>
+                    <th>RECEBIDO</th>
+                    <th>QUANT</th>
+                    <th>DATA</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for material in cirurgiakit.cirurgiamaterial_set.all %}
+                    <tr>
+                        <td class="row-span">{{ material.material.nome }}</td>
+                        <td>{{ material.quantidade_solicitada }}</td>
+                        <td>{{ material.quantidade_fornecida }}</td>
+                        <td></td> <!-- DATA -->
+                        <td></td> <!-- HORA -->
+                        <td></td> <!-- ENTREGUE -->
+                        <td></td> <!-- RECEBIDO -->
+                        <td>{{ material.quantidade_devolvida }}</td>
+                        <td></td> <!-- DATA DEVOLUÇÃO -->
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
+</body>
+</html>
