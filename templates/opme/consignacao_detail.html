@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Consignação #{{ consignacao.id }}{% endblock %}
+{% block breadcrumb %}Módulo OPME › Consignações › Detalhes #{{ consignacao.id }}{% endblock %}
+{% block page_title %}Detalhes da Consignação #{{ consignacao.id }}{% endblock %}
+
+{% block content %}
+
+<style>
+  .result-icon { float: right; font-size: 2.0rem; opacity: 0.8; }
+  td, th { vertical-align: middle; }
+  .border-danger, .border-info, .border-success, .border-primary, .border-warning {
+    border-bottom-width: 2px !important;
+  }
+  .foto-thumbnail { 
+    max-height: 180px; 
+    object-fit: cover; 
+    border-radius: 6px; 
+    transition: transform 0.2s;
+  }
+  .foto-thumbnail:hover { transform: scale(1.05); }
+  .foto-card { transition: all 0.2s; }
+  .foto-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+</style>
+
+<div class="container-fluid py-2" style="width: 95%;">
+
+  <!-- TÍTULO + STATUS + BOTÕES -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+      <h4><i class="bi bi-arrow-left-right"></i> Consignação #{{ consignacao.id }}</h4>
+      <p class="text-muted mb-0">
+        Caixa: <strong>{{ consignacao.caixa }}</strong> • 
+        Empresa: <strong>{{ consignacao.caixa.empresa }}</strong>
+      </p>
+    </div>
+    <div>
+      <span class="badge fs-6 {% if consignacao.status == 'CONSIGNADO' %}bg-warning{% elif consignacao.status == 'DEVOLVIDO' %}bg-success{% else %}bg-info{% endif %}">
+        {{ consignacao.get_status_display }}
+      </span>
+      <a href="{% url 'opme:consignacao_relatorio' consignacao.pk %}" class="btn btn-sm btn-outline-primary ms-2" target="_blank">
+        <i class="bi bi-file-earmark-text"></i> Gerar Relatório
+      </a>
+      {% if consignacao.status == 'CONSIGNADO' %}
+        <a href="{% url 'opme:consignacao_conferencia' consignacao.pk %}" class="btn btn-sm btn-outline-info ms-2">
+          <i class="bi bi-check2-square"></i> Conferência de Itens
+        </a>
+        <a href="{% url 'opme:consignacao_reposicao' consignacao.pk %}" class="btn btn-sm btn-outline-secondary ms-2">
+          <i class="ri-clockwise-2-line"></i> Reposição de Itens
+        </a>
+        <a href="{% url 'opme:consignacao_devolucao' consignacao.pk %}" class="btn btn-sm btn-outline-success ms-2">
+          <i class="bi bi-arrow-return-left"></i> Registrar Devolução
+        </a>
+      {% endif %}
+      <a href="{% url 'opme:consignacao_list' %}" class="btn btn-outline-secondary ms-2">
+        ← Voltar para Lista
+      </a>
+    </div>
+  </div>
+
+  <!-- CARDS DE RESUMO -->
+  <div class="row g-3 mb-4">
+    
+    <div class="col-md-4">
+      <a href="#" class="card-link">
+        <div class="card card-animate border-primary h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <p class="fw-medium text-muted mb-0">Data da Consignação</p>
+                <h5 class="mt-2 ff-secondary cfs-22 fw-semibold text-primary">{{ consignacao.data_consignacao|date:"d/m/Y H:i" }}</h5>
+                <small class="text-muted">Responsável: {{ consignacao.responsavel_entrega|default:"—" }}</small>
+              </div>
+              <div>
+                <div class="avatar-sm flex-shrink-0">
+                  <span class="avatar-title bg-primary-subtle text-primary rounded-circle fs-2">
+                    <i class="bi bi-calendar3"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="#" class="card-link">
+        <div class="card card-animate border-success h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <p class="fw-medium text-muted mb-0">Data da Devolução</p>
+                <h5 class="mt-2 ff-secondary cfs-22 fw-semibold text-success">{{ consignacao.data_devolucao|date:"d/m/Y H:i"|default:"-" }}</h5>
+                <small class="text-muted">Responsável: {{ consignacao.responsavel_devolucao|default:"—" }}</small>
+              </div>
+              <div>
+                <div class="avatar-sm flex-shrink-0">
+                  <span class="avatar-title bg-success-subtle text-success rounded-circle fs-2">
+                    <i class="bi bi-calendar3-week-fill"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="#" class="card-link">
+        <div class="card card-animate border-info h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <p class="fw-medium text-muted mb-0">Observações Gerais</p>
+                <p class="mb-0 small">{{ consignacao.observacao|linebreaksbr|default:"Nenhuma observação registrada" }}</p>
+              </div>
+              <div>
+                <div class="avatar-sm flex-shrink-0">
+                  <span class="avatar-title bg-info-subtle text-info rounded-circle fs-2">
+                    <i class="bi bi-chat-square-text"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- FOTOS - Galeria de múltiplas imagens -->
+  <div class="row g-3 mb-5">
+    <!-- Fotos de Chegada -->
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-light">
+          <h6 class="mb-0"><i class="bi bi-camera-fill"></i> Fotos na Chegada / Recebimento</h6>
+        </div>
+        <div class="card-body">
+          {% if fotos_chegada %}
+            <div class="row g-2">
+              {% for foto in fotos_chegada %}
+                <div class="col-6 col-sm-4 col-md-6">
+                  <div class="foto-preview-container foto-card rounded overflow-hidden shadow-sm">
+                    <img src="{{ foto.imagem.url }}" class="foto-thumbnail img-fluid w-100" alt="Foto chegada">
+                    
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-5 text-muted">
+              <i class="bi bi-camera-slash fs-3"></i><br>
+              Nenhuma foto de chegada registrada
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Fotos de Devolução -->
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-light">
+          <h6 class="mb-0"><i class="bi bi-camera-fill"></i> Fotos na Devolução</h6>
+        </div>
+        <div class="card-body">
+          {% if fotos_devolucao %}
+            <div class="row g-2">
+              {% for foto in fotos_devolucao %}
+                <div class="col-6 col-sm-4 col-md-6">
+                  <div class="foto-preview-container foto-card rounded overflow-hidden shadow-sm">
+                    <img src="{{ foto.imagem.url }}" class="foto-thumbnail img-fluid w-100" alt="Foto devolução">
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-5 text-muted">
+              <i class="bi bi-camera-slash fs-3"></i><br>
+              Nenhuma foto de devolução registrada
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RELATÓRIO DE CONSUMO / ITENS -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-light">
+      <h5 class="mb-0"><i class="bi bi-clipboard-check"></i> Itens da Consignação - Recebido × Devolvido × Consumido</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0 table-hover">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th class="text-center">Esperado</th>
+              <th class="text-center">Recebido</th>
+              <th class="text-center">Reposição</th>
+              <th class="text-center">Devolvido</th>
+              <th class="text-center">Consumido</th>
+              <th>Observação Recebimento</th>
+              <th>Observação Devolução</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in consumidos %}
+            <tr>
+              <td>{{ item.produto }}</td>
+              <td class="text-center">{{ item.esperado }}</td>
+              <td class="text-center">{{ item.recebido|default:"0" }}</td>
+              <td class="text-center">{{ item.reposto}}</td>
+              <td class="text-center">{{ item.devolvido }}</td>
+              <td class="text-center">
+                <span class="badge {% if item.consumido > 0 %}bg-danger{% else %}bg-success{% endif %}">
+                  {{ item.consumido }}
+                </span>
+              </td>
+              <td>{{ item.observacao|default:"—" }}</td>
+              <td>{{ item.observacao_devolucao|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">
+                Nenhum item registrado ou com diferença
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Excluir Produto</h1>
+<p>Confirma a exclusão do produto <strong>{{ produto.descricao }}</strong>?</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Excluir</button>
+  <a href="{% url 'opme:produto_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

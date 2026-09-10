@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+
+{% block title %}Gestão de Caixas › {% if editando %}Editar Caixa{% else %}Nova Caixa{% endif %}{% endblock %}
+{% block breadcrumb %}Módulo OPME › Caixas / Kits › {% if editando %}Editar{% else %}Nova{% endif %}{% endblock %}
+{% block page_title %}{% if editando %}Editar Caixa / Kit{% else %}Nova Caixa / Kit{% endif %}{% endblock %}
+
+{% block content %}
+
+<style>
+  .result-icon {
+    float: right;
+    font-size: 2.0rem;
+    opacity: 0.8;
+  }
+  td, th {
+    vertical-align: middle;
+  }
+  .card-link {
+    text-decoration: none;
+    color: inherit;
+  }
+  .card-link:hover {
+    transform: translateY(-2px);
+  }
+  .border-danger, .border-info, .border-success, .border-primary, .border-warning {
+    border-bottom-width: 2px !important;
+  }
+</style>
+
+<div class="container-fluid py-2" style="width: 95%;">
+
+  <!-- TÍTULO + BOTÕES -->
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h4><i class="bi bi-box"></i> {% if editando %}Editar Caixa / Kit{% else %}Nova Caixa / Kit{% endif %}</h4>
+        <p class="text-muted">
+          {% if editando %}
+            Atualização da caixa {{ caixa.identificador|default:"—" }} da empresa {{ caixa.empresa.nome|default:"—" }}.
+          {% else %}
+            Cadastro de novo kit/caixa cirúrgica com composição padrão de itens OPME.
+          {% endif %}
+        </p>
+      </div>
+      <div>
+        <a href="{% url 'opme:caixa_list' %}" class="btn btn-outline-secondary">
+          ← Voltar para Lista
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MENSAGENS DE ERRO -->
+  {% if errors %}
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <strong>Verifique os campos:</strong>
+    <ul class="mb-0">
+      {% for campo, msg in errors.items %}
+        <li>{{ campo|capfirst }}: {{ msg }}</li>
+      {% endfor %}
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endif %}
+
+  
+
+  <!-- FORMULÁRIO PRINCIPAL -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <form method="post" id="caixa-form">
+        {% csrf_token %}
+
+        <div class="row g-4">
+          <!-- Identificador -->
+          <div class="col-md-6">
+            <label for="identificador" class="form-label fw-medium">Identificador da Caixa <span class="text-danger">*</span></label>
+            <input type="text" 
+                   name="identificador" 
+                   id="identificador" 
+                   class="form-control" 
+                   placeholder="Ex: CX-001/2025, KIT-ABC-001, Serial 123456"
+                   value="{{ caixa.identificador|default:'' }}" 
+                   required 
+                   autofocus>
+            <div class="form-text text-muted">
+              Código único da caixa (obrigatório para identificação rápida).
+            </div>
+          </div>
+
+          <!-- Empresa -->
+          <div class="col-md-6">
+            <label for="empresa" class="form-label fw-medium">Empresa / Consignatária <span class="text-danger">*</span></label>
+            <select name="empresa" id="empresa" class="form-select" required>
+              <option value="">Selecione a empresa...</option>
+              {% for empresa in empresas %}
+                <option value="{{ empresa.id }}" 
+                        {% if editando and empresa.id == caixa.empresa.id %}selected{% endif %}>
+                  {{ empresa.nome }}
+                </option>
+              {% endfor %}
+            </select>
+            <div class="form-text text-muted">
+              Empresa responsável pela caixa / consignação.
+            </div>
+          </div>
+
+          <!-- Descrição -->
+          <div class="col-12">
+            <label for="descricao" class="form-label fw-medium">Descrição / Observação</label>
+            <input type="text" 
+                   name="descricao" 
+                   id="descricao" 
+                   class="form-control" 
+                   placeholder="Ex: Kit Artroscopia Joelho - Completo, Caixa Trauma 2025"
+                   value="{{ caixa.descricao|default:'' }}">
+            <div class="form-text text-muted">
+              Descrição detalhada do kit (opcional, mas recomendado).
+            </div>
+          </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mt-3">
+          <div class="card-header bg-light border-0">
+            <h5 class="mb-0"><i class="bi bi-list-check"></i> Itens Padrão da Caixa</h5>
+          </div>
+          <div class="card-body">
+            <div id="itens-container">
+              {% if editando %}
+                {% for item in caixa.itens_padrao.all %}
+                
+                <div class="row mb-3 item-row align-items-center">
+
+                  <div class="col-md-6 position-relative">
+
+                    <!-- TEXTO VISÍVEL -->
+                    <input type="text"
+                          class="form-control busca-produto"
+                          value="{{ item.produto.descricao }}"
+                          placeholder="Buscar produto...">
+
+                    <!-- ID REAL -->
+                    <input type="hidden"
+                          name="itens_{{ forloop.counter0 }}_produto"
+                          value="{{ item.produto.id }}">
+
+                    <!-- LISTA -->
+                    <div class="lista-produto list-group mt-2"
+                        style="max-height:200px; overflow:auto; position:absolute; z-index:999; width:100%;">
+                    </div>
+
+                  </div>
+
+                  <div class="col-md-2">
+                    <input type="text"
+                          name="itens_{{ forloop.counter0 }}_codigo"
+                          class="form-control"
+                          readonly required
+                          value="{{ item.produto.referencia|default:'' }}">
+                  </div>
+
+                  <div class="col-md-2">
+                    <input type="number"
+                          name="itens_{{ forloop.counter0 }}_quantidade"
+                          class="form-control"
+                          min="1"
+                          value="{{ item.quantidade_esperada|default:1 }}">
+                  </div>
+
+                  <div class="col-md-2">
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-item">
+                      <i class="bi bi-trash"></i> Remover
+                    </button>
+                  </div>
+
+                </div>
+                {% endfor %}
+              {% endif %}
+            </div>
+
+            <!-- Botão adicionar item -->
+            <button type="button" id="add-item" class="btn btn-outline-primary mt-3">
+              <i class="bi bi-plus-circle"></i> Adicionar Item Padrão
+            </button>
+
+            <!-- Modelo oculto para clonagem via JS -->
+
+            
+
+            <div id="item-modelo" class="row mb-3 item-row align-items-center" style="display: none;">
+
+              <div class="col-md-6">
+                  <input type="text" class="form-control busca-produto" placeholder="Buscar produto...">
+
+                  <input type="hidden" name="produto_modelo">
+
+                  <div class="lista-produto list-group mt-2" style="max-height:200px; overflow:auto;"></div>
+              </div>
+
+
+              <div class="col-md-2">
+                <input type="text" name="referencia-produto" class="form-control referencia-produto">
+              </div>
+
+              <div class="col-md-2">
+                <input type="number" name="quantidade_modelo" min="1" class="form-control" value="1">
+              </div>
+
+              <div class="col-md-2">
+                <button type="button" class="btn btn-sm btn-outline-danger remove-item">
+                  <i class="bi bi-trash"></i> Remover
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- SEÇÃO DE ITENS PADRÃO -->
+  
+  <!-- BOTÕES DE AÇÃO FINAL -->
+  <div class="d-flex justify-content-end gap-3 mt-4">
+    <a href="{% url 'opme:caixa_list' %}" class="btn btn-outline-secondary">
+      Cancelar
+    </a>
+    <button type="submit" form="caixa-form" class="btn btn-success">
+      <i class="bi bi-check-circle"></i>
+      {% if editando %}Salvar Alterações{% else %}Cadastrar Caixa{% endif %}
+    </button>
+  </div>
+
+</div>
+
+
+<script>
+
+// =========================
+// DEBOUNCE
+// =========================
+function debounce(func, delay) {
+    let timeout
+    return function () {
+        clearTimeout(timeout)
+        timeout = setTimeout(() => func.apply(this, arguments), delay)
+    }
+}
+
+// =========================
+// BUSCA AUTOCOMPLETE
+// =========================
+document.addEventListener("keyup", debounce(function (e) {
+
+    if (!e.target.classList.contains("busca-produto")) return
+
+    let input = e.target
+    let termo = input.value.trim()
+
+    let row = input.closest(".item-row")
+    let lista = row.querySelector(".lista-produto")
+    let hidden = row.querySelector("input[type='hidden']")
+
+    if (termo.length < 2) {
+        lista.innerHTML = ""
+        return
+    }
+
+    fetch(`/opme/produtos/buscar/?q=${encodeURIComponent(termo)}`)
+        .then(r => r.json())
+        .then(data => {
+
+            lista.innerHTML = ""
+
+            if (data.length === 0) {
+                lista.innerHTML = `<div class="list-group-item text-muted">Nenhum produto</div>`
+                return
+            }
+
+            data.forEach(prod => {
+
+                let item = document.createElement("a")
+                item.classList.add("list-group-item", "list-group-item-action")
+
+                item.innerHTML = `
+                    <strong>${prod.descricao}</strong><br>
+                    <small> ( ${prod.codigo || ''} )</small>
+                `
+
+                item.onclick = () => {
+
+                    // seta valores na linha
+                    hidden.value = prod.id
+                    input.value = prod.descricao
+
+                    let referenciaInput = row.querySelector(".referencia-produto")
+                    if (referenciaInput) {
+                        referenciaInput.value = prod.referencia || ""
+                    }
+
+                    lista.innerHTML = ""
+                }
+
+                lista.appendChild(item)
+            })
+
+        })
+
+}, 300))
+
+// =========================
+// ADICIONAR ITEM
+// =========================
+let itemCount = document.querySelectorAll("#itens-container .item-row").length
+
+document.getElementById('add-item').addEventListener('click', function () {
+
+    const container = document.getElementById('itens-container')
+    const modelo = document.getElementById('item-modelo').cloneNode(true)
+
+    modelo.style.display = 'flex'
+    modelo.removeAttribute('id')
+
+    // inputs da linha
+    const hidden = modelo.querySelector("input[type='hidden']")
+    const qtd = modelo.querySelector("input[type='number']")
+
+    hidden.name = `itens_${itemCount}_produto`
+    qtd.name = `itens_${itemCount}_quantidade`
+
+    // botão remover
+    modelo.querySelector('.remove-item').addEventListener('click', function () {
+        modelo.remove()
+    })
+
+    container.appendChild(modelo)
+    itemCount++
+
+})
+
+document.addEventListener("click", function(e){
+
+    if(e.target.closest(".remove-item")){
+        
+        let row = e.target.closest(".item-row")
+
+        if(row){
+            row.remove()
+        }
+
+    }
+
+})
+
+// =========================
+// FECHAR LISTA AO CLICAR FORA
+// =========================
+document.addEventListener("click", function (e) {
+    if (!e.target.classList.contains("busca-produto")) {
+        document.querySelectorAll(".lista-produto").forEach(el => el.innerHTML = "")
+    }
+})
+
+</script>
+
+{% endblock %}

@@ -21,7 +21,7 @@
                         <div class="row align-items-end">  <!-- `align-items-end` alinha os itens pela base -->
                             <!-- Campo Prontuário -->
                             <div class="form-group col-md-5 mb-0">  <!-- `mb-0` remove margem inferior -->
-                                <label for="solicitacao" class="form-label">Espeialidade:</label>
+                                <label for="solicitacao" class="form-label">Especialidade:</label>
                                 <select name="especialidade" class="form-select">
                                     <option value="" disabled {% if not especialidade_selecionada %}selected{% endif %}>Selecione a Especialidade</option>
                                     {% for esp in especialidades %}

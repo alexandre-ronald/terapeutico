@@ -1,0 +1,404 @@
+{% extends "base_relatorio.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 11pt;
+        line-height: 1.3;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+
+    .page {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto 10mm;
+        background: white;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        padding: 5mm 8mm 8mm 8mm;
+        box-sizing: border-box;
+        page-break-after: always;
+    }
+
+
+
+    .header-relatorio {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .texto-cabecalho {
+            flex: 1;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+    .texto-cabecalho p { margin: 0; font-size: 11px; }
+    .texto-cabecalho h6 { margin: 0; font-size: 11px; }
+    .texto-cabecalho h5 { margin: 2px 0; font-size: 12px;  }
+    .texto-cabecalho h4 { margin: 2px 0; font-size: 13px; font-weight: bold; }
+
+    .logo-esquerda img {
+        max-height: 50px;
+    }
+    
+    hr {
+        border: none;
+        border-top: 1px solid #555;
+        margin: 8px 0;
+    }
+
+    .meta-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11pt;
+    }
+
+    .meta-table td {
+        padding: 2px 0px;
+        vertical-align: top;
+    }
+
+    .texto-cabecalho p { margin: 0; font-size: 11px; }
+    .texto-cabecalho h6 { margin: 0; font-size: 11px; }
+    .meta-table h5 { margin: 2px 0; font-size: 12px;  }
+    .texto-cabecalho h4 { margin: 2px 0; font-size: 13px; font-weight: bold; }
+
+    h5 { margin: 2px 0; font-size: 15px;  }
+    p { margin: 0; font-size: 13px; }
+
+    .foto-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        margin: 20px 0;
+    }
+
+    .foto-box {
+        flex: 1;
+        border: 1px solid #ccc;
+        padding: 10px;
+        background: #f9f9f9;
+        text-align: center;
+        border-radius: 4px;
+    }
+
+    .foto-box img {
+        max-width: 100%;
+        max-height: 220px;
+        border-radius: 4px;
+    }
+
+    .tabela-itens {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+    }
+
+    .tabela-itens th, .tabela-itens td {
+        border: 1px solid #999;
+        padding: 6px 8px;
+        text-align: left;
+    }
+
+    .tabela-itens thead th {
+        background: #e9ecef;
+        text-align: center;
+        font-weight: bold;
+    }    
+
+    .consumido-danger {
+        background: #ffebee;
+        color: #c62828;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .consumido-zero {
+        background: #e8f5e9;
+        color: #2e7d32;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .resumo {
+        background: #f8f9fa;
+        padding: 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        margin: 20px 0;
+    }
+
+    .signatures {
+        margin-top: 60px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .sig-line {
+        border-top: 1px solid #000;
+        width: 250px;
+        margin: 40px auto 8px;
+        text-align: center;
+    }
+
+    .btn-imprimir {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 20px;
+        font-size: 14pt;
+    }
+
+    @media print {
+        body { background: white; }
+        .page {
+            margin: 0;
+            box-shadow: none;
+            min-height: auto;
+        }
+        .btn-imprimir, .no-print { display: none !important; }
+        thead { display: table-header-group; }
+        tr { page-break-inside: avoid; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+
+    <!-- Cabeçalho -->
+    <div class="header-relatorio">
+        <div class="logo-esquerda">
+            <img src="{% static 'assets/images/logo.jpg' %}" alt="HU-UFMA">
+        </div>
+        <div class="texto-cabecalho">
+            <h4>Hospital Universitário da Universidade Federal do Maranhão - HU-UFMA</h4>
+            <h5>Unidade de Processamento de Materiais Esterilizados – UPME</h5>
+            <h5>Relatório de Consignação de Kits Cirúrgicos OPME</h5>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Dados principais -->
+    <table class="meta-table">
+        <tr>
+            <td width="65%">
+                <h5><strong>Caixa / Kit:</strong> {{ emprestimo.caixa.identificador }}</h5>
+                <h5><strong>Recebido por:</strong> {{ emprestimo.responsavel_entrega|default:"—" }}</h5>
+                <h5><strong>Devolvido por:</strong> {{ emprestimo.responsavel_devolucao|default:"—" }}</h5>
+            </td>
+            <td width="35%">
+                <h5><strong>Empresa:</strong> {{ emprestimo.caixa.empresa.nome }}</h5>
+                <h5><strong>Data de Recebimento:</strong> {{ emprestimo.data_emprestimo|date:"d/m/Y H:i" }}</h5>
+                <h5><strong>Data da Devolução:</strong> {{ emprestimo.data_devolucao|date:"d/m/Y H:i"|default:"Não devolvido" }}</h5>
+            </td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <!-- Descrição da Caixa -->
+    <div style="margin: 10px 0;">
+        <h5 class="mb-2" style="margin-top: 20px;">Descrição da Caixa/Kit:</h5>
+        <div style="min-height: 60px; border: 1px solid #ccc; padding: 10px; background: #f9f9f9;">
+            <h6>{{ emprestimo.caixa.descricao|default:"—" }}</h6>
+        </div>
+    </div>
+
+    <!-- Observações gerais -->
+    <div style="margin: 15px 0;">
+        <h5 class="mb-2" style="margin-top: 20px;">Observações Gerais:</h5>
+        <div style="min-height: 60px; border: 1px solid #ccc; padding: 10px; background: #f9f9f9;">
+            <h6>{{ emprestimo.observacao|linebreaksbr|default:"Nenhuma observação registrada." }}</h6>
+        </div>
+    </div>
+
+    <div class="foto-container">
+        <div class="foto-box" style="flex: 1;">
+            <h5 class="mb-2"><strong>Foto no Recebimento / Entrega</strong><br></h5>
+            
+            {% if emprestimo.fotos.exists %}
+                {% for foto in emprestimo.fotos.all %}
+                    {% if foto.tipo == "CHEGADA" %}
+                        <img src="{{ foto.imagem.url }}" alt="Foto chegada" style="max-width: 100%; margin-bottom: 10px;">
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p class="text-muted py-3">Nenhuma foto de chegada registrada</p>
+            {% endif %}
+            
+        </div>
+        
+    </div>
+    <div class="foto-container">
+        <div class="foto-box" style="flex: 1;">
+            <h5 class="mb-2"><strong>Fotos na Devolução</strong><br></h5>
+            
+            {% if emprestimo.fotos.exists %}
+                {% for foto in emprestimo.fotos.all %}
+                    {% if foto.tipo == "DEVOLUCAO" %}
+                        <img src="{{ foto.imagem.url }}" alt="Foto chegada" style="max-width: 100%; margin-bottom: 10px;">
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p class="text-muted py-3">Nenhuma foto de chegada registrada</p>
+            {% endif %}
+            
+        </div>
+        
+    </div>
+
+
+    <!-- Tabela de itens -->
+    <h5 style="margin-top: 20px;">Itens da Caixa - Recebido × Devolvido × Consumido</h5>
+    <table class="tabela-itens">
+        <thead>
+            <tr>
+                <th class="h6">Produto</th>
+                <th class="text-center h6">Esperado</th>
+                <th class="text-center h6">Recebido</th>
+                <th class="text-center h6">Reposto</th>
+                <th class="text-center h6">Devolvido</th>
+                <th class="text-center h6">Consumido</th>
+                <th class="text-center h6">Obs. Recebimento</th>
+                <th class="text-center h6">Obs. Devolução</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in consumidos %}
+            <tr>
+                <td class="h6 small">{{ item.produto }}</td>
+                <td class="text-center h6 small">{{ item.esperado }}</td>
+                <td class="text-center h6 small">{{ item.recebido|default:"—" }}</td>
+                <td class="text-center h6 small">{{ item.reposto|default:"—" }}</td>
+                <td class="text-center h6 small">{{ item.devolvido }}</td>
+                <td class="text-center h6 small {% if item.consumido > 0 %}consumido-danger{% else %}consumido-zero{% endif %}">
+                    {{ item.consumido }}
+                </td>
+                <td class="h6 small">{{ item.observacao|default:"—" }}</td>
+                <td class="h6 small">{{ item.observacao_devolucao|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-3 text-muted">
+                    Nenhum item com diferença ou consumo registrado
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="margin: 10px 0;">
+        <h5 class="mb-2" style="margin-top: 20px;">Observações Gerais da Devolução:</h5>
+        <div style="min-height: 60px; border: 1px solid #ccc; padding: 10px; background: #f9f9f9;">
+            <h6>{{ consignacao.observacao_devolucao|default:'' }}</h6>
+        </div>
+    </div>
+
+    <!-- Resumo Final -->
+    <div class="resumo mt-3 p-4 bg-white border border-primary rounded shadow">
+
+        <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+            <i class="bi bi-file-earmark-check fs-3 text-primary me-3"></i>
+            <h5 class="mb-0 text-primary fw-bold">Resumo Final da Consignação</h5>
+        </div>
+
+        <div class="row g-4 text-center">
+
+            <!-- Esperado -->
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded border">
+                    <i class="bi bi-list-check text-muted fs-4 mb-2 d-block"></i>
+                    <div class="small text-muted">Esperado (caixa)</div>
+                    <h4 class="fw-bold text-dark mb-0">{{ total_esperado }}</h4>
+                </div>
+            </div>
+
+            <!-- Recebido -->
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded border">
+                    <i class="bi bi-check-circle text-primary fs-4 mb-2 d-block"></i>
+                    <div class="small text-muted">Recebido (conferido)</div>
+                    <h4 class="fw-bold text-primary mb-0">{{ total_recebido }}</h4>
+                </div>
+            </div>
+
+            <!-- Reposto -->
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded border">
+                    <i class="bi bi-check-circle text-primary fs-4 mb-2 d-block"></i>
+                    <div class="small text-muted">Reposto</div>
+                    <h4 class="fw-bold text-primary mb-0">{{ total_reposto }}</h4>
+                </div>
+            </div>
+
+            <!-- Devolvido -->
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded border">
+                    <i class="bi bi-arrow-return-left text-success fs-4 mb-2 d-block"></i>
+                    <div class="small text-muted">Devolvido</div>
+                    <h4 class="fw-bold text-success mb-0">{{ total_devolvido }}</h4>
+                </div>
+            </div>
+
+            <!-- Consumido / Perdido -->
+            <div class="col-md-3">
+                <div class="p-3 {% if total_consumido > 0 %}bg-danger-subtle border-danger{% else %}bg-success-subtle border-success{% endif %} rounded border">
+                    <i class="bi bi-exclamation-triangle {% if total_consumido > 0 %}text-danger{% else %}text-success{% endif %} fs-4 mb-2 d-block"></i>
+                    <div class="small text-muted">Consumido / Perdido</div>
+                    <h4 class="fw-bold {% if total_consumido > 0 %}text-danger{% else %}text-success{% endif %} mb-0">
+                        {{ total_consumido }}
+                    </h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- Percentual de Devolução + Status -->
+        <div class="mt-4 text-center">
+            <div class="d-inline-block px-4 py-3 bg-secondary-subtle h6 ">
+                <strong>Percentual de Devolução:</strong> 
+                {{ percentual_devolucao|floatformat:1 }}%
+                <small class="text-muted">Status: <strong class="text-primary">{{ emprestimo.get_status_display }}</strong></small>
+            </div>
+        </div>
+
+        {% if total_consumido > 0 %}
+        <div class="alert alert-warning mt-4 text-center small h6" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Atenção:</strong> Foram registrados <strong>{{ total_consumido }}</strong> itens consumidos ou perdidos.
+        </div>
+        {% else %}
+        <div class="alert alert-success mt-4 text-center small" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <strong>Devolução completa:</strong> Todos os itens foram devolvidos conforme o esperado.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Assinaturas -->
+    <div class="signatures h6">
+        <div class="col-6 text-center">
+            <div class="sig-line"></div>
+            Responsável pelo Recebimento
+        </div>
+        <div class="col-6 text-center">
+            <div class="sig-line"></div>
+            Responsável pela Devolução / Conferência
+        </div>
+    </div>
+
+</div>
+
+<!-- Botão de impressão -->
+<div class="text-center mt-4 btn-imprimir">
+    <button onclick="window.print()" class="btn btn-success">
+        🖨️ Imprimir Relatório
+    </button>
+</div>
+
+{% endblock %}

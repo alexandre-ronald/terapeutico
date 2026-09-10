@@ -1,0 +1,20 @@
+<!-- templates/limpeza/limpeza_confirm_delete.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card border-danger">
+        <div class="card-body">
+            <h4 class="text-danger">Confirmar exclusão</h4>
+            <p>Tem certeza que deseja excluir a limpeza do dia <strong>{{ limpeza.data|date:"d/m/Y" }}</strong> - 
+               <strong>{{ limpeza.centro_cirurgico }} - {{ limpeza.sala }}</strong>?</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Sim, Excluir</button>
+                <a href="{% url 'centrocirurgico:limpeza-list' %}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

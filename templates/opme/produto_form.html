@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Gestão de Produtos › {% if editando %}Editar Produto{% else %}Novo Produto{% endif %}{% endblock %}
+{% block breadcrumb %}Módulo OPME › Produtos › {% if editando %}Editar{% else %}Nova{% endif %}{% endblock %}
+{% block page_title %}{% if editando %}Editar Produto OPME{% else %}Novo Produto OPME{% endif %}{% endblock %}
+
+{% block content %}
+
+<style>
+  .result-icon {
+    float: right;
+    font-size: 2.0rem;
+    opacity: 0.8;
+  }
+  td, th {
+    vertical-align: middle;
+  }
+  .card-link {
+    text-decoration: none;
+    color: inherit;
+  }
+  .card-link:hover {
+    transform: translateY(-2px);
+  }
+  .border-danger, .border-info, .border-success, .border-primary, .border-warning {
+    border-bottom-width: 2px !important;
+  }
+</style>
+
+<div class="container-fluid py-2" style="width: 95%;">
+
+  <!-- TÍTULO + BOTÕES -->
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h4><i class="bi bi-box-seam"></i> {% if editando %}Editar Produto OPME{% else %}Novo Produto OPME{% endif %}</h4>
+        <p class="text-muted">
+          {% if editando %}
+            Atualização do produto {{ produto.descricao|default:"—" }} ({{ produto.referencia|default:"sem ref" }}).
+          {% else %}
+            Cadastro de novo item cirúrgico, órtese, prótese ou material de uso único (OPME).
+          {% endif %}
+        </p>
+      </div>
+      <div>
+        <a href="{% url 'opme:produto_list' %}" class="btn btn-outline-secondary">
+          ← Voltar para Lista
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MENSAGENS DE ERRO -->
+  {% if errors %}
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <strong>Verifique os campos:</strong>
+    <ul class="mb-0">
+      {% for campo, msg in errors.items %}
+        <li>{{ campo|capfirst }}: {{ msg }}</li>
+      {% endfor %}
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endif %}
+
+  <!-- FORMULÁRIO -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="row g-4">
+          <!-- Descrição (principal) -->
+          <div class="col-md-8">
+            <label for="descricao" class="form-label fw-medium">Descrição do Produto <span class="text-danger">*</span></label>
+            <input type="text" 
+                   name="descricao" 
+                   id="descricao" 
+                   class="form-control" 
+                   placeholder="Ex: Prótese de Joelho Total Cementada - Modelo XYZ"
+                   value="{{ descricao|default:'' }}" 
+                   required 
+                   autofocus>
+            <div class="form-text text-muted">
+              Nome completo ou descrição técnica do item (obrigatório, máx. 200 caracteres).
+            </div>
+          </div>
+
+          <!-- Referência / Código -->
+          <div class="col-md-4">
+            <label for="referencia" class="form-label fw-medium">Referência / Código</label>
+            <input type="text" 
+                   name="referencia" 
+                   id="referencia" 
+                   class="form-control" 
+                   value="{{ referencia|default:'' }}" 
+                   placeholder="Ex: REF-12345, CAT-789">
+            <div class="form-text text-muted">
+              Código do fabricante ou catálogo (opcional).
+            </div>
+          </div>
+
+          <!-- Fabricante -->
+          <div class="col-md-6">
+            <label for="fabricante" class="form-label fw-medium">Fabricante</label>
+            <input type="text" 
+                   name="fabricante" 
+                   id="fabricante" 
+                   class="form-control" 
+                   placeholder="Ex: Stryker, Zimmer Biomet, Johnson & Johnson">
+            <div class="form-text text-muted">
+              Nome da empresa fabricante (opcional).
+            </div>
+          </div>
+
+          <!-- Unidade -->
+          <div class="col-md-6">
+            <label for="unidade" class="form-label fw-medium">Unidade de Medida</label>
+            <input type="text" 
+                   name="unidade" 
+                   id="unidade" 
+                   class="form-control" 
+                   placeholder="Ex: un, par, kit, m, cm"
+                   value="{{ unidade|default:'un' }}">
+            <div class="form-text text-muted">
+              Unidade de contagem (ex: unidade, par, kit, metro). Padrão: un
+            </div>
+          </div>
+
+          <!-- Espaço para card informativo / preview -->
+          <div class="col-12 mt-4">
+            <div class="card bg-light border-0">
+              <div class="card-body text-center">
+                <i class="bi bi-box-seam fs-1 text-primary opacity-75 mb-2 d-block"></i>
+                <p class="text-muted mb-0 small">
+                  Este produto será utilizado na composição padrão das caixas cirúrgicas.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="my-4">
+
+        <!-- Botões de ação -->
+        <div class="d-flex justify-content-end gap-3">
+          <a href="{% url 'opme:produto_list' %}" class="btn btn-outline-secondary">
+            Cancelar
+          </a>
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-circle"></i>
+            {% if editando %}Salvar Alterações{% else %}Cadastrar Produto{% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

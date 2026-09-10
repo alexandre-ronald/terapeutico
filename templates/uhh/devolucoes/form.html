@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Hemoterapia › Devolução de Bolsa{% endblock %}
+{% block breadcrumb %}Hemoterapia › Devolução{% endblock %}
+{% block page_title %}Registrar Devolução de Bolsa{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-2" style="width:95%;">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+<div>
+
+<h4>
+<i class="bi bi-arrow-return-left"></i>
+Devolução de Bolsa
+</h4>
+
+<p class="text-muted">
+Registro de retorno de bolsa não utilizada à Unidade de Hemoterapia Hospitalar.
+</p>
+
+</div>
+
+<div>
+<a href="{% url 'uhh:lista_devolucoes' %}" class="btn btn-outline-secondary">
+← Voltar
+</a>
+</div>
+
+</div>
+
+<div class="card border-0 shadow-sm">
+
+<div class="card-body">
+
+<form method="post">
+{% csrf_token %}
+
+<div class="row g-4">
+
+<div class="col-md-6">
+
+<label class="form-label fw-medium">Liberação da Bolsa *</label>
+
+<select name="liberacao" class="form-select" required>
+
+<option value="">Selecione</option>
+
+{% for l in liberacoes %}
+
+<option value="{{l.id}}">
+Bolsa {{l.prova_cruzada.bolsa.numero_bolsa}} | Paciente {{l.prova_cruzada.paciente.nome}}
+</option>
+
+{% endfor %}
+
+</select>
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label fw-medium">Setor de Origem *</label>
+
+<input type="text"
+name="setor_origem"
+class="form-control"
+placeholder="Ex: UTI, Centro Cirúrgico"
+required>
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label fw-medium">Devolvido por *</label>
+
+<input type="text"
+name="devolvido_por"
+class="form-control"
+placeholder="Profissional responsável"
+required>
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label fw-medium">Condição da Bolsa *</label>
+
+<input type="text"
+name="condicao_bolsa"
+class="form-control"
+placeholder="Ex: refrigerada, fora de temperatura"
+required>
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label fw-medium">Status *</label>
+
+<select name="status" class="form-select" required>
+
+<option value="aprovada">Aprovada para Reintegração</option>
+
+<option value="descartada">Descartada</option>
+
+</select>
+
+</div>
+
+<div class="col-12">
+
+<label class="form-label fw-medium">Observações</label>
+
+<textarea
+name="observacoes"
+class="form-control"
+rows="3"
+placeholder="Observações sobre a devolução"
+></textarea>
+
+</div>
+
+</div>
+
+<hr class="my-4">
+
+<div class="d-flex justify-content-end gap-3">
+
+<a href="{% url 'uhh:lista_devolucoes' %}" class="btn btn-outline-secondary">
+Cancelar
+</a>
+
+<button class="btn btn-success">
+<i class="bi bi-check-circle"></i>
+Registrar Devolução
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Solicitações de Hemocomponentes{% endblock %}
+{% block breadcrumb %}Hemoterapia / Solicitações{% endblock %}
+{% block page_title %}Solicitações de Hemocomponentes{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-2" style="width: 90%;">
+
+<!-- HEADER -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h4 class="mb-0">
+                    <i class="bi bi-droplet-fill text-danger me-1"></i>
+                    Solicitações ao Hemocentro
+                </h4>
+                <small class="text-muted">
+                    Controle e acompanhamento das solicitações de hemocomponentes
+                </small>
+            </div>
+
+            <a href="{% url 'uhh:nova_solicitacao' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Nova Solicitação
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- CARD -->
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+
+        <!-- BUSCA -->
+        <form method="GET" class="mb-3">
+            <div class="row g-2 align-items-center">
+
+                <div class="col-md-4 position-relative">
+                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                    <input type="text"
+                           name="busca"
+                           class="form-control ps-5"
+                           placeholder="Buscar por solicitante ou observação..."
+                           value="{{ busca }}">
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-secondary w-100">
+                        Buscar
+                    </button>
+                </div>
+
+            </div>
+        </form>
+
+        <!-- TABELA -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Data</th>
+                        <th>Solicitante</th>
+                        <th>Status</th>
+                        <th>Observações</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                {% for s in solicitacoes %}
+                <tr>
+
+                    <td>
+                        <strong>#{{ s.id }}</strong>
+                    </td>
+
+                    <td>
+                        {{ s.data_solicitacao|date:"d/m/Y H:i" }}
+                    </td>
+
+                    <td>
+                        {{ s.solicitante }}
+                    </td>
+
+                    <!-- STATUS -->
+                    <td>
+                        {% if s.status == 'aberta' %}
+                            <span class="badge bg-primary">Aberta</span>
+                        {% elif s.status == 'atendida_parcial' %}
+                            <span class="badge bg-warning text-dark">Parcial</span>
+                        {% elif s.status == 'atendida_total' %}
+                            <span class="badge bg-success">Atendida</span>
+                        {% elif s.status == 'cancelada' %}
+                            <span class="badge bg-danger">Cancelada</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- OBS -->
+                    <td style="max-width: 250px;">
+                        <span title="{{ s.observacoes }}">
+                            {{ s.observacoes|default:"-"|truncatechars:60 }}
+                        </span>
+                    </td>
+
+                    <!-- AÇÕES -->
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm">
+
+                            <a href="{% url 'uhh:editar_solicitacao' s.id %}" 
+                               class="btn btn-outline-primary"
+                               title="Itens">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+
+                            <a href="{% url 'uhh:relatorio_hemomar' s.id %}" 
+                               class="btn btn-outline-secondary"
+                               title="Relatório">
+                                <i class="bi bi-file-earmark-text"></i> Relatório
+                            </a>
+
+                            <a href="{% url 'uhh:registrar_retorno' s.id %}" 
+                               class="btn btn-outline-success"
+                               title="Registrar Retorno">
+                                <i class="bi bi-box-arrow-in-down"></i> Recebimento
+                            </a>
+
+                        </div>
+                    </td>
+
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-4 d-block mb-2"></i>
+                        Nenhuma solicitação registrada
+                    </td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+    <!-- PAGINAÇÃO -->
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer bg-light border-0">
+
+        <nav>
+            <ul class="pagination justify-content-center mb-2">
+
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                            &laquo;
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                            &raquo;
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                {% endif %}
+
+            </ul>
+        </nav>
+
+        <div class="text-center text-muted small">
+            Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }}
+            de {{ page_obj.paginator.count }} registros
+        </div>
+
+    </div>
+    {% endif %}
+
+</div>
+
+</div>
+
+{% endblock %}

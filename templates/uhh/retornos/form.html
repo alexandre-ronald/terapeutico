@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Hemoterapia › Registro de Retorno{% endblock %}
+{% block breadcrumb %}Hemoterapia › Retorno de Hemocomponentes{% endblock %}
+{% block page_title %}Registro de Retorno do Hemocentro{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<div class="container-fluid py-2" style="width:95%;">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h4><i class="bi bi-droplet"></i> Retorno de Hemocomponentes Solicitados</h4>
+            <p class="text-muted">
+                Registro de solicitação de hemocomponentes ao Centro de Hemoterapia.
+            </p>
+        </div>
+
+        <div>
+            <a href="{% url 'uhh:lista_solicitacoes' %}" class="btn btn-outline-secondary">
+                ← Voltar
+            </a>
+        </div>
+
+    </div>
+    <div class="card shadow-sm">
+
+        <div class="card-header d-flex justify-content-between align-items-center">
+
+            <h5 class="mb-0">
+                <i class="bi bi-box-arrow-in-down"></i>
+                Retorno da Solicitação Nº {{ solicitacao.id }}
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="row mb-3">
+
+                    <div class="col-md-3">
+                        <label class="form-label">Solicitação</label>
+                        <input type="text"
+                            class="form-control"
+                            value="{{ solicitacao.id }}"
+                            readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Data da Solicitação</label>
+                        <input type="text"
+                            class="form-control"
+                            value="{{ solicitacao.data_solicitacao|date:'d/m/Y H:i' }}"
+                            readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Solicitante</label>
+                        <input type="text"
+                            class="form-control"
+                            value="{{ solicitacao.solicitante }}"
+                            readonly>
+                    </div>
+
+                </div>
+
+                <hr>
+
+                <h6 class="mb-3">
+                    <i class="bi bi-list-ul"></i>
+                    Itens da Solicitação
+                </h6>
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover table-striped align-middle">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th>Hemocomponente</th>
+                                <th>Grupo</th>
+                                <th>RH</th>
+                                <th>Quantidade</th>
+                                <th>Bolsa Recebida</th>
+                                <th class="text-center">Recebido</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for item in itens %}
+
+                            <tr>
+
+                                <td>{{ item.hemocomponente }}</td>
+
+                                <td>{{ item.grupo_sanguineo }}</td>
+
+                                <td>{{ item.fator_rh }}</td>
+
+                                <td>
+                                    <span class="badge bg-primary">
+                                        {{ item.quantidade }}
+                                    </span>
+                                </td>
+
+                                <td>
+
+                                    <select name="bolsa_{{ item.id }}" class="form-control">
+
+                                        <option value="">-- Selecionar bolsa --</option>
+
+                                        {% for b in bolsas %}
+                                        <option value="{{ b.id }}">
+                                            {{ b.numero_bolsa }} | Mac: {{ b.numero_macarrao }} | 
+                                            {{ b.grupo_sanguineo }}{{ b.fator_rh }} | 
+                                            Val: {{ b.data_validade|date:"d/m/Y" }} | 
+                                            {{ b.get_status_display }}
+                                        </option>
+                                        {% endfor %}
+
+                                    </select>
+
+                                </td>
+
+                                <td class="text-center">
+
+                                    <input type="checkbox"
+                                        name="recebido_{{ item.id }}"
+                                        class="form-check-input"
+                                        checked>
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="mt-4 d-flex justify-content-between">
+
+                    <a href="{% url 'uhh:lista_solicitacoes' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i>
+                        Voltar
+                    </a>
+
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save"></i>
+                        Registrar Retorno
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

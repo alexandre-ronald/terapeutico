@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+
+{% block title %}
+Indicador de Giro de Sala
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid p-0" style="max-width: 95%;">
+<div class="row">
+    <!-- CABEÇALHO DO MÓDULO -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h4 class="fw-bold text-dark mb-1">
+                <i class="bi bi-arrow-clockwise text-warning me-2"></i>Indicador de Giro de Sala
+            </h4>
+            <p class="text-muted mb-0 small">
+                Monitoramento dos últimos 30 dias de liberação de Sala Cirúrgica.
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <span class="badge bg-white text-dark shadow-sm border px-3 py-2 fw-normal">
+                <i class="bi bi-calendar-event text-primary me-1"></i> Período: Últimos 30 dias
+            </span>
+        </div>
+    </div>
+    <!-- CARD PRINCIPAL -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-1">
+                            <i class="fa-solid fa-rotate text-primary me-2"></i>
+                            Giro de Sala
+                        </h5>
+                        <small class="text-muted">
+                            Tempo médio entre a saída do paciente e a liberação da sala.
+                        </small>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary">
+                        Últimos 30 dias
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="display-3 fw-bold text-primary">
+                        {{ media }}
+                    </div>
+                    <div class="text-muted">
+                        minutos
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <small class="fw-semibold">
+                            Meta
+                        </small>
+                        <small>
+                            {{ meta }} min
+                        </small>
+                    </div>
+                    <div class="progress" style="height:12px">
+                        <div class="progress-bar bg-{{ badge }}"
+                             style="width:{{ percentual_meta }}%">
+                        </div>
+                    </div>
+                    <div class="text-end mt-1">
+                        <small class="text-muted">
+                            {{ percentual_meta }}%
+                        </small>
+                    </div>
+                </div>
+
+                <div class="alert alert-light border d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold">
+                        Situação Geral
+                    </span>
+                    <span class="badge bg-{{ badge }}">
+                        {{ status }}
+                    </span>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-4">
+                        <div class="border rounded p-3 text-center h-100">
+                            <small class="text-muted">
+                                Cirurgias
+                            </small>
+                            <h3 class="fw-bold mb-0">
+                                {{ total }}
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="border rounded p-3 text-center h-100">
+                            <small class="text-muted">
+                                Melhor Giro
+                            </small>
+                            <h3 class="fw-bold text-success mb-0">
+                                {{ melhor }}
+                            </h3>
+                            <small class="text-muted">
+                                min
+                            </small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="border rounded p-3 text-center h-100">
+                            <small class="text-muted">
+                                Pior Giro
+                            </small>
+                            <h3 class="fw-bold text-danger mb-0">
+                                {{ pior }}
+                            </h3>
+                            <small class="text-muted">
+                                min
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <a href="{% url 'centrocirurgico:exportar_relatorio_giro_sala_pdf' %}" class="btn btn-danger btn-sm" target="_blank">
+            <i class="bi bi-file-earmark-pdf me-1"></i> Baixar Relatório PDF
+        </a>
+    </div>
+
+    <!-- TABELA -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0">
+                        Giro Médio por Sala
+                    </h6>
+                    <small class="text-muted">
+                        Clique em detalhes para investigar
+                    </small>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sala</th>
+                            <th class="text-center">Cirurgias</th>
+                            <th class="text-center">Giro Médio</th>
+                            <th class="text-center">Status</th>
+                            <th width="70" class="text-center">Detalhe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sala in salas %}
+                        <tr class="linha-sala">
+                            <td>
+                                <strong>
+                                    {{ sala.cirurgia__sala }}
+                                </strong>
+                            </td>
+                            <td class="text-center">
+                                {{ sala.quantidade }}
+                            </td>
+                            <td class="text-center">
+                                <strong>
+                                    {{ sala.media|floatformat:1 }}
+                                </strong>
+                                <small class="text-muted">
+                                    min
+                                </small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-{{ sala.badge }}">
+                                    {{ sala.status }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <button
+                                    class="btn btn-light btn-sm border btn-detalhe"
+                                    title="Ver Detalhes"
+                                    data-sala="{{ sala.cirurgia__sala }}">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <!-- Linha de detalhe oculta inicialmente para cada sala -->
+                        <tr class="detalhe-sala d-none bg-light">
+                            <td colspan="5">
+                                <div class="p-4">
+                                    <h5 class="fw-bold mb-3">Detalhes da Sala: <span class="sala-nome-titulo">{{ sala.cirurgia__sala }}</span></h5>
+                                    
+                                    <!-- RESUMO DA SALA -->
+                                    <div class="row g-3 mb-2">
+                                        <div class="col-md-3">
+                                            <div class="card border-0 shadow-sm">
+                                                <div class="card-body text-center">
+                                                    <small class="text-muted">Giro Médio</small>
+                                                    <h3 class="fw-bold text-primary media-sala">--</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card border-0 shadow-sm">
+                                                <div class="card-body text-center">
+                                                    <small class="text-muted">Melhor</small>
+                                                    <h3 class="fw-bold text-success melhor-sala">--</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card border-0 shadow-sm">
+                                                <div class="card-body text-center">
+                                                    <small class="text-muted">Pior</small>
+                                                    <h3 class="fw-bold text-danger pior-sala">--</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card border-0 shadow-sm">
+                                                <div class="card-body text-center">
+                                                    <small class="text-muted">Cirurgias</small>
+                                                    <h3 class="fw-bold total-sala">--</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- TABELA DE CIRURGIAS DA SALA -->
+                                    <div class="table-responsive bg-white rounded shadow-sm">
+                                        <table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Data</th>
+                                                    <th>Procedimento</th>
+                                                    <th>Cirurgião</th>
+                                                    <th>Especialidade</th>
+                                                    <th class="text-center">Giro</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="tbody-cirurgias">
+                                                <tr>
+                                                    <td colspan="5" class="text-center text-muted py-4">
+                                                        Carregando...
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-5">
+                                Nenhum registro encontrado.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<script>
+document.querySelectorAll(".btn-detalhe").forEach(function(botao) {
+    botao.addEventListener("click", async function() {
+        const sala = this.dataset.sala;
+        const linhaAtual = this.closest("tr");
+        const linhaDetalhe = linhaAtual.nextElementSibling;
+        
+        // Alterna a visibilidade da linha de detalhes
+        const estaVisivel = !linhaDetalhe.classList.contains("d-none");
+        
+        // Esconde todas as outras linhas de detalhes abertas
+        document.querySelectorAll(".detalhe-sala").forEach(tr => tr.classList.add("d-none"));
+
+        if (estaVisivel) {
+            linhaDetalhe.classList.add("d-none");
+            return;
+        }
+
+        linhaDetalhe.classList.remove("d-none");
+
+        const elMedia = linhaDetalhe.querySelector(".media-sala");
+        const elMelhor = linhaDetalhe.querySelector(".melhor-sala");
+        const elPior = linhaDetalhe.querySelector(".pior-sala");
+        const elTotal = linhaDetalhe.querySelector(".total-sala");
+        const elTbody = linhaDetalhe.querySelector(".tbody-cirurgias");
+
+        elMedia.textContent = "--";
+        elMelhor.textContent = "--";
+        elPior.textContent = "--";
+        elTotal.textContent = "--";
+        elTbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary"></div> Carregando...
+                </td>
+            </tr>
+        `;
+
+        try {
+            const response = await fetch(`/centrocirurgico/api/giro-sala/${encodeURIComponent(sala)}/`);
+            if (!response.ok) throw new Error("Erro ao buscar dados.");
+
+            const dados = await response.json();
+
+            elMedia.textContent = dados.resumo.media + " min";
+            elMelhor.textContent = dados.resumo.melhor + " min";
+            elPior.textContent = dados.resumo.pior + " min";
+            elTotal.textContent = dados.resumo.total;
+
+            let htmlCirurgias = "";
+            if (dados.cirurgias.length === 0) {
+                htmlCirurgias = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            Nenhuma cirurgia encontrada.
+                        </td>
+                    </tr>
+                `;
+            } else {
+                dados.cirurgias.forEach(function(c) {
+                    htmlCirurgias += `
+                        <tr>
+                            <td>${c.data}</td>
+                            <td>${c.procedimento}</td>
+                            <td>${c.medico}</td>
+                            <td>${c.especialidade}</td>
+                            <td class="text-center">
+                                <span class="badge bg-${c.cor}">
+                                    ${c.giro} min
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            elTbody.innerHTML = htmlCirurgias;
+
+        } catch (e) {
+            console.error(e);
+            elTbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-danger text-center py-4">
+                        Erro ao carregar os dados da sala.
+                    </td>
+                </tr>
+            `;
+        }
+    });
+});
+</script>
+
+{% endblock %}

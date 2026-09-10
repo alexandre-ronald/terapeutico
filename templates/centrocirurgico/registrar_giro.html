@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}
+Registro de Giro de Sala
+{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    .card-etapa {
+        background-color: #ffffff;
+        border-radius: 0.5rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: 0.25s;
+        padding: 1.5rem;
+        height: 210px;
+        text-align: center;
+    }
+    .card-etapa:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    }
+    .icon-etapa {
+        font-size: 2.8rem;
+        margin-bottom: 1rem;
+    }
+    .hora-etapa {
+        font-size: .85rem;
+        color: #6c757d;
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        align-items: center;
+        margin-top: 15px;
+        margin-bottom: 10px;
+    }
+</style>
+
+<div class="container">
+
+    <div class="text-center mb-4 mt-4">
+        <h1 class="display-6 fw-bold text-dark">Registro de Giro de Sala</h1>
+        
+        <hr class="w-25 mx-auto mt-2 mb-0">
+    </div>
+
+    <div class="row g-3 justify-content-center">
+
+        <div class="alert alert-primary alert-dismissible alert-label-icon label-arrow fade show material-shadow" role="alert"> 
+            <div class="alert-message"> 
+                <i class="ri-user-3-line label-icon"></i>Paciente: <strong>{{paciente.nome}}</strong> | 
+                Prontuário: <strong>{{paciente.prontuario}}</strong> | 
+                Data Cirurgia: <strong>{{giro.cirurgia.data|date:'d/m/Y'}}</strong> | 
+                Sala: <strong>{{giro.cirurgia.sala}}</strong> <br> 
+
+                Cirurgia: <strong>{{giro.cirurgia.procedimento}}</strong> | 
+                Médico: <strong>{{giro.cirurgia.medico}}</strong> 
+            </div>
+        </div>
+        <hr>
+
+        <div class="col-12">
+            <div class="row">
+                <div class="col-12 col-md-4">
+                    <div class="card text-center p-4 shadow">
+                        <div class="card-content-wrapper">
+                            <i class="bi bi-activity icon-etapa text-primary"></i>
+                            <h5>Início da Cirurgia</h5>
+                            <p class="text-muted small">
+                                <div class="hora-etapa">
+                                    <i class="bi bi-clock"></i>
+                                    <span>{{ giro.dataInicioCirurgia|date:'d/m/Y  H:i'|default:"--:--" }}</span>
+                                          
+                                </div>
+                            </p>
+                        </div>
+                        
+                        {% if not giro.dataInicioCirurgia %}
+                            <a href="{% url 'centrocirurgico:inicio_cirurgia' giro.id %}"
+                                class="btn btn-outline-primary">Registrar Início de Cirurgia</a>
+                            </a>
+                            
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card text-center p-4 shadow">
+                        <div class="card-content-wrapper">
+                            <i class="bi bi-check2-circle icon-etapa text-success"></i>
+                            <h5>Final da Cirurgia</h5>
+                            <p class="text-muted small">
+                                <div class="hora-etapa">
+                                    <i class="bi bi-clock"></i>
+                                    <span>{{ giro.dataFinalCirurgia|date:'d/m/Y H:i'|default:"--:--" }}</span>
+                                </div>
+                            </p>
+                        </div>
+
+                        {% if giro.dataInicioCirurgia and not giro.dataFinalCirurgia %}
+                            <a href="{% url 'centrocirurgico:fim_cirurgia' giro.id %}"
+                                class="btn btn-outline-success">Registrar Final de Cirurgia</a>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card text-center p-4 shadow">
+                        <div class="card-content-wrapper">
+                            <i class="bi bi-box-arrow-right icon-etapa text-dark"></i>
+                            <h5>Saída do Paciente da Sala</h5>
+                            <p class="text-muted small">
+                                <div class="hora-etapa">
+                                    <i class="bi bi-clock"></i>
+                                    <span>{{ giro.dataSaidaSala|date:'d/m/Y H:i'|default:"--:--" }}</span>
+                                </div>
+                            </p>
+                        </div>
+                        {% if giro.dataFinalCirurgia and not giro.dataSaidaSala %}
+                            <a href="{% url 'centrocirurgico:saida_sala' giro.id %}"
+                                class="btn btn-outline-dark">Registrar Saída do Paciente da Sala</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="row">
+                <div class="col-12 col-md-4">
+                    <div class="card text-center p-4 shadow">
+                        <div class="card-content-wrapper">
+                            <i class="bi bi-tools  icon-etapa text-warning"></i>
+                            <h5>Desmontagem da Sala</h5>
+                            <p class="text-muted small">
+                                <div class="hora-etapa">
+                                    <i class="bi bi-clock"></i>
+                                    <span>{{ giro.dataDesmontagemSala|date:'d/m/Y H:i'|default:"--:--"}}</span>
+                                </div>
+                            </p>
+                        </div>
+                        {% if giro.dataSaidaSala and not giro.dataDesmontagemSala %}
+                            <a href="{% url 'centrocirurgico:desmontagem' giro.id %}" 
+                                class="btn btn-outline-warning">Registrar Desmontagem da Sala</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card text-center p-4 shadow">
+                        <div class="card-content-wrapper">
+                            <i class="bi bi-trash icon-etapa text-info"></i>
+                            <h5>Início da Limpeza</h5>
+                            <p class="text-muted small">
+                                <div class="hora-etapa">
+                                    <i class="bi bi-clock"></i>
+                                    <span>{{ giro.dataInicioLimpeza|date:'d/m/Y H:i'|default:"--:--" }}</span>
+                                </div>
+                            </p>
+                            
+                        </div>
+                        {% if giro.dataDesmontagemSala and not giro.dataInicioLimpeza %}
+                            <a href="{% url 'centrocirurgico:inicio_limpeza' giro.id %}"
+                                class="btn btn-outline-info">Registrar Final de Cirurgia</a>
+                            </a>
+                        {% endif %}
+                        
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card text-center p-4 shadow">
+                        <div class="card-content-wrapper">
+                            <i class="bi bi-check2-square icon-etapa text-danger"></i>
+                            <h5>Final da Limpeza</h5>
+                            <p class="text-muted small">
+                                <div class="hora-etapa">
+                                    <i class="bi bi-clock"></i>
+                                    <span>{{ giro.dataFinalLimpeza|date:'d/m/Y H:i'|default:"--:--" }}</span>
+                                </div>
+                            </p>
+                        </div>
+                        {% if giro.dataInicioLimpeza and not giro.dataFinalLimpeza %}
+                            <a href="{% url 'centrocirurgico:final_limpeza' giro.id %}"
+                                class="btn btn-outline-info">Registrar Final da Limpeza</a>
+                            </a>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

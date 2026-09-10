@@ -24,11 +24,18 @@ urlpatterns = [
     path('get_kit_materials/', views.get_kit_materials, name='get_kit_materials'),
 
     path('mapa_cirurgico/', views.mapa_cirurgico_list, name='mapa_cirurgico_list'),
+    path('mapa_cirurgico/oftalmologia/', views.mapa_oftalmologia_list, name='mapa_oftalmo_list'),
 
     path('fornecimento_material/', views.fornecimento_material, name='fornecimento_material'),
     path('fornecimento_material_extra/', views.fornecimento_material_extra, name='fornecimento_material_extra'),
     path('fornecimento_material/save/', views.fornecimento_material_save, name='fornecimento_material_save'),
 
     path('imprimir_formecimento', views.relatorio_formulario_pdf, name='relatorio_formulario'),
+
+    # Obstétrico
+    path('mapa_cirurgico/obstetrico/', views.mapa_obstetrico_list, name='mapa_obstetrico_list'),
+
+    # Infantil
+    path('mapa_cirurgico/infantil/', views.mapa_infantil_list, name='mapa_infantil_list'),
 
 ]

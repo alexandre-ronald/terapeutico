@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect
 from django.http import JsonResponse
 from django.urls import reverse
 from django.core.paginator import Paginator
+from datetime import datetime
 
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
@@ -59,7 +60,7 @@ def relatorio_cirurgia(request, pk):
         # cabeçalho — você pode mover isso para settings se preferir
         'hospital_name': 'HOSPITAL UNIVERSITÁRIO – HUPD',
         'institution': 'HOSPITAL UNIVERSITÁRIO - UNIVERSIDADE FEDERAL DO MARANHÃO',
-        'unit': 'UNIDADE DE PROCESSAMENTO DE MATERIAIS ESTERILIZADOS – UPME/UPD',
+        'unit': 'UNIDADE DE PROCESSAMENTO DE MATERIAIS ESTERILIZADOS – UPME',
         'report_title': 'FORNECIMENTO DE MATERIAIS PROCESSADOS',
     }
     return render(request, 'upme/relatorio_cirurgia.html', context)
@@ -384,6 +385,93 @@ def cirurgia_submit(request):
     # Esta view pode ser usada para redirecionar ou processar após submissão
     return redirect('upme:cirurgia_form')
 
+def mapa_oftalmologia_list(request):
+
+    data_mapa = request.GET.get('data_mapa')
+    dados = []
+    unidade = 124
+
+    if request.method == 'GET':
+        if data_mapa:
+            dados = buscar_mapa_aghu(data=data_mapa, unidade = unidade)
+
+    for dado in dados:
+        prontuario = dado['prontuario']
+        procedimento = dado['procedimento']
+        especialidade = dado['especialidade']
+
+        paciente = Paciente.objects.filter(prontuario=prontuario).first()
+        if paciente:
+            cirurgia = Cirurgia.objects.filter(paciente = paciente, 
+                                               procedimento = procedimento, 
+                                               especialidade = especialidade)
+            
+            
+
+    #paginator = Paginator(dados, 8)  # 10 pacientes por página
+    #page_number = request.GET.get('page')
+    #page_obj = paginator.get_page(page_number)
+
+    context = {
+        'mapa': dados,
+    }
+
+    return render(request, 'upme/mapa_oftalmologico_listar.html', context)
+
+def mapa_infantil_list(request):
+
+    data_mapa = request.GET.get('data_mapa')
+    dados = []
+    unidade = 120
+
+    if request.method == 'GET':
+        if data_mapa:
+            dados = buscar_mapa_aghu(data=data_mapa, unidade = unidade)
+
+    for dado in dados:
+        prontuario = dado['prontuario']
+        procedimento = dado['procedimento']
+        especialidade = dado['especialidade']
+
+        paciente = Paciente.objects.filter(prontuario=prontuario).first()
+        if paciente:
+            cirurgia = Cirurgia.objects.filter(paciente = paciente, 
+                                               procedimento = procedimento, 
+                                               especialidade = especialidade)
+            
+    context = {
+        'mapa': dados,
+    }
+
+    return render(request, 'upme/mapa_infantil_listar.html', context)
+
+def mapa_obstetrico_list(request):
+
+    data_mapa = request.GET.get('data_mapa')
+    dados = []
+    unidade = 119
+
+    if request.method == 'GET':
+        if data_mapa:
+            dados = buscar_mapa_aghu(data=data_mapa, unidade = unidade)
+
+    for dado in dados:
+        prontuario = dado['prontuario']
+        procedimento = dado['procedimento']
+        especialidade = dado['especialidade']
+
+        paciente = Paciente.objects.filter(prontuario=prontuario).first()
+        if paciente:
+            cirurgia = Cirurgia.objects.filter(paciente = paciente, 
+                                               procedimento = procedimento, 
+                                               especialidade = especialidade)
+            
+    context = {
+        'mapa': dados,
+    }
+
+    return render(request, 'upme/mapa_obstetrico_listar.html', context)
+
 def mapa_cirurgico_list(request):
 
     data_mapa = request.GET.get('data_mapa')
@@ -460,7 +548,56 @@ def buscar_mapa_cirurgico_aghu(data=None):
         resultados = [dict(zip(colunas, linha)) for linha in cursor.fetchall()]
 
         return resultados
+    
+def buscar_mapa_aghu(data=None, unidade = None):
+    if not data:
+        # Nenhum filtro informado, não executa consulta
+        return []
 
+    conexao = psycopg2.connect(
+        dbname='dbaghu',
+        user='ugen_integra',
+        password='UFwHP9@a',
+        host='10.16.1.4',
+        port='6544',
+        sslmode='disable'  # se necessário para evitar erro de TLS antigo
+    )
+
+    with conexao.cursor() as cursor:
+        sql = """
+        SELECT 
+            data, 
+            sala_nome as sala, 
+            v_cir.prontuario, 
+            nome_paciente, 
+            esp_nome as especialidade, 
+            proc_descr as procedimento, 
+            nome_equipe as medico,
+            aip.dt_nascimento as data_nascimento,
+            v_cir.dthr_inicio_ordem as data_inicio_cirurgia
+        FROM agh.v_lista_mbc_cirurgias  v_cir
+          LEFT JOIN agh.aip_pacientes aip ON aip.prontuario = v_cir.prontuario
+        WHERE 1 = 1
+        """
+
+        parametros = []
+
+        if unidade:
+            sql += " AND v_cir.unf_seq  = %s"
+            parametros.append(unidade)
+        
+        if data:
+            sql += " AND v_cir.data = %s"
+            parametros.append(data)
+
+        sql += " ORDER BY data_inicio_cirurgia asc"
+
+        cursor.execute(sql, parametros)
+
+        colunas = [desc[0] for desc in cursor.description]
+        resultados = [dict(zip(colunas, linha)) for linha in cursor.fetchall()]
+
+        return resultados
 
 def buscar_pacientes_aghu(prontuario=None, item=None, nome=None):
 
@@ -654,8 +791,10 @@ def fornecimento_material(request):
     materiais_agrupados = {}  # Dicionário para agrupar materiais por kit
     if prontuario:
         try:
+            
+            data = datetime.strptime(data_cirurgia, '%d/%m/%Y').date()
             paciente = Paciente.objects.get(prontuario=prontuario)
-            cirurgia = Cirurgia.objects.filter(paciente=paciente).order_by('-data').first()
+            cirurgia = Cirurgia.objects.filter(paciente=paciente , data = data).order_by('-data').first()
             if cirurgia:
                 # Carregar materiais com relação kit_material
                 materiais_incluidos = CirurgiaMaterial.objects.filter(cirurgia=cirurgia).select_related('material', 'kit_material__kit').order_by('-kit_material')

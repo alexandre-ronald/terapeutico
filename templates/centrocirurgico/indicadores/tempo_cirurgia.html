@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}
+Tempo Médio de Cirurgia por Procedimento
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <!-- FILTROS DE PESQUISA -->
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h6 class="fw-bold mb-0">
+                    <i class="bi bi-filter text-primary me-2"></i>Filtros de Pesquisa (Últimos 30 dias)
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Médico</label>
+                        <select name="medico" class="form-select form-select-sm">
+                            <option value="">Todos os médicos</option>
+                            {% for m in medicos %}
+                            <option value="{{ m }}" {% if filtro_medico == m %}selected{% endif %}>{{ m }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Especialidade</label>
+                        <select name="especialidade" class="form-select form-select-sm">
+                            <option value="">Todas as especialidades</option>
+                            {% for e in especialidades %}
+                            <option value="{{ e }}" {% if filtro_especialidade == e %}selected{% endif %}>{{ e }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Procedimento</label>
+                        <select name="procedimento" class="form-select form-select-sm">
+                            <option value="">Todos os procedimentos</option>
+                            {% for p in procedimentos_lista %}
+                            <option value="{{ p }}" {% if filtro_procedimento == p %}selected{% endif %}>{{ p }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 text-end">
+                        <a href="." class="btn btn-outline-secondary btn-sm me-2">Limpar Filtros</a>
+                        <button type="submit" class="btn btn-primary btn-sm px-4">Filtrar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row ">
+    <!-- CARDS DE RESUMO -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 ">
+            <div class="card-header bg-white border-0">
+                <h5 class="fw-bold mb-1">
+                    <i class="bi bi-stopwatch text-primary me-2"></i>Resumo Geral
+                </h5>
+                <small class="text-muted">Média baseada no período</small>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-4">
+                    <div class="display-4 fw-bold text-primary">
+                        {{ media_geral_minutos }} <span class="fs-4 text-muted">min</span>
+                    </div>
+                    <small class="text-muted">Tempo Médio Geral ({{ media_geral_horas }}h)</small>
+                </div>
+                <hr>
+                <div>
+                    <h3 class="fw-bold text-dark">{{ total_cirurgias }}</h3>
+                    <small class="text-muted">Total de Cirurgias Realizadas</small>
+                </div>
+                
+                
+            </div>
+            
+        </div>
+        <div class="">
+            <a href="{% url 'centrocirurgico:exportar_relatorio_tempo_cirurgia_pdf' %}?{{ request.GET.urlencode }}" class="btn btn-danger btn-sm" target="_blank">
+                <i class="bi bi-file-earmark-pdf me-1"></i> Baixar Relatório PDF
+            </a>
+        </div>
+    </div>
+
+    <!-- TABELA PRINCIPAL DE PROCEDIMENTOS -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0">Tempo Médio por Procedimento</h6>
+                    <small class="text-muted">Clique em detalhes para investigar por dia</small>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Procedimento</th>
+                            <th class="text-center">Cirurgias</th>
+                            <th class="text-center">Tempo Médio</th>
+                            <th width="70" class="text-center">Detalhe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in procedimentos %}
+                        <tr class="linha-procedimento">
+                            <td>
+                                <strong>{{ p.procedimento }}</strong>
+                            </td>
+                            <td class="text-center">
+                                {{ p.quantidade }}
+                            </td>
+                            <td class="text-center">
+                                <strong>{{ p.media_minutos }} min</strong>
+                                <small class="text-muted">({{ p.media_horas }}h)</small>
+                            </td>
+                            <td class="text-center">
+                                <button
+                                    class="btn btn-light btn-sm border btn-detalhe-proc"
+                                    title="Ver Detalhes"
+                                    data-procedimento="{{ p.procedimento }}">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <!-- Linha de detalhe oculta para cada procedimento -->
+                        <tr class="detalhe-proc d-none bg-light">
+                            <td colspan="4">
+                                <div class="p-4">
+                                    <h5 class="fw-bold mb-3">Detalhamento: <span class="text-primary proc-nome-titulo">{{ p.procedimento }}</span></h5>
+                                    
+                                    <!-- RESUMO DO PROCEDIMENTO -->
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <div class="card border-0 shadow-sm">
+                                                <div class="card-body text-center">
+                                                    <small class="text-muted">Média do Procedimento</small>
+                                                    <h3 class="fw-bold text-primary media-proc">--</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card border-0 shadow-sm">
+                                                <div class="card-body text-center">
+                                                    <small class="text-muted">Total Realizado</small>
+                                                    <h3 class="fw-bold text-dark total-proc">--</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- TABELA DE CIRURGIAS DO PROCEDIMENTO -->
+                                    <div class="table-responsive bg-white rounded shadow-sm">
+                                        <table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Data / Sala</th>
+                                                    <th>Paciente</th>
+                                                    <th>Médico / Especialidade</th>
+                                                    <th class="text-center">Duração</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="tbody-cirurgias-proc">
+                                                <tr>
+                                                    <td colspan="4" class="text-center text-muted py-4">
+                                                        Carregando...
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-5">
+                                Nenhum registro encontrado com os filtros selecionados.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+    </div>
+    
+</div>
+
+<script>
+document.querySelectorAll(".btn-detalhe-proc").forEach(function(botao) {
+    botao.addEventListener("click", async function() {
+        const procedimento = this.dataset.procedimento;
+        const linhaAtual = this.closest("tr");
+        const linhaDetalhe = linhaAtual.nextElementSibling;
+        
+        const estaVisivel = !linhaDetalhe.classList.contains("d-none");
+        
+        // Fecha todas as outras linhas abertas
+        document.querySelectorAll(".detalhe-proc").forEach(tr => tr.classList.add("d-none"));
+
+        if (estaVisivel) {
+            linhaDetalhe.classList.add("d-none");
+            return;
+        }
+
+        linhaDetalhe.classList.remove("d-none");
+
+        const elMedia = linhaDetalhe.querySelector(".media-proc");
+        const elTotal = linhaDetalhe.querySelector(".total-proc");
+        const elTbody = linhaDetalhe.querySelector(".tbody-cirurgias-proc");
+
+        elMedia.textContent = "--";
+        elTotal.textContent = "--";
+        elTbody.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary"></div> Carregando...
+                </td>
+            </tr>
+        `;
+
+        try {
+            // Pega os valores atuais dos selects de filtro da tela para enviar junto na API
+            const medicoFiltro = document.querySelector("select[name='medico']").value;
+            const especialidadeFiltro = document.querySelector("select[name='especialidade']").value;
+
+            const params = new URLSearchParams({
+                medico: medicoFiltro,
+                especialidade: especialidadeFiltro
+            });
+
+            const response = await fetch(`/centrocirurgico/api/tempo-cirurgia/${encodeURIComponent(procedimento)}/?${params.toString()}`);
+            if (!response.ok) throw new Error("Erro ao buscar dados.");
+
+            const dados = await response.json();
+
+            elMedia.textContent = dados.resumo.media + " min (" + dados.resumo.horas + "h)";
+            elTotal.textContent = dados.resumo.total;
+
+            let htmlCirurgias = "";
+            if (dados.cirurgias.length === 0) {
+                htmlCirurgias = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            Nenhuma cirurgia encontrada para este filtro.
+                        </td>
+                    </tr>
+                `;
+            } else {
+                dados.cirurgias.forEach(function(c) {
+                    htmlCirurgias += `
+                        <tr>
+                            <td>
+                                <strong>${c.data}</strong><br>
+                                <small class="text-muted">Sala: ${c.sala}</small>
+                            </td>
+                            <td>${c.paciente}</td>
+                            <td>
+                                ${c.medico}<br>
+                                <small class="text-muted">${c.especialidade}</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark border">
+                                    ${c.duracao_minutos} min (${c.duracao_horas}h)
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            elTbody.innerHTML = htmlCirurgias;
+
+        } catch (e) {
+            console.error(e);
+            elTbody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-danger text-center py-4">
+                        Erro ao carregar os detalhes do procedimento.
+                    </td>
+                </tr>
+            `;
+        }
+    });
+});
+</script>
+
+{% endblock %}

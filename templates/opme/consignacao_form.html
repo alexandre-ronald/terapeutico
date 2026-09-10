@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block title %}
+Gestão de Consignações › {% if editando %}Editar{% else %}Nova{% endif %} Consignação
+{% endblock %}
+
+{% block breadcrumb %}
+Módulo OPME › Consignações › {% if editando %}Editar{% else %}Nova{% endif %}
+{% endblock %}
+
+{% block page_title %}
+{% if editando %}Editar Consignação OPME{% else %}Nova Consignação OPME{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<style>
+  .foto-preview { max-height: 120px; object-fit: cover; border-radius: 4px; }
+  .foto-preview-container { position: relative; display: inline-block; margin: 5px; }
+  .foto-preview-container .remove-foto { 
+    position: absolute; 
+    top: 5px; 
+    right: 5px; 
+    background: rgba(220,53,69,0.8); 
+    color: white; 
+    border: none; 
+    border-radius: 50%; 
+    width: 24px; 
+    height: 24px; 
+    line-height: 24px; 
+    text-align: center; 
+    font-size: 14px; 
+    cursor: pointer; 
+  }
+  .form-control-sm { font-size: 0.9rem; }
+</style>
+
+<div class="container-fluid py-2" style="width: 95%;">
+
+  <!-- TÍTULO + BOTÕES -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4><i class="bi bi-arrow-left-right"></i> {% if editando %}Editar Consignação{% else %}Nova Consignação{% endif %}</h4>
+      <p class="text-muted">
+        {% if editando %}
+          Atualização da consignação #{{ consignacao.id }} - Caixa {{ consignacao.caixa.identificador|default:"—" }}.
+        {% else %}
+          Registro de nova consignação de kit/caixa cirúrgica OPME para uso no hospital.
+        {% endif %}
+      </p>
+    </div>
+    <div>
+      <a href="{% url 'opme:consignacao_list' %}" class="btn btn-outline-secondary">
+        ← Voltar para Lista
+      </a>
+    </div>
+  </div>
+
+  <!-- MENSAGENS DE ERRO -->
+  {% if error %}
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endif %}
+
+  <!-- FORMULÁRIO -->
+  <form method="post" enctype="multipart/form-data" id="consignacao-form">
+    {% csrf_token %}
+
+    <!-- Dados principais -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <div class="row g-4">
+          <div class="col-md-6">
+            <label for="caixa" class="form-label fw-medium">Caixa / Kit <span class="text-danger">*</span></label>
+            <select name="caixa" id="caixa" class="form-select" required {% if editando %}disabled{% endif %}>
+              <option value="">Selecione a caixa / kit...</option>
+              {% for caixa in caixas %}
+                <option value="{{ caixa.id }}" {% if editando and caixa.id == consignacao.caixa.id %}selected{% endif %}>
+                  {{ caixa.identificador }} - {{ caixa.empresa.nome }}
+                </option>
+              {% endfor %}
+            </select>
+            <div class="form-text text-muted">Selecione o kit que está sendo consignado ao hospital.</div>
+          </div>
+
+          <div class="col-12">
+            <label for="txtobservacao" class="form-label fw-medium">Observações Gerais</label>
+            <textarea name="observacao" id="observacao" rows="3" class="form-control" placeholder="Ex: Consignação para cirurgia ortopédica...">{{ consignacao.observacao }}</textarea>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conferência de Itens -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-light">
+        <h6 class="mb-0"><i class="bi bi-check2-square"></i> Conferência de Itens na Chegada / Recebimento</h6>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table mb-0 table-hover" id="tabela-itens">
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th class="text-center">Esperado</th>
+                <th class="text-center">Recebido</th>
+                <th class="text-center">Removido / Negado</th>
+                <th>Observação</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if editando and itens %}
+                {% for item in itens %}
+                  <tr>
+                    <td><strong>{{ item.caixa_item.produto }}</strong></td>
+                    <td class="text-center fw-bold">{{ item.caixa_item.quantidade_esperada }}</td>
+                    <td class="text-center">
+                      <input type="number" 
+                             name="item_{{ item.caixa_item.id }}_quantidade_recebida" 
+                             min="0" 
+                             class="form-control form-control-sm mx-auto text-center" 
+                             style="width: 100px;"
+                             value="{{ item.caixa_item.quantidade_recebida|default:'' }}">
+                    </td>
+                    <td class="text-center">
+                      <div class="form-check">
+                        <input type="checkbox" 
+                               name="item_{{ item.caixa_item.id }}_removido_na_chegada" 
+                               class="form-check-input" 
+                               id="removido_{{ item.caixa_item.id }}"
+                               {% if item.removido_na_chegada %}checked{% endif %}>
+                      </div>
+                    </td>
+                    <td>
+                      <textarea name="item_{{ item.caixa_item.id }}_observacao" 
+                                rows="2" 
+                                class="form-control form-control-sm">{{ item.observacao|default:'' }}</textarea>
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr id="linha-vazia">
+                  <td colspan="5" class="text-center py-4 text-muted">
+                    Selecione uma caixa / kit para carregar os itens
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fotos de Chegada -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h6 class="mb-0"><i class="bi bi-camera"></i> Fotos da Caixa na Chegada / Recebimento</h6>
+        
+        {% if editando and qtd_fotos_chegada > 0 %}
+          <small class="text-muted">({{ qtd_fotos_chegada }} foto(s) já cadastrada(s))</small>
+        {% endif %}
+      </div>
+      
+      <div class="card-body">
+        <div class="mb-4">
+          <button type="button" id="btn-adicionar-foto" class="btn btn-primary mb-3">
+            <i class="bi bi-plus-circle"></i> Adicionar imagem
+          </button>
+          <div class="form-text text-muted mb-3">
+            Clique no botão acima para adicionar quantas imagens forem necessárias (uma por vez).
+          </div>
+
+          <!-- Container dinâmico para novas fotos -->
+          <div id="fotos-container" class="mt-3"></div>
+        </div>
+
+        <!-- Fotos já existentes -->
+        {% if editando and fotos_chegada_existentes.exists %}
+          <hr class="my-4">
+          <h6 class="mb-3">Fotos já cadastradas</h6>
+          <div class="row g-3">
+            {% for foto in fotos_chegada_existentes %}
+              <div class="col-md-3 col-sm-4">
+                <div class="foto-preview-container">
+                  <img src="{{ foto.imagem.url }}" class="foto-preview" alt="Foto chegada">
+                  <small class="d-block text-muted mt-1 text-center">{{ foto.descricao|default:"Sem descrição" }}</small>
+                  <button type="button" class="remove-foto" title="Remover foto existente" onclick="alert('Remoção de foto existente ainda não implementada no backend.')">×</button>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- BOTÕES -->
+    <div class="d-flex justify-content-end gap-3 mt-4">
+      <a href="{% url 'opme:consignacao_list' %}" class="btn btn-outline-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-success">
+        <i class="bi bi-check-circle"></i>
+        {% if editando %}Salvar Alterações{% else %}Registrar Consignação{% endif %}
+      </button>
+    </div>
+  </form>
+
+</div>
+
+<!-- JavaScript para carregar itens dinamicamente (apenas em criação) -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const selectCaixa = document.getElementById('caixa');
+  const tabelaBody = document.querySelector('#tabela-itens tbody');
+
+  // Só carrega dinamicamente se NÃO estiver editando (em edição os itens já vêm preenchidos)
+  if (selectCaixa && !{{ editando|yesno:"true,false" }}) {
+    selectCaixa.addEventListener('change', function() {
+      const caixaId = this.value;
+      tabelaBody.innerHTML = '';
+
+      if (!caixaId) {
+        tabelaBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Selecione uma caixa / kit para carregar os itens</td></tr>';
+        return;
+      }
+
+      tabelaBody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div> Carregando itens...</td></tr>';
+
+      fetch(`{% url 'opme:get_itens_caixa' %}?caixa_id=${caixaId}`, {
+        method: 'GET',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(response => response.json())
+      .then(data => {
+        tabelaBody.innerHTML = '';
+        if (data.error) {
+          tabelaBody.innerHTML = `<tr><td colspan="5" class="text-danger text-center py-4">${data.error}</td></tr>`;
+          return;
+        }
+        if (data.itens.length === 0) {
+          tabelaBody.innerHTML = '<tr><td colspan="5" class="text-muted text-center py-4">Nenhum item encontrado nesta caixa</td></tr>';
+          return;
+        }
+        data.itens.forEach(item => {
+          tabelaBody.innerHTML += `
+            <tr>
+              <td><strong>${item.produto}</strong></td>
+              <td class="text-center fw-bold">${item.quantidade_esperada}</td>
+              <td class="text-center">
+                <input type="number" name="item_${item.id}_quantidade_recebida" min="0" 
+                       class="form-control form-control-sm mx-auto text-center" style="width:100px;" value="${item.quantidade_esperada}">
+              </td>
+              <td class="text-center">
+                <div class="form-check">
+                  <input type="checkbox" name="item_${item.id}_removido_na_chegada" 
+                         class="form-check-input" id="removido_${item.id}">
+                </div>
+              </td>
+              <td>
+                <textarea name="item_${item.id}_observacao" rows="2" class="form-control form-control-sm"></textarea>
+              </td>
+            </tr>
+          `;
+        });
+      })
+      .catch(error => {
+        console.error('Erro:', error);
+        tabelaBody.innerHTML = '<tr><td colspan="5" class="text-danger text-center py-4">Erro ao carregar itens</td></tr>';
+      });
+    });
+  }
+
+  // Adicionar campos de foto dinamicamente (um campo por clique)
+  const btnAddFoto = document.getElementById('btn-adicionar-foto');
+  const containerFotos = document.getElementById('fotos-container');
+
+  let contadorFoto = 0;
+
+  if (btnAddFoto && containerFotos) {
+    btnAddFoto.addEventListener('click', () => {
+      contadorFoto++;
+
+      const bloco = document.createElement('div');
+      bloco.className = 'mb-4 p-3 bg-light border rounded position-relative';
+      bloco.id = `bloco-foto-${contadorFoto}`;
+
+      bloco.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <label class="form-label mb-0">Imagem ${contadorFoto}</label>
+          <button type="button" class="btn btn-sm btn-danger remover-bloco" data-bloco-id="${contadorFoto}">
+            Remover esta imagem
+          </button>
+        </div>
+        <input type="file" name="fotos_chegada" accept="image/*" class="form-control mb-2 input-foto">
+        <div class="preview-foto mt-2" style="min-height: 120px;"></div>
+      `;
+
+      containerFotos.appendChild(bloco);
+
+      const inputFoto = bloco.querySelector('.input-foto');
+      const previewDiv = bloco.querySelector('.preview-foto');
+
+      inputFoto.addEventListener('change', function() {
+        previewDiv.innerHTML = '';
+        if (this.files && this.files[0]) {
+          const file = this.files[0];
+          const reader = new FileReader();
+          reader.onload = e => {
+            previewDiv.innerHTML = `
+              <div class="foto-preview-container">
+                <img src="${e.target.result}" class="foto-preview" alt="Prévia">
+              </div>
+              <small class="d-block text-muted mt-1">${file.name}</small>
+            `;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      bloco.querySelector('.remover-bloco').addEventListener('click', () => {
+        bloco.remove();
+      });
+    });
+  }
+});
+</script>
+
+{% endblock %}

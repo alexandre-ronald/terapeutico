@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Limpeza Terminal de SO
+{% endblock %}
+
+{% block breadcrumb %}
+Centro Cirúrgico / Salas Operatórias
+{% endblock %}
+
+{% block page_title %}
+Resgistrar Limpeza
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+    
+    <h2><i class="bi bi-pencil-square"></i> Registrando Limpeza Terminal</h2>
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="post" id="limpezaForm">
+                {% csrf_token %}
+                <input type="hidden" name="acao" id="acao_input">
+                <input type="hidden" name="tipo" id="tipo_input">
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Data da Limpeza</label>
+                        <h5 class="text-muted">{{ limpeza.data|date:"d/m/Y" }}</h5>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Centro Cirúrgico</label>
+                        <h5>{{ limpeza.get_centro_cirurgico_display }}</h5>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Sala</label>
+                        <h5 class="text-primary">{{ limpeza.sala }}</h5>
+                    </div>
+                </div>
+
+                <hr>
+
+                <h5 class="mb-4 text-center">Registro de Início e Fim da Limpeza</h5>
+
+                <div class="row g-4">
+
+                    <!-- ==================== EQUIPE ENFERMAGEM ==================== -->
+                    <div class="col-lg-6">
+                        <div class="card border-primary h-100">
+                            <div class="card-header bg-primary text-white">
+                                <i class="bi bi-person-badge-fill"></i> Equipe Enfermagem
+                            </div>
+                            <div class="card-body">
+
+                                <!-- Início Enfermagem -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-primary">Início da Limpeza</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        {% if limpeza.inicio_enfermagem %}
+                                            <span class="text-success">
+                                                <strong>{{ limpeza.inicio_enfermagem|date:"H:i" }}</strong><br>
+                                                <small>{{ limpeza.usuario_inicio_enfermagem.get_full_name|default:limpeza.usuario_inicio_enfermagem }}</small>
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted flex-grow-1">— Ainda não registrado —</span>
+                                            <button type="button" onclick="registrar('enfermagem', 'inicio')" 
+                                                    class="btn btn-primary">
+                                                <i class="bi bi-play-circle"></i> Registrar Início
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Fim Enfermagem -->
+                                <div>
+                                    <label class="form-label fw-bold text-primary">Fim da Limpeza</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        {% if limpeza.fim_enfermagem %}
+                                            <span class="text-success">
+                                                <strong>{{ limpeza.fim_enfermagem|date:"H:i" }}</strong><br>
+                                                <small>{{ limpeza.usuario_fim_enfermagem.get_full_name|default:limpeza.usuario_fim_enfermagem }}</small>
+                                            </span>
+                                        {% elif limpeza.inicio_enfermagem %}
+                                            <span class="text-muted flex-grow-1">— Aguardando finalização —</span>
+                                            <button type="button" onclick="registrar('enfermagem', 'fim')" 
+                                                    class="btn btn-success">
+                                                <i class="bi bi-stop-circle"></i> Registrar Fim
+                                            </button>
+                                        {% else %}
+                                            <span class="text-muted">— Registre o início primeiro —</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==================== EQUIPE HIGIENIZAÇÃO ==================== -->
+                    <div class="col-lg-6">
+                        <div class="card border-success h-100">
+                            <div class="card-header bg-success text-white">
+                                <i class="bi bi-shield-check"></i> Equipe Higienização
+                            </div>
+                            <div class="card-body">
+
+                                <!-- Início Higienização -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-success">Início da Limpeza</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        {% if limpeza.inicio_higienizacao %}
+                                            <span class="text-success">
+                                                <strong>{{ limpeza.inicio_higienizacao|date:"H:i" }}</strong><br>
+                                                <small>{{ limpeza.usuario_inicio_higienizacao.get_full_name|default:limpeza.usuario_inicio_higienizacao }}</small>
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted flex-grow-1">— Ainda não registrado —</span>
+                                            <button type="button" onclick="registrar('higienizacao', 'inicio')" 
+                                                    class="btn btn-primary">
+                                                <i class="bi bi-play-circle"></i> Registrar Início
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Fim Higienização -->
+                                <div>
+                                    <label class="form-label fw-bold text-success">Fim da Limpeza</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        {% if limpeza.fim_higienizacao %}
+                                            <span class="text-success">
+                                                <strong>{{ limpeza.fim_higienizacao|date:"H:i" }}</strong><br>
+                                                <small>{{ limpeza.usuario_fim_higienizacao.get_full_name|default:limpeza.usuario_fim_higienizacao }}</small>
+                                            </span>
+                                        {% elif limpeza.inicio_higienizacao %}
+                                            <span class="text-muted flex-grow-1">— Aguardando finalização —</span>
+                                            <button type="button" onclick="registrar('higienizacao', 'fim')" 
+                                                    class="btn btn-success">
+                                                <i class="bi bi-stop-circle"></i> Registrar Fim
+                                            </button>
+                                        {% else %}
+                                            <span class="text-muted">— Registre o início primeiro —</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </form>
+        </div>
+
+        <div class="card-footer text-end">
+            <a href="{% url 'centrocirurgico:limpeza-detail' limpeza.pk %}" class="btn btn-secondary">Voltar aos Detalhes</a>
+            <a href="{% url 'centrocirurgico:limpeza-list' %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function registrar(equipe, tipo) {
+    const equipeNome = equipe === 'enfermagem' ? 'Equipe Enfermagem' : 'Equipe Higienização';
+    const acaoNome = tipo === 'inicio' ? 'INÍCIO' : 'FIM';
+
+    if (confirm(`Confirma o registro de ${acaoNome} para ${equipeNome}?`)) {
+        document.getElementById('acao_input').value = equipe;
+        document.getElementById('tipo_input').value = tipo;
+        document.getElementById('limpezaForm').submit();
+    }
+}
+</script>
+
+{% endblock %}

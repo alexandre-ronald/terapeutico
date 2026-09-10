@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if modo == 'novo' %}
+Nova Bolsa
+{% else %}
+Editar Bolsa
+{% endif %}
+{% endblock %}
+
+{% block breadcrumb %}
+Hemoterapia / Bolsas / {% if modo == 'novo' %}Nova{% else %}Editar{% endif %}
+{% endblock %}
+
+{% block page_title %}
+{% if modo == 'novo' %}
+Cadastro de Bolsa de Sangue
+{% else %}
+Edição de Bolsa
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-2" style="width: 95%;">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">
+                <i class="bi bi-droplet-fill text-danger"></i> Cadastro de Bolsas
+            </h4>
+            <small class="text-muted">Controle do banco de sangue</small>
+        </div>
+
+        <a href="{% url 'uhh:lista_bolsas' %}" class="btn btn-primary">
+            <i class="bi bi-arrow-left-short"></i> Voltar
+        </a>
+    </div>
+
+<div class="card border-0 shadow-sm">
+<div class="card-body">
+
+<form method="POST">
+{% csrf_token %}
+
+<div class="row g-3">
+
+    <!-- Número da Bolsa -->
+    <div class="col-md-4">
+        <label class="form-label">Número da Bolsa</label>
+        <input type="text" name="numero_bolsa" class="form-control"
+               value="{{ bolsa.numero_bolsa|default:'' }}" required>
+    </div>
+
+    <!-- Número do Macarrão -->
+    <div class="col-md-4">
+        <label class="form-label">Número do Macarrão</label>
+        <input type="text" name="numero_macarrao" class="form-control"
+               value="{{ bolsa.numero_macarrao|default:'' }}" required>
+    </div>
+
+    <!-- Hemocomponente (COMBO) -->
+    <div class="col-md-4">
+        <label class="form-label">Hemocomponente</label>
+        <select name="hemocomponente" class="form-select" required>
+
+            <option value="">Selecione</option>
+
+            <option value="CH" {% if bolsa.hemocomponente == 'CH' %}selected{% endif %}>
+                Concentrado de Hemácias
+            </option>
+
+            <option value="CHFILTRADO" {% if bolsa.hemocomponente == 'CHFILTRADO' %}selected{% endif %}>
+                Concentrado de Hemácias Filtrado
+            </option>
+
+            <option value="FRACAOCH" {% if bolsa.hemocomponente == 'FRACAOCH' %}selected{% endif %}>
+                Fração de Concentrado de Hemácias
+            </option>
+
+            <option value="PLASMA" {% if bolsa.hemocomponente == 'PLASMA' %}selected{% endif %}>
+                Plasma Fresco Congelado
+            </option>
+
+            <option value="PLAQUETAS" {% if bolsa.hemocomponente == 'PLAQUETAS' %}selected{% endif %}>
+                Concentrado de Plaquetas
+            </option>
+
+            <option value="CRIO" {% if bolsa.hemocomponente == 'CRIO' %}selected{% endif %}>
+                Crioprecipitado
+            </option>
+
+        </select>
+    </div>
+
+    <!-- Grupo Sanguíneo (COMBO) -->
+    <div class="col-md-2">
+        <label class="form-label">Grupo Sanguíneo</label>
+        <select name="grupo_sanguineo" class="form-select" required>
+
+            <option value="">Selecione</option>
+
+            <option value="A" {% if bolsa.grupo_sanguineo == 'A' %}selected{% endif %}>A</option>
+            <option value="B" {% if bolsa.grupo_sanguineo == 'B' %}selected{% endif %}>B</option>
+            <option value="AB" {% if bolsa.grupo_sanguineo == 'AB' %}selected{% endif %}>AB</option>
+            <option value="O" {% if bolsa.grupo_sanguineo == 'O' %}selected{% endif %}>O</option>
+
+        </select>
+    </div>
+
+    <!-- Fator RH -->
+    <div class="col-md-2">
+        <label class="form-label">Fator RH</label>
+        <select name="fator_rh" class="form-select" required>
+            <option value="+"
+                {% if bolsa.fator_rh == '+' %}selected{% endif %}>+</option>
+
+            <option value="-"
+                {% if bolsa.fator_rh == '-' %}selected{% endif %}>-</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Volume (ml)</label>
+        <input type="number" name="volume_ml" class="form-control"
+            value="{{ bolsa.volume_ml|default:'' }}"
+            placeholder="Ex: 300" required>
+    </div>
+    <!-- Data Coleta -->
+    <div class="col-md-2">
+        <label class="form-label">Data Coleta</label>
+        <input type="date" name="data_coleta" class="form-control"
+               value="{{ bolsa.data_coleta|date:'Y-m-d' }}">
+    </div>
+
+    <!-- Data Validade -->
+    <div class="col-md-2">
+        <label class="form-label">Data Validade</label>
+        <input type="date" name="data_validade" class="form-control"
+               value="{{ bolsa.data_validade|date:'Y-m-d' }}">
+    </div>
+
+    <!-- Status -->
+    <div class="col-md-2">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+
+            <option value="estoque" {% if bolsa.status == 'estoque' %}selected{% endif %}>Estoque</option>
+            <option value="reservada" {% if bolsa.status == 'reservada' %}selected{% endif %}>Reservada</option>
+            <option value="liberada" {% if bolsa.status == 'liberada' %}selected{% endif %}>Liberada</option>
+            <option value="transfundida" {% if bolsa.status == 'transfundida' %}selected{% endif %}>Transfundida</option>
+            <option value="descartada" {% if bolsa.status == 'descartada' %}selected{% endif %}>Descartada</option>
+
+        </select>
+    </div>
+
+    <!-- Observações -->
+    <div class="col-md-12">
+        <label class="form-label">Observações</label>
+        <textarea name="observacoes" class="form-control" rows="3">
+            {{ bolsa.observacoes|default:'' }}
+        </textarea>
+    </div>
+
+</div>
+
+<hr>
+
+<div class="d-flex justify-content-end gap-2">
+    <a href="{% url 'uhh:lista_bolsas' %}" class="btn btn-outline-secondary">
+        Cancelar
+    </a>
+
+    <button type="submit" class="btn btn-primary">
+        <i class="bi bi-check-circle"></i> Salvar
+    </button>
+</div>
+
+</form>
+
+</div>
+</div>
+
+</div>
+
+{% endblock %}

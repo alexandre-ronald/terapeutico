@@ -569,8 +569,8 @@
     align-items: center;
     padding: .625rem 1.5rem;
     color: var(--vz-vertical-menu-item-color);
-    font-size: .9375rem;
-    font-family: hkgrotesk, sans-serif
+    font-size: .8375rem;
+    font-family: Poppins, sans-serif
 }
 
 .navbar-menu .navbar-nav .nav-link.active {
@@ -658,7 +658,7 @@
     color: var(--vz-vertical-menu-sub-item-color);
     white-space: none;
     position: relative;
-    font-size: .813rem;
+    font-size: .713rem;
     font-family: Poppins, sans-serif
 }
 
@@ -4456,7 +4456,7 @@ code {
 :root {
     --vz-card-logo-dark: block;
     --vz-card-logo-light: none;
-    --vz-vertical-menu-width: 250px;
+    --vz-vertical-menu-width: 260px;
     --vz-vertical-menu-width-md: 180px;
     --vz-vertical-menu-width-sm: 70px;
     --vz-header-bg: #fff;

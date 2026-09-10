@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Hemoterapia › Devoluções de Bolsas{% endblock %}
+{% block breadcrumb %}Hemoterapia › Devoluções{% endblock %}
+{% block page_title %}Controle de Devolução de Bolsas{% endblock %}
+
+{% block content %}
+
+<style>
+    td,
+    th {
+        vertical-align: middle;
+    }
+
+    .status-aprovada {
+        background-color: #198754;
+    }
+
+    .status-descartada {
+        background-color: #dc3545;
+    }
+</style>
+
+<div class="container-fluid py-2" style="width:95%;">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h4>
+                <i class="bi-arrow-return-left"></i>
+                Devoluções de Bolsas
+            </h4>
+
+            <p class="text-muted">
+                Registro de bolsas devolvidas pelos setores assistenciais para a Unidade de Hemoterapia.
+            </p>
+
+        </div>
+
+        <div>
+
+            <a href="{% url 'uhh:nova_devolucao' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i>
+                Nova Devolução
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>Bolsa</th>
+
+                            <th>Paciente</th>
+
+                            <th>Setor Origem</th>
+
+                            <th>Data Devolução</th>
+
+                            <th>Status</th>
+
+                            <th width="120">Ações</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for d in devolucoes %}
+
+                        <tr>
+
+                            <td>
+                                <strong>{{ d.bolsa.numero_bolsa }}</strong>
+                            </td>
+
+                            <td>
+                                {{ d.liberacao.prova_cruzada.paciente.nome }}
+                            </td>
+
+                            <td>
+                                {{ d.setor_origem }}
+                            </td>
+
+                            <td>
+                                {{ d.data_devolucao|date:"d/m/Y H:i" }}
+                            </td>
+
+                            <td>
+
+                                {% if d.status == "aprovada" %}
+
+                                <span class="badge status-aprovada">
+                                    {{ d.get_status_display }}
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge status-descartada">
+                                    {{ d.get_status_display }}
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                <a href="#" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+
+                                <a href="#" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+
+                                <i class="bi bi-inbox fs-4 d-block mb-2"></i>
+
+                                Nenhuma devolução registrada.
+
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

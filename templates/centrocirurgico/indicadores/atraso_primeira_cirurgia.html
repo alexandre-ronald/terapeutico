@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block title %}
+Atraso da Primeira Cirurgia
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0" style="max-width: 95%;">
+    
+    <!-- CABEÇALHO DO MÓDULO -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h4 class="fw-bold text-dark mb-1">
+                <i class="bi bi-clock-history text-warning me-2"></i>Indicador de Atraso da Primeira Cirurgia
+            </h4>
+            <p class="text-muted mb-0 small">
+                Monitoramento dos últimos 30 dias para controle preventivo de impacto e efeito cascata no centro cirúrgico.
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <span class="badge bg-white text-dark shadow-sm border px-3 py-2 fw-normal">
+                <i class="bi bi-calendar-event text-primary me-1"></i> Período: Últimos 30 dias
+            </span>
+        </div>
+    </div>
+
+    <!-- CARDS DE RESUMO MODERNO -->
+    <div class="row g-3 mb-4">
+        <!-- Card Total -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+                <div class="card-body p-4 position-relative">
+                    <div class="position-absolute end-0 top-0 mt-3 me-3 opacity-10 text-primary">
+                        <i class="bi bi-collection fs-1"></i>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary fw-semibold px-2 py-1 mb-2 rounded-pill">Total Geral</span>
+                    <h2 class="fw-bold display-5 text-dark mb-1">{{ total_primeiras }}</h2>
+                    <p class="text-muted small mb-0">Primeiras cirurgias avaliadas</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Até 30 min -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4  overflow-hidden bg-white border-start border-success border-4">
+                <div class="card-body p-4 position-relative">
+                    <div class="position-absolute end-0 top-0 mt-3 me-3 text-success opacity-25">
+                        <i class="bi bi-check-circle-fill fs-1"></i>
+                    </div>
+                    <span class="badge bg-success-subtle text-success fw-semibold px-2 py-1 mb-2 rounded-pill">Pontual / Tolerável</span>
+                    <h2 class="fw-bold display-5 text-success mb-1">{{ p_ate_30|stringformat:"s" }}%</h2>
+                    <p class="text-muted small mb-0">Até 30 min de atraso <span class="fw-bold text-success">({{ ate_30 }})</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Até 60 min -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4  overflow-hidden bg-white border-start border-warning border-4">
+                <div class="card-body p-4 position-relative">
+                    <div class="position-absolute end-0 top-0 mt-3 me-3 text-warning opacity-25">
+                        <i class="bi bi-exclamation-triangle-fill fs-1"></i>
+                    </div>
+                    <span class="badge bg-warning-subtle text-warning-emphasis fw-semibold px-2 py-1 mb-2 rounded-pill">Atenção</span>
+                    <h2 class="fw-bold display-5 text-warning-emphasis mb-1">{{ p_ate_60|stringformat:"s" }}%</h2>
+                    <p class="text-muted small mb-0">De 31 a 60 min <span class="fw-bold text-warning-emphasis">({{ ate_60 }})</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Acima de 60 min -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4  overflow-hidden bg-white border-start border-danger border-4">
+                <div class="card-body p-4 position-relative">
+                    <div class="position-absolute end-0 top-0 mt-3 me-3 text-danger opacity-25">
+                        <i class="bi bi-shield-exclamation fs-1"></i>
+                    </div>
+                    <span class="badge bg-danger-subtle text-danger fw-semibold px-2 py-1 mb-2 rounded-pill">Crítico</span>
+                    <h2 class="fw-bold display-5 text-danger mb-1">{{ p_acima_60|stringformat:"s" }}%</h2>
+                    <p class="text-muted small mb-0">Acima de 60 min <span class="fw-bold text-danger">({{ acima_60 }})</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABELA DE SALAS COM A COLUNA DE GRÁFICO INTEGRADA (ORDENADA POR NOME) -->
+    <div class="row g-4">
+        <div class="col-12 col-md-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+                <div class="card-header bg-white py-3 border-0">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <h6 class="fw-bold mb-0 text-dark">
+                            <i class="bi bi-table text-primary me-2"></i>Detalhamento e Distribuição por Sala (Ordenado Alfabeticamente)
+                        </h6>
+                        <div class="d-flex gap-3 small text-muted">
+                            <span class="d-flex align-items-center"><span class="badge bg-success rounded-circle me-1" style="width:8px; height:8px; padding:0;"></span> Até 30m</span>
+                            <span class="d-flex align-items-center"><span class="badge bg-warning rounded-circle me-1" style="width:8px; height:8px; padding:0;"></span> Até 60m</span>
+                            <span class="d-flex align-items-center"><span class="badge bg-danger rounded-circle me-1" style="width:8px; height:8px; padding:0;"></span> > 60m</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light text-uppercase fs-7 text-secondary">
+                            <tr>
+                                <th class="ps-4">Sala</th>
+                                <th class="text-center">Qtd. Dias</th>
+                                <th class="text-center">Até 30m</th>
+                                <th class="text-center">Até 60m</th>
+                                <th class="text-center">> 60m</th>
+                                <th style="width: 50%;" class="text-center">Distribuição (Gráfico)</th>
+                                <th width="80" class="text-center pe-4">Detalhe</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in salas|dictsort:"sala" %}
+                            <tr class="linha-sala">
+                                <td class="ps-4">
+                                    <strong class="text-dark">{{ s.sala }}</strong>
+                                </td>
+                                <td class="text-center fw-semibold">
+                                    {{ s.total }}
+                                </td>
+                                <td class="text-center text-success fw-semibold">
+                                    {{ s.ate_30 }}
+                                </td>
+                                <td class="text-center text-warning-emphasis fw-semibold">
+                                    {{ s.ate_60 }}
+                                </td>
+                                <td class="text-center text-danger fw-semibold">
+                                    {{ s.acima_60 }}
+                                </td>
+                                <!-- Coluna de Gráfico de Barras Multicor Integrado -->
+                                <td class="text-center align-middle">
+                                    {% with total=s.total|default:1 %}
+                                    <div class="progress rounded-pill shadow-inner mx-auto" style="height: 16px; background-color: #f1f5f9; " title="Até 30m: {{ s.ate_30 }} | Até 60m: {{ s.ate_60 }} | > 60m: {{ s.acima_60 }}">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: {% widthratio s.ate_30 s.total 100 %}%;"></div>
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {% widthratio s.ate_60 s.total 100 %}%;"></div>
+                                        <div class="progress-bar bg-danger" role="progressbar" style="width: {% widthratio s.acima_60 s.total 100 %}%;"></div>
+                                    </div>
+                                    {% endwith %}
+                                </td>
+                                <td class="text-center pe-4">
+                                    <button
+                                        class="btn btn-light btn-sm border rounded-2 px-2 btn-detalhe-sala shadow-sm"
+                                        title="Ver Detalhes"
+                                        data-sala="{{ s.sala }}">
+                                        <i class="bi bi-search text-primary"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <!-- Linha de detalhe oculta para cada sala -->
+                            <tr class="detalhe-sala d-none bg-light">
+                                <td colspan="7" class="p-2">
+                                    <div class="bg-white p-4 rounded-4 shadow-sm border">
+                                        <h5 class="fw-bold mb-3 text-dark">Histórico de Atrasos da <span class="text-primary">{{ s.sala }}</span></h5>
+                                        
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="table-light fs-7 text-secondary">
+                                                    <tr>
+                                                        <th>Data</th>
+                                                        <th>Paciente / Procedimento</th>
+                                                        <th>Médico Responsável</th>
+                                                        <th class="text-center">Planejado vs Real</th>
+                                                        <th class="text-center">Atraso / Faixa</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="tbody-cirurgias-sala">
+                                                    <tr>
+                                                        <td colspan="5" class="text-center text-muted py-4">
+                                                            <div class="spinner-border spinner-border-sm text-primary"></div> Carregando...
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-5">
+                                    Nenhum registro de primeira cirurgia encontrado nos últimos 30 dias.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                    <h6 class="fw-bold text-dark m-0">
+                        <i class="bi bi-bar-chart-fill text-primary me-2"></i>Distribuição de Atrasos por Dia da Semana (Segunda a Sexta)
+                    </h6>
+                    <div class="d-flex gap-3 small text-muted">
+                        <span class="d-flex align-items-center"><span class="badge bg-success rounded-circle me-1" style="width:8px; height:8px; padding:0;"></span> Até 30m</span>
+                        <span class="d-flex align-items-center"><span class="badge bg-warning rounded-circle me-1" style="width:8px; height:8px; padding:0;"></span> Até 60m</span>
+                        <span class="d-flex align-items-center"><span class="badge bg-danger rounded-circle me-1" style="width:8px; height:8px; padding:0;"></span> > 60m</span>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column gap-3">
+                    {% for d in atraso_por_dia %}
+                    <div>
+                        <div class="d-flex justify-content-between small fw-semibold text-secondary mb-1">
+                            <span>{{ d.dia }}</span>
+                            <span class="text-muted">Total: {{ d.total }} cirurgia(s)</span>
+                        </div>
+                        <div class="progress rounded-pill shadow-inner" style="height: 16px; background-color: #f1f5f9;" title="Até 30m: {{ d.ate_30 }} | Até 60m: {{ d.ate_60 }} | > 60m: {{ d.acima_60 }}">
+                            {% if d.total > 0 %}
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {% widthratio d.ate_30 d.total 100 %}%;" title="Até 30m: {{ d.ate_30 }}"></div>
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: {% widthratio d.ate_60 d.total 100 %}%;" title="Até 60m: {{ d.ate_60 }}"></div>
+                                <div class="progress-bar bg-danger" role="progressbar" style="width: {% widthratio d.acima_60 d.total 100 %}%;" title="> 60m: {{ d.acima_60 }}"></div>
+                            {% else %}
+                                <div class="progress-bar bg-transparent text-muted small" style="width: 100%;"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="{% url 'centrocirurgico:exportar_relatorio_atraso_primeira_cirurgia_pdf' %}" class="btn btn-danger btn-sm rounded-3 px-3 shadow-sm mb-3" target="_blank">
+        <i class="bi bi-file-earmark-pdf me-1"></i> Baixar Relatório PDF
+    </a>
+</div>
+
+<script>
+document.querySelectorAll(".btn-detalhe-sala").forEach(function(botao) {
+    botao.addEventListener("click", async function() {
+        const sala = this.dataset.sala;
+        const linhaAtual = this.closest("tr");
+        const linhaDetalhe = linhaAtual.nextElementSibling;
+        
+        const estaVisivel = !linhaDetalhe.classList.contains("d-none");
+        
+        // Fecha todas as outras linhas abertas
+        document.querySelectorAll(".detalhe-sala").forEach(tr => tr.classList.add("d-none"));
+
+        if (estaVisivel) {
+            linhaDetalhe.classList.add("d-none");
+            return;
+        }
+
+        linhaDetalhe.classList.remove("d-none");
+        const elTbody = linhaDetalhe.querySelector(".tbody-cirurgias-sala");
+
+        elTbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary"></div> Carregando...
+                </td>
+            </tr>
+        `;
+
+        try {
+            const response = await fetch(`/centrocirurgico/api/atraso-sala/${encodeURIComponent(sala)}/`);
+            if (!response.ok) throw new Error("Erro ao buscar dados.");
+
+            const dados = await response.json();
+            let htmlCirurgias = "";
+
+            if (dados.cirurgias.length === 0) {
+                htmlCirurgias = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            Nenhuma primeira cirurgia encontrada para esta sala.
+                        </td>
+                    </tr>
+                `;
+            } else {
+                dados.cirurgias.forEach(function(c) {
+                    htmlCirurgias += `
+                        <tr>
+                            <td><strong>${c.data}</strong></td>
+                            <td>
+                                <strong class="text-dark">${c.paciente}</strong><br>
+                                <small class="text-muted">${c.procedimento}</small>
+                            </td>
+                            <td><span class="fw-semibold text-dark">${c.medico}</span></td>
+                            <td class="text-center">
+                                <span class="text-success">${c.planejado}</span> → <span class="text-danger">${c.real}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-${c.faixa_badge} px-2 py-1">
+                                    ${c.atraso_minutos} min (${c.faixa_txt})
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            elTbody.innerHTML = htmlCirurgias;
+
+        } catch (e) {
+            console.error(e);
+            elTbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-danger text-center py-4">
+                        Erro ao carregar o detalhamento da sala.
+                    </td>
+                </tr>
+            `;
+        }
+    });
+});
+</script>
+
+{% endblock %}

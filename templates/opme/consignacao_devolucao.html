@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Devolução de Consignação #{{ consignacao.id }}{% endblock %}
+
+{% block content %}
+
+<style>
+  .foto-preview { max-height: 120px; object-fit: cover; border-radius: 4px; }
+  .foto-preview-container { position: relative; display: inline-block; margin: 5px; }
+  .foto-preview-container .remove-foto { 
+    position: absolute; 
+    top: 5px; 
+    right: 5px; 
+    background: rgba(220,53,69,0.8); 
+    color: white; 
+    border: none; 
+    border-radius: 50%; 
+    width: 24px; 
+    height: 24px; 
+    line-height: 24px; 
+    text-align: center; 
+    font-size: 14px; 
+    cursor: pointer; 
+  }
+  .form-control-sm { font-size: 0.9rem; }
+</style>
+
+<div class="container-fluid py-2" style="width: 95%;">
+
+  <!-- TÍTULO -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4><i class="bi bi-arrow-return-left"></i> Devolução da Consignação #{{ consignacao.id }}</h4>
+      <p class="text-muted">
+        Caixa / Kit: {{ consignacao.caixa.identificador }} - {{ consignacao.caixa.empresa.nome }}
+      </p>
+    </div>
+    <div>
+      <a href="{% url 'opme:consignacao_detail' consignacao.pk %}" class="btn btn-outline-secondary">
+        ← Voltar
+      </a>
+    </div>
+  </div>
+
+   <!-- ALERTA DE INSTRUÇÃO -->
+  <div class="alert alert-info border-info mb-4" role="alert">
+    <strong>Instruções:</strong> Informe a quantidade efetivamente devolvida de cada item. A diferença será considerada consumida/perdida. Adicione observações se houver danos, perdas ou discrepâncias. Não esqueça de anexar a foto da caixa devolvida.
+  </div>
+
+  <!-- FORMULÁRIO DE DEVOLUÇÃO -->
+  <form method="post" enctype="multipart/form-data" id="devolucao-form">
+    {% csrf_token %}
+    <!-- Itens para devolução -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-light">
+        <h6 class="mb-0"><i class="bi bi-arrow-return-left"></i> Devolução de Itens</h6>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table mb-0 table-hover" id="tabela-devolucao">
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th class="text-center">Esperado</th>
+                <th class="text-center">Recebido</th>
+                <th class="text-center">Reposição</th>
+                <th class="text-center">Devolvido</th>
+                <th>Observação de Devolução</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in itens %}
+                <tr>
+                  <td><strong>{{ item.caixa_item.produto }}</strong></td>
+                  <td class="text-center fw-bold">{{ item.caixa_item.quantidade_esperada }}</td>
+                  <td class="text-center">{{ item.quantidade_recebida|default:"—" }}</td>
+                  <td class="text-center">{{ item.quantidade_reposta|default:"—" }}</td>
+                  <td class="text-center">
+                    <input type="number" 
+                           name="item_{{ item.caixa_item.id }}_quantidade_devolvida" 
+                           min="0" 
+                           max="{{ item.quantidade_recebida|default:'0'}} +  {{item.quantidade_reposta|default:'0' }}"
+                           step="1"
+                           class="form-control form-control-sm mx-auto text-center" 
+                           style="width: 100px;"
+                           value="{{ item.quantidade_devolvida|default:'' }}">
+                  </td>
+                  <td>
+                    <textarea name="item_{{ item.caixa_item.id }}_observacao_devolucao" 
+                              rows="1" 
+                              class="form-control form-control-sm">{{ item.observacao_devolucao|default:'' }}</textarea>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">
+                    Nenhum item nesta consignação
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fotos de Devolução -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h6 class="mb-0"><i class="bi bi-camera"></i> Fotos da Devolução</h6>
+        
+        {% if qtd_fotos_devolucao > 0 %}
+          <small class="text-muted">({{ qtd_fotos_devolucao }} foto(s) já cadastrada(s))</small>
+        {% endif %}
+      </div>
+      
+      <div class="card-body">
+        <div class="mb-4">
+          <button type="button" id="btn-adicionar-foto" class="btn btn-primary mb-3">
+            <i class="bi bi-plus-circle"></i> Adicionar imagem
+          </button>
+          <div class="form-text text-muted mb-3">
+            Clique no botão acima para adicionar quantas imagens forem necessárias (uma por vez).
+          </div>
+
+          <!-- Container dinâmico para novas fotos -->
+          <div id="fotos-container" class="mt-3"></div>
+        </div>
+        
+        <!-- Dentro do bloco de Fotos de Devolução -->
+        <div class="mb-4">
+          <button type="button" id="btn-adicionar-foto" class="btn btn-primary mb-3">
+            <i class="bi bi-plus-circle"></i> Adicionar imagem
+          </button>
+          <div class="form-text text-muted mb-3">
+            Clique no botão acima para adicionar quantas imagens forem necessárias (uma por vez).
+          </div>
+
+          <!-- Container dinâmico para novas fotos -->
+          <div id="fotos-container" class="mt-3"></div>
+        </div>
+
+        <!-- Fotos já existentes de devolução -->
+        {% if fotos_devolucao_existentes.exists %}
+          <hr class="my-4">
+          <h6 class="mb-3">Fotos já cadastradas</h6>
+          <div class="row g-3">
+            {% for foto in fotos_devolucao_existentes %}
+              <div class="col-md-3 col-sm-4">
+                <div class="foto-preview-container">
+                  <img src="{{ foto.imagem.url }}" class="foto-preview" alt="Foto devolução">
+                  <small class="d-block text-muted mt-1 text-center">{{ foto.descricao|default:"Sem descrição" }}</small>
+                  <button type="button" class="remove-foto" title="Remover foto existente" onclick="alert('Remoção de foto existente ainda não implementada no backend.')">×</button>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+     <!-- Observação geral de devolução -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <label for="observacao_devolucao" class="form-label fw-medium">Observações Gerais da Devolução</label>
+        <textarea name="observacao_devolucao" id="observacao_devolucao" rows="4" class="form-control"
+                  placeholder="Ex: Todos os itens devolvidos em perfeito estado, embalagens intactas...">{{ consignacao.observacao_devolucao|default:'' }}</textarea>
+      </div>
+    </div>
+
+    <!-- BOTÕES DE AÇÃO -->
+    <div class="d-flex justify-content-end gap-3 mt-4">
+      <a href="{% url 'opme:consignacao_detail' consignacao.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-success">
+        <i class="bi bi-check-circle"></i> Registrar Devolução
+      </button>
+    </div>
+  </form>
+
+</div>
+
+<!-- JavaScript: Adicionar campos de foto dinamicamente (mesmo padrão da chegada) -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const btnAdicionar = document.getElementById('btn-adicionar-foto');
+  const container = document.getElementById('fotos-container');
+
+  let contadorCampos = 0;
+
+  if (btnAdicionar) {
+    btnAdicionar.addEventListener('click', function() {
+      contadorCampos++;
+
+      const divCampo = document.createElement('div');
+      divCampo.className = 'mb-4 border rounded p-3 bg-light position-relative';
+      divCampo.id = `foto-campo-${contadorCampos}`;
+
+      divCampo.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <label class="form-label mb-0">Imagem ${contadorCampos}</label>
+          <button type="button" class="btn btn-sm btn-danger remove-campo" data-campo-id="${contadorCampos}">
+            Remover esta imagem
+          </button>
+        </div>
+        
+        <input type="file" name="fotos_devolucao" accept="image/*" class="form-control mb-3 foto-input">
+        
+        <div class="preview-area mt-2" style="min-height: 120px;"></div>
+      `;
+
+      container.appendChild(divCampo);
+
+      const input = divCampo.querySelector('.foto-input');
+      const previewArea = divCampo.querySelector('.preview-area');
+
+      input.addEventListener('change', function() {
+        previewArea.innerHTML = '';
+
+        if (this.files && this.files[0]) {
+          const file = this.files[0];
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            previewArea.innerHTML = `
+              <div class="foto-preview-container">
+                <img src="${e.target.result}" class="foto-preview" alt="Pré-visualização">
+              </div>
+              <small class="d-block text-muted mt-1">${file.name}</small>
+            `;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      divCampo.querySelector('.remove-campo').addEventListener('click', function() {
+        divCampo.remove();
+      });
+    });
+  }
+});
+</script>
+
+{% endblock %}

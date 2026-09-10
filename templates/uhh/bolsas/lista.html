@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Bolsas de Sangue{% endblock %}
+{% block breadcrumb %}Hemoterapia / Bolsas{% endblock %}
+{% block page_title %}Estoque de Bolsas{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-2" style="width: 95%;">
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0">
+            <i class="bi bi-droplet-fill text-danger"></i> Estoque de Bolsas
+        </h4>
+        <small class="text-muted">Controle do banco de sangue</small>
+    </div>
+
+    <a href="{% url 'uhh:nova_bolsa' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nova Bolsa
+    </a>
+</div>
+
+<div class="row mb-3">
+
+    <!-- TOTAL -->
+    <div class="col-md-2">
+        <div class="card card-animate border-secondary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="fw-medium text-muted mb-0">Total de Bolsas</p>
+                        <h2 class="mt-2 fw-semibold text-secondary">{{ totais.total }}</h2>
+                        <small class="text-muted">Bolsas cadastradas</small>
+                    </div>
+                    <div>
+                        <div class="avatar-sm">
+                            <span class="avatar-title bg-secondary-subtle text-secondary rounded-circle fs-2">
+                                <i class="bi bi-stack"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ESTOQUE -->
+    <div class="col-md-2">
+        <div class="card card-animate border-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="fw-medium text-muted mb-0">Em Estoque</p>
+                        <h2 class="mt-2 fw-semibold text-primary">{{ totais.estoque }}</h2>
+                        <small class="text-muted">Disponíveis</small>
+                    </div>
+                    <div>
+                        <div class="avatar-sm">
+                            <span class="avatar-title bg-primary-subtle text-primary rounded-circle fs-2">
+                                <i class="bi bi-box-seam"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESERVADAS -->
+    <div class="col-md-2">
+        <div class="card card-animate border-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="fw-medium text-muted mb-0">Reservadas</p>
+                        <h2 class="mt-2 fw-semibold text-warning">{{ totais.reservada }}</h2>
+                        <small class="text-muted">Separadas</small>
+                    </div>
+                    <div>
+                        <div class="avatar-sm">
+                            <span class="avatar-title bg-warning-subtle text-warning rounded-circle fs-2">
+                                <i class="bi bi-clock-history"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIBERADAS -->
+    <div class="col-md-2">
+        <div class="card card-animate border-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="fw-medium text-muted mb-0">Liberadas</p>
+                        <h2 class="mt-2 fw-semibold text-info">{{ totais.liberada }}</h2>
+                        <small class="text-muted">Prontas uso</small>
+                    </div>
+                    <div>
+                        <div class="avatar-sm">
+                            <span class="avatar-title bg-info-subtle text-info rounded-circle fs-2">
+                                <i class="bi bi-box-arrow-up"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRANSFUNDIDAS -->
+    <div class="col-md-2">
+        <div class="card card-animate border-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="fw-medium text-muted mb-0">Transfundidas</p>
+                        <h2 class="mt-2 fw-semibold text-success">{{ totais.transfundida }}</h2>
+                        <small class="text-muted">Utilizadas</small>
+                    </div>
+                    <div>
+                        <div class="avatar-sm">
+                            <span class="avatar-title bg-success-subtle text-success rounded-circle fs-2">
+                                <i class="bi bi-check-circle"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DESCARTADAS -->
+    <div class="col-md-2">
+        <div class="card card-animate border-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="fw-medium text-muted mb-0">Descartadas</p>
+                        <h2 class="mt-2 fw-semibold text-danger">{{ totais.descartada }}</h2>
+                        <small class="text-muted">Perdas</small>
+                    </div>
+                    <div>
+                        <div class="avatar-sm">
+                            <span class="avatar-title bg-danger-subtle text-danger rounded-circle fs-2">
+                                <i class="bi bi-x-circle"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="card shadow-sm border-0">
+<div class="card-body">
+
+<!-- FILTROS -->
+<form method="GET" class="row g-2 mb-3">
+
+    <div class="col-md-4">
+        <input type="text" name="busca" class="form-control"
+               placeholder="Número da bolsa ou macarrão..."
+               value="{{ busca }}">
+    </div>
+
+    <div class="col-md-3">
+        <select name="status" class="form-select">
+            <option value="">Todos Status</option>
+            <option value="estoque" {% if status_filtro == 'estoque' %}selected{% endif %}>Estoque</option>
+            <option value="reservada">Reservada</option>
+            <option value="liberada">Liberada</option>
+            <option value="transfundida">Transfundida</option>
+            <option value="descartada">Descartada</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button class="btn btn-outline-secondary w-100">Filtrar</button>
+    </div>
+
+</form>
+
+<div class="table-responsive">
+<table class="table table-hover align-middle">
+
+<thead class="table-light">
+<tr>
+    <th>Bolsa</th>
+    <th>Macarrão</th>
+    <th>Tipo</th>
+    <th>Grupo</th>
+    <th>Validade</th>
+    <th>Status</th>
+    <th class="text-center">Ações</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for b in bolsas %}
+<tr>
+
+<td><strong>{{ b.numero_bolsa }}</strong></td>
+<td>{{ b.numero_macarrao }}</td>
+<td>{{ b.hemocomponente }}</td>
+
+<td>
+    <span class="badge bg-danger">
+        {{ b.grupo_sanguineo }}{{ b.fator_rh }}
+    </span>
+</td>
+
+<td>
+    {% if b.esta_vencida %}
+        <span class="text-danger fw-bold">
+            {{ b.data_validade|date:"d/m/Y" }}
+        </span>
+    {% else %}
+        {{ b.data_validade|date:"d/m/Y" }}
+    {% endif %}
+</td>
+
+<td>
+    {% if b.status == 'estoque' %}
+        <span class="badge bg-primary">Estoque</span>
+    {% elif b.status == 'reservada' %}
+        <span class="badge bg-warning text-dark">Reservada</span>
+    {% elif b.status == 'liberada' %}
+        <span class="badge bg-info">Liberada</span>
+    {% elif b.status == 'transfundida' %}
+        <span class="badge bg-success">Transfundida</span>
+    {% elif b.status == 'descartada' %}
+        <span class="badge bg-danger">Descartada</span>
+    {% endif %}
+</td>
+
+<td class="text-center">
+    <a href="{% url 'uhh:editar_bolsa' b.id %}" 
+       class="btn btn-outline-warning btn-sm">
+        <i class="bi bi-pencil"></i>
+    </a>
+</td>
+
+</tr>
+{% empty %}
+<tr>
+    <td colspan="7" class="text-center text-muted">
+        Nenhuma bolsa cadastrada
+    </td>
+</tr>
+{% endfor %}
+
+</tbody>
+
+</table>
+</div>
+
+</div>
+</div>
+
+</div>
+
+{% endblock %}

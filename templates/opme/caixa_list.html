@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Gestão de Caixas{% endblock %}
+{% block breadcrumb %}Módulo OPME › Caixas / Kits{% endblock %}
+{% block page_title %}Caixas / Kits{% endblock %}
+
+{% block content %}
+
+<style>
+  .result-icon {
+    float: right;
+    font-size: 2.0rem;
+    opacity: 0.8;
+  }
+  td, th {
+    vertical-align: middle;
+  }
+  .card-link {
+    text-decoration: none;
+    color: inherit;
+  }
+  .card-link:hover {
+    transform: translateY(-2px);
+  }
+  .border-danger, .border-info, .border-success, .border-primary, .border-warning {
+    border-bottom-width: 2px !important;
+  }
+</style>
+
+<div class="container-fluid py-2" style="width: 95%;">
+
+  <!-- TÍTULO + BOTÕES -->
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h4><i class="bi bi-box"></i> Gestão de Caixas / Kits</h4>
+        <p class="text-muted">
+          Cadastro e parametrização das caixas cirúrgicas com composição padrão de itens OPME.
+        </p>
+      </div>
+      <div>
+        <a href="{% url 'opme:caixa_create' %}" class="btn btn-success">
+          <i class="bi bi-plus-circle"></i> Nova Caixa
+        </a>
+        <a href="#" class="btn btn-outline-secondary ms-2">
+          ← Voltar ao Menu
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARDS DE INDICADORES -->
+  <div class="row">
+    <div class="col-md-4">
+      <a href="#" class="card-link">
+        <div class="card card-animate border-primary">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <p class="fw-medium text-muted mb-0">Total de Caixas</p>
+                <h4 class="mt-2 ff-secondary cfs-22 fw-semibold text-primary">{{ caixas.count|default:0 }}</h4>
+                <small class="text-muted">Caixas cadastradas no sistema</small>
+              </div>
+              <div>
+                <div class="avatar-sm flex-shrink-0">
+                  <span class="avatar-title bg-primary-subtle text-primary rounded-circle fs-2">
+                    <i class="bi bi-box-seam"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-4">
+      <a href="#" class="card-link">
+        <div class="card card-animate border-success">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <p class="fw-medium text-muted mb-0">Caixas Ativas</p>
+                <h4 class="mt-2 ff-secondary cfs-22 fw-semibold text-success">
+                  {{ caixas_ativas|default:caixas.count }}
+                </h4>
+                <small class="text-muted">Caixas em uso ou disponíveis</small>
+              </div>
+              <div>
+                <div class="avatar-sm flex-shrink-0">
+                  <span class="avatar-title bg-success-subtle text-success rounded-circle fs-2">
+                    <i class="bi bi-check-circle"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-4">
+      <a href="#" class="card-link">
+        <div class="card card-animate border-warning">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <p class="fw-medium text-muted mb-0">Com Itens</p>
+                <h4 class="mt-2 ff-secondary cfs-22 fw-semibold text-warning">
+                  {{ caixas_com_itens|default:0 }}
+                </h4>
+                <small class="text-muted">Caixas com itens padrão cadastrados</small>
+              </div>
+              <div>
+                <div class="avatar-sm flex-shrink-0">
+                  <span class="avatar-title bg-warning-subtle text-warning rounded-circle fs-2">
+                    <i class="bi bi-list-check"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- FILTROS -->
+  <form method="get" >
+    <div class="d-flex gap-2 align-items-center mb-3">
+
+      <div class="col-md-3">
+        <!-- Filtro por empresa (opcional - se quiser implementar) -->
+        <select name="empresa" class="form-select form-select-sm" >
+          <option value="">Todas as Empresas</option>
+          {% for empresa in empresas %}
+            <option value="{{ empresa.id }}" {% if request.GET.empresa == empresa.id|stringformat:'s' %}selected{% endif %}>
+              {{ empresa.nome }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <!-- Pesquisa -->
+        <input type="text"
+                name="q"
+                value="{{ request.GET.q }}"
+                class="form-control form-control-sm"
+                placeholder="Pesquisar por identificador ou descrição"
+                style="min-width: 200px;">
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-search"></i>
+        </button>
+
+       
+      </div>
+    </div>
+  </form>
+
+  <!-- TABELA -->
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-custom mb-0">
+        <thead>
+          <tr>
+            <th>Identificador</th>
+            <th>Empresa</th>
+            <th>Descrição</th>
+            <th>Itens Padrão</th>
+            <th class="text-end">Gestão</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for caixa in caixas %}
+          <tr>
+            <td>
+              <strong>{{ caixa.identificador }}</strong>
+            </td>
+            <td>{{ caixa.empresa.nome|default:"—" }}</td>
+            <td>{{ caixa.descricao|default:"Sem descrição" }}</td>
+            <td>
+              {% for item in caixa.itens_padrao.all|slice:":3" %}
+                <small>{{ item.produto.descricao }} × {{ item.quantidade_esperada }}</small><br>
+              {% endfor %}
+              {% if caixa.itens_padrao.count > 3 %}
+                <small class="text-muted">+ {{ caixa.itens_padrao.count|add:"-3" }} itens</small>
+              {% endif %}
+              {% if not caixa.itens_padrao.exists %}
+                <small class="text-muted">Nenhum item</small>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{% url 'opme:caixa_update' caixa.pk %}"
+                 class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <a href="{% url 'opme:caixa_delete' caixa.pk %}"
+                 class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-4">
+              Nenhuma caixa cadastrada
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

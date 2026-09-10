@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Hemoterapia › Nova Solicitação{% endblock %}
+{% block breadcrumb %}Hemoterapia › Solicitações{% endblock %}
+{% block page_title %}
+    {% if modo == "editar" %}
+        Editar Solicitação de Hemocomponentes
+    {% else %}
+        Nova Solicitação de Hemocomponentes
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<div class="container-fluid">
+
+<form method="POST">
+    {% csrf_token %}
+
+    <div class="card shadow-sm mb-3">
+
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-droplet-half"></i>
+                Dados da Solicitação
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-4">
+                    <label class="form-label">Solicitante</label>
+                    <input type="text" name="solicitante" class="form-control"
+                           value="{{ solicitacao.solicitante|default:'' }}" required>
+                </div>
+
+                <div class="col-md-8">
+                    <label class="form-label">Observações</label>
+                    <input type="text" name="observacoes" class="form-control"
+                           value="{{ solicitacao.observacoes|default:'' }}">
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ITENS -->
+    <div class="card shadow-sm">
+
+        <div class="card-header d-flex justify-content-between">
+
+            <h5 class="mb-0">
+                <i class="bi bi-list-ul"></i>
+                Itens da Solicitação
+            </h5>
+
+            <button type="button" class="btn btn-primary btn-sm" onclick="addItem()">
+                <i class="bi bi-plus-circle"></i>
+                Adicionar Item
+            </button>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered align-middle" id="tabela-itens">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50%;">Hemocomponente</th>
+                            <th style="width: 10%;">Grupo</th>
+                            <th style="width: 10%;">RH</th>
+                            <th style="width: 10%;">ML</th>
+                            <th style="width: 10%;">Quantidade</th>
+                            <th style="width: 4%;"></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% if itens %}
+                            {% for item in itens %}
+                            <tr>
+
+                                <td>
+                                    <input type="hidden" name="item_id[]" value="{{ item.id }}">
+                                    <select name="hemocomponente[]" class="form-select">
+                                        <option value="">Selecione</option>
+                                        <option value="CH" {% if item.hemocomponente == 'CH' %}selected{% endif %}>Concentrado de Hemácias</option>
+                                        <option value="CHFILTRADO" {% if item.hemocomponente == 'CHFILTRADO' %}selected{% endif %}>Concentrado de Hemácias Filtrado</option>
+                                        <option value="FRACAOCH" {% if item.hemocomponente == 'FRACAOCH' %}selected{% endif %}>Fração de Concentrado de Hemácias</option>
+                                        <option value="PLASMA" {% if item.hemocomponente == 'PLASMA' %}selected{% endif %}>Plasma Fresco Congelado</option>
+                                        <option value="PLAQUETAS" {% if item.hemocomponente == 'PLAQUETAS' %}selected{% endif %}>Concentrado de Plaquetas</option>
+                                        <option value="CRIO" {% if item.hemocomponente == 'CRIO' %}selected{% endif %}>Crioprecipitado</option>
+                                    </select>
+                                </td>
+
+                                <td>
+                                    <select name="grupo[]" class="form-select">
+                                        <option value="">--</option>
+                                        <option value="A" {% if item.grupo_sanguineo == 'A' %}selected{% endif %}>A</option>
+                                        <option value="B" {% if item.grupo_sanguineo == 'B' %}selected{% endif %}>B</option>
+                                        <option value="AB" {% if item.grupo_sanguineo == 'AB' %}selected{% endif %}>AB</option>
+                                        <option value="O" {% if item.grupo_sanguineo == 'O' %}selected{% endif %}>O</option>
+                                    </select>
+                                </td>
+
+                                <td>
+                                    <select name="rh[]" class="form-select">
+                                        <option value="">--</option>
+                                        <option value="+" {% if item.fator_rh == '+' %}selected{% endif %}>+</option>
+                                        <option value="-" {% if item.fator_rh == '-' %}selected{% endif %}>-</option>
+                                    </select>
+                                </td>
+
+                                <td>
+                                    <input type="number" name="ml[]" class="form-control" value="{{ item.ml }}">
+                                </td>
+
+                                <td>
+                                    <input type="number" name="quantidade[]" class="form-control" value="{{ item.quantidade }}">
+                                </td>
+
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                        <!-- NOVO -->
+                        <tr>
+                            <td>
+                                <input type="hidden" name="item_id[]" value="">
+                                <select name="hemocomponente[]" class="form-select">
+                                    <option value="">Selecione</option>
+                                    <option value="CH">Concentrado de Hemácias</option>
+                                    <option value="CHFILTRADO">Concentrado de Hemácias Filtrado</option>
+                                    <option value="FRACAOCH">Fração de Concentrado de Hemácias</option>
+                                    <option value="PLASMA">Plasma Fresco Congelado</option>
+                                    <option value="PLAQUETAS">Concentrado de Plaquetas</option>
+                                    <option value="CRIO">Crioprecipitado</option>
+                                </select>
+                            </td>
+
+                            <td>
+                                <select name="grupo[]" class="form-select">
+                                    <option value="">--</option>
+                                    <option>A</option>
+                                    <option>B</option>
+                                    <option>AB</option>
+                                    <option>O</option>
+                                </select>
+                            </td>
+
+                            <td>
+                                <select name="rh[]" class="form-select">
+                                    <option value="">--</option>
+                                    <option>+</option>
+                                    <option>-</option>
+                                </select>
+                            </td>
+
+                            <td>
+                                <input type="number" name="ml[]" class="form-control">
+                            </td>
+
+                            <td>
+                                <input type="number" name="quantidade[]" class="form-control">
+                            </td>
+
+                            <td class="text-center">
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endif %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="mt-3 d-flex justify-content-between">
+
+        <a href="{% url 'uhh:lista_solicitacoes' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Voltar
+        </a>
+
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-save"></i>
+            Salvar Solicitação
+        </button>
+
+    </div>
+
+</form>
+
+</div>
+
+<script>
+
+function addItem() {
+
+    let tabela = document.getElementById("tabela-itens").getElementsByTagName('tbody')[0];
+
+    let novaLinha = tabela.rows[0].cloneNode(true);
+
+    // limpa valores
+    novaLinha.querySelectorAll("input, select").forEach(el => el.value = "");
+
+    // garante que será novo item
+    novaLinha.querySelector("input[name='item_id[]']").value = "";
+
+    tabela.appendChild(novaLinha);
+}
+
+function removeItem(btn) {
+
+    let row = btn.closest("tr");
+    let tabela = document.getElementById("tabela-itens");
+
+    if (tabela.rows.length > 2) {
+        row.remove();
+    }
+
+}
+
+</script>
+
+{% endblock %}

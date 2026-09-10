@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+    
+    <h2><i class="bi bi-clipboard-check"></i> Nova Limpeza Terminal</h2>
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="post" id="limpezaForm">
+                {% csrf_token %}
+                <input type="hidden" name="acao" id="acao_input">
+                <input type="hidden" name="tipo" id="tipo_input">
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Data da Limpeza</label>
+                        <h5 class="text-muted mb-0">{{ hoje|date:"d/m/Y" }} <small>(hoje)</small></h5>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Centro Cirúrgico <span class="text-danger">*</span></label>
+                        <select name="centro_cirurgico" id="centro" class="form-select" required>
+                            <option value="">Selecione o centro...</option>
+                            {% for cod, nome in centros %}
+                                <option value="{{ cod }}">{{ nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Sala <span class="text-danger">*</span></label>
+                        <select name="sala" id="sala" class="form-select" required>
+                            <option value="">Selecione a sala...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr>
+
+                <h5 class="mb-4 text-center">Registro de Início e Fim da Limpeza</h5>
+
+                <div class="row g-4">
+
+                    <!-- ==================== EQUIPE ENFERMAGEM ==================== -->
+                    <div class="col-lg-6">
+                        <div class="card border-primary h-100">
+                            <div class="card-header">
+                                <i class="bi bi-person-badge-fill"></i> Equipe Enfermagem
+                            </div>
+                            <div class="card-body">
+
+                                <!-- Início Enfermagem -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-primary">Início da Limpeza</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <span id="enf_inicio_info" class="text-muted flex-grow-1">— Ainda não registrado —</span>
+                                        <button type="button" onclick="registrar('enfermagem', 'inicio')" 
+                                                class="btn btn-primary">
+                                            <i class="bi bi-play-circle"></i> Registrar Início
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Fim Enfermagem (só aparece após início) -->
+                                <div id="enf_fim_container" style="display: none;">
+                                    <label class="form-label fw-bold text-primary">Fim da Limpeza</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <span id="enf_fim_info" class="text-muted flex-grow-1">— Aguardando registro —</span>
+                                        <button type="button" onclick="registrar('enfermagem', 'fim')" 
+                                                class="btn btn-success">
+                                            <i class="bi bi-stop-circle"></i> Registrar Fim
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==================== EQUIPE HIGIENIZAÇÃO ==================== -->
+                    <div class="col-lg-6">
+                        <div class="card border-success h-100">
+                            <div class="card-header">
+                                <i class="bi bi-shield-check"></i> Equipe Higienização
+                            </div>
+                            <div class="card-body">
+
+                                <!-- Início Higienização -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-success">Início da Limpeza</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <span id="hig_inicio_info" class="text-muted flex-grow-1">— Ainda não registrado —</span>
+                                        <button type="button" onclick="registrar('higienizacao', 'inicio')" 
+                                                class="btn btn-primary">
+                                            <i class="bi bi-play-circle"></i> Registrar Início
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Fim Higienização (só aparece após início) -->
+                                <div id="hig_fim_container" style="display: none;">
+                                    <label class="form-label fw-bold text-success">Fim da Limpeza</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <span id="hig_fim_info" class="text-muted flex-grow-1">— Aguardando registro —</span>
+                                        <button type="button" onclick="registrar('higienizacao', 'fim')" 
+                                                class="btn btn-success">
+                                            <i class="bi bi-stop-circle"></i> Registrar Fim
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </form>
+        </div>
+
+        <div class="card-footer text-end">
+            <a href="{% url 'centrocirurgico:limpeza-list' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Salas dinâmicas
+const salas = {
+    'CCA': ['SALA 01','SALA 02','SALA 03','SALA 04','SALA 05','SALA 06','SALA 07','SALA 08','SALA 09','RPA'],
+    'CCI': ['SALA 01','SALA 02','SALA 03','RPA'],
+    'CCOF': ['SALA 01','SALA 02','SALA 03','RPA']
+};
+
+document.getElementById('centro').addEventListener('change', function() {
+    const centro = this.value;
+    const salaSelect = document.getElementById('sala');
+    salaSelect.innerHTML = '<option value="">Selecione a sala...</option>';
+    
+    if (centro && salas[centro]) {
+        salas[centro].forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s;
+            opt.textContent = s;
+            salaSelect.appendChild(opt);
+        });
+    }
+});
+
+function registrar(equipe, tipo) {
+    const centro = document.getElementById('centro').value;
+    const sala = document.getElementById('sala').value;
+
+    if (!centro || !sala) {
+        alert("⚠️ Por favor, selecione o Centro Cirúrgico e a Sala.");
+        return;
+    }
+
+    const equipeNome = equipe === 'enfermagem' ? 'Equipe Enfermagem' : 'Equipe Higienização';
+    const acaoNome = tipo === 'inicio' ? 'INÍCIO' : 'FIM';
+
+    if (confirm(`Confirma o registro de ${acaoNome} para ${equipeNome}?`)) {
+        document.getElementById('acao_input').value = equipe;
+        document.getElementById('tipo_input').value = tipo;
+        document.getElementById('limpezaForm').submit();
+    }
+}
+</script>
+
+{% endblock %}

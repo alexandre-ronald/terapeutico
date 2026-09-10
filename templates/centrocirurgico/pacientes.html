@@ -1,0 +1,170 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR" data-layout="vertical">
+
+<head>
+    <meta charset="utf-8">
+    <title>Mapa Cirúrgico</title>
+
+    <link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'assets/css/icons.min.css' %}" rel="stylesheet">
+    <link href="{% static 'assets/css/app.min.css' %}" rel="stylesheet">
+
+    <style>
+        .card-paciente {
+            border-radius: 6px;
+            padding: 12px 12px;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            height: 100%;
+        }
+        .lbl { 
+            font-size: .75rem; 
+            color: #666; 
+            margin-bottom: 0;
+        }
+        .val { 
+            font-size: .85rem; 
+            font-weight: 600; 
+            color: #333; 
+            margin-bottom: 1px;
+        }
+        .campo {
+            margin-bottom: 0px;
+        }
+        .btn-registrar {
+            padding: 6px 10px;
+            font-size: .8rem;
+            width: 100%;
+        }
+        .badge-info {
+            background: #e8f4ff;
+            color: #084298;
+            font-weight: 500;
+        }
+        .grupo {
+            border-top: 1px dashed #ddd;
+            margin-top: 8px;
+            padding-top: 3px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="container py-3">
+
+    <!-- CABEÇALHO -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h1 class="fw-bold text-dark">Registro de Giro de Sala</h1>
+
+        
+    </div>
+   
+    <div class="alert bg-info border-secondary text-white material-shadow h4 text-center" role="alert">
+        Pacientes no Mapa Cirúrgico — <strong>{{ data }}</strong>
+    </div>
+
+    <div class="row g-2">
+        {% for mp in mapa %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card card-body card-paciente">
+
+                <!-- Linha 1 - Paciente -->
+                <div class="campo">
+                    <p class="lbl">Paciente</p>
+                    <p class="val">{{ mp.nome_paciente }}</p>
+                </div>
+
+                <!-- Linha 2 - Prontuário / Especialidade -->
+                <div class="d-flex justify-content-between">
+                    <div class="campo">
+                        <p class="lbl">Prontuário</p>
+                        <span class="badge badge-info">{{ mp.prontuario }}</span>
+                    </div>
+                    <div class="campo text-end">
+                        <p class="lbl">Especialidade</p>
+                        <span class="badge bg-info">{{ mp.especialidade }}</span>
+                    </div>
+                    <div class="campo">
+                        <p class="lbl">Situação</p>
+                        {% if mp.situacao == 'CANCELADA' %}
+                            <span class="badge bg-danger">{{ mp.situacao }}</span>
+                        {%else%}
+                            <span class="badge badge-info">{{ mp.situacao }}</span>
+                        {%endif%}
+                    </div>
+                </div>
+
+                <!-- Linha 3 - Procedimento -->
+                <div class="grupo">
+                    <p class="lbl">Procedimento</p>
+                    <p class="val">{{ mp.procedimento }}</p>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                     <!-- Linha 4 - Médico -->
+                    <div class="campo">
+                        <p class="lbl">Médico</p>
+                        <p class="val">{{ mp.medico }}</p>
+                    </div>
+
+                    <!-- Linha 5 - Hora -->
+                    <div class="campo">
+                        <p class="lbl">Hora</p>
+                        <p class="val">{{ mp.data_inicio_cirurgia|date:'H:i' }}</p>
+                    </div>
+                </div>
+
+                <form method="post" action="{% url 'centrocirurgico:giro_sala_novo' %}">
+                    {% csrf_token %}
+
+                    <!-- Linha 5 - Sala -->
+                    <div class="campo grupo">
+                        <p class="lbl">Sala</p>
+                        <select class="form-select form-select-sm" name="sala">
+                            {% for i in "123456789" %}
+                            <option value="SALA 0{{ i }}" 
+                                {% if mp.sala == "SALA 0"|add:i %}selected{% endif %}>
+                                SALA 0{{ i }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                
+                    <input type="hidden" name="prontuario" value="{{mp.prontuario}}">
+                    <input type="hidden" name="nome" value="{{mp.nome_paciente}}">
+                    <input type="hidden" name="data_nascimento" value="{{mp.data_nascimento|date:'d/m/Y'}}">
+                    <input type="hidden" name="especialidade" value="{{mp.especialidade}}">
+                    <input type="hidden" name="procedimento" value="{{mp.procedimento}}">
+                    <input type="hidden" name="data_cirurgia" value="{{ mp.data_inicio_cirurgia|date:'d/m/Y' }}">
+                    <input type="hidden" name="hora_cirurgia" value="{{ mp.data_inicio_cirurgia|date:'H:i' }}">
+                    <input type="hidden" name="medico" value="{{mp.medico}}">
+
+                    {% if mp.existe == 'S' %}
+                        {% if mp.salaLiberada == 'S' %}
+                            <button type="submit" class="btn btn-light btn-sm btn-registrar mt-2">  Cirurgia Encerrada - Sala Liberada </button>
+                        {%else %}
+                            <button type="submit" class="btn btn-warning btn-sm btn-registrar mt-2"> <i class="ri-timer-line"></i>  Continuar Registrar Giro</button>
+                        {%endif%}
+                    {%else %}
+                        <button type="submit" class="btn btn-info btn-sm btn-registrar mt-2"> <i class="ri-timer-line"></i>  Registrar Giro</button>
+                    {%endif%}
+                     
+                </form>
+
+               
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'assets/js/app.js' %}"></script>
+
+</body>
+</html>

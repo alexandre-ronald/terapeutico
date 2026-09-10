@@ -1,0 +1,48 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Dashboard - Limpezas Terminais</h2>
+
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5>Total de Registros</h5>
+                    <h2>{{ total_limpezas }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5>Concluídas</h5>
+                    <h2>{{ concluidas }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5>Hoje</h5>
+                    <h2>{{ hoje_limpezas }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5>Taxa de Conclusão</h5>
+                    <h2>{{ taxa_conclusao }}%</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{% url 'centrocirurgico:limpeza-list' %}" class="btn btn-primary">Ver Todas as Limpezas</a>
+        <a href="{% url 'centrocirurgico:limpeza-create' %}" class="btn btn-success">Nova Limpeza</a>
+    </div>
+</div>
+{% endblock %}

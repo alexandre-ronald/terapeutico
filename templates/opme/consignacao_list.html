@@ -1,0 +1,178 @@
+
+{% extends "base.html" %}
+
+{% block title %}Gestão de Consignação{% endblock %}
+{% block breadcrumb %}Módulo OPME › Consignações{% endblock %}
+{% block page_title %}Consignação de Caixas{% endblock %}
+
+{% block content %}
+
+<style>
+  .result-icon {
+    float: right;
+    font-size: 2.0rem;
+    opacity: 0.8;
+  }
+  td, th {
+    vertical-align: middle;
+  }
+  .card-link {
+    text-decoration: none;
+    color: inherit;
+  }
+  .card-link:hover {
+    transform: translateY(-2px);
+  }
+  .border-danger, .border-info, .border-success, .border-primary, .border-warning {
+    border-bottom-width: 2px !important;
+  }
+</style>
+
+<div class="container-fluid py-2" style="width: 95%;">
+
+  
+
+  <!-- TÍTULO + BOTÕES -->
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h4><i class="bi bi-arrow-left-right"></i> Gestão de Consignações</h4>
+        <p class="text-muted">Controle de saída e devolução de caixas / kits cirúrgicos OPME.</p>
+      </div>
+      <div>
+        <a href="{% url 'opme:consignacao_create' %}" class="btn btn-success">
+          <i class="bi bi-plus-circle"></i> Nova Consignação
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARDS DE INDICADORES -->
+  <div class="row">
+    <div class="col-md-4">
+      <a href="#" class="card-link">
+        <div class="card card-animate border-primary">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <p class="fw-medium text-muted mb-0">Consignação em Andamento</p>
+                <h4 class="mt-2 ff-secondary cfs-22 fw-semibold text-primary">{{ consignacoes_emprestados|default:0  }}</h4>
+                <small class="text-muted">Consignação em Andamento</small>
+              </div>
+              <div>
+                <div class="avatar-sm flex-shrink-0">
+                  <span class="avatar-title bg-primary-subtle text-primary rounded-circle fs-2">
+                    <i class="bi bi-box-seam"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="#" class="card-link">
+        <div class="card card-animate border-success">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <p class="fw-medium text-muted mb-0">Consignação Finalizadas</p>
+                <h4 class="mt-2 ff-secondary cfs-22 fw-semibold text-success">{{ consignacoes_devolvidos|default:0 }}</h4>
+                <small class="text-muted">Consignação Finalizadas</small>
+              </div>
+              <div>
+                <div class="avatar-sm flex-shrink-0">
+                  <span class="avatar-title bg-success-subtle text-success rounded-circle fs-2">
+                    <i class="bi bi-box2-fill"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- FILTROS -->
+  <form method="get" class="d-flex gap-2 mb-3">
+    <select name="status" class="form-select form-select-sm" style="width: auto;">
+      <option value="">Todos os Status</option>
+      <option value="EMPRESTADO" {% if request.GET.status == 'EMPRESTADO' %}selected{% endif %}>Emprestado</option>
+      <option value="DEVOLVIDO" {% if request.GET.status == 'DEVOLVIDO' %}selected{% endif %}>Devolvido</option>
+      <option value="DEVOLVIDO_PARCIAL" {% if request.GET.status == 'DEVOLVIDO_PARCIAL' %}selected{% endif %}>Devolvido Parcial</option>
+    </select>
+    <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="bi bi-search"></i></button>
+  </form>
+
+  <!-- TABELA -->
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Caixa</th>
+            <th>Data Consignação</th>
+            <th>Status</th>
+            
+            <th class="text-end">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for emp in page_obj %}
+          <tr>
+            <td>{{ emp.id }}</td>
+            <td>{{ emp.caixa }}</td>
+            <td>{{ emp.data_consignacao|date:"d/m/Y H:i" }}</td>
+            <td>
+              <span class="badge {% if emp.status == 'EMPRESTADO' %}bg-warning{% elif emp.status == 'DEVOLVIDO' %}bg-success{% else %}bg-info{% endif %}">
+                {{ emp.get_status_display }}
+              </span>
+            </td>
+           
+            <td class="text-end">
+              <a href="{% url 'opme:consignacao_detail' emp.pk %}" class="btn btn-sm btn-outline-primary">Detalhes</a>
+              <a href="{% url 'opme:consignacao_relatorio' emp.pk %}" target="_blank" class="btn btn-sm btn-outline-primary">Relatório</a>
+
+         
+
+              {% if emp.status == 'CONSIGNADO' %}
+                <a href="{% url 'opme:consignacao_edit' emp.pk %}" class="btn btn-sm btn-outline-warning">Editar</a>
+                <a href="{% url 'opme:consignacao_conferencia' emp.pk %}" class="btn btn-sm btn-outline-info"><i class="bi bi-check2-square"></i></a>
+                <a href="{% url 'opme:consignacao_devolucao' emp.pk %}" class="btn btn-sm btn-outline-success">Devolução</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-center py-4 text-muted">Nenhum empréstimo encontrado</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginação -->
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer bg-light">
+      <nav>
+        <ul class="pagination justify-content-center mb-0">
+          {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">&laquo;</a></li>
+          {% endif %}
+          {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+              <a class="page-link" href="?page={{ num }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">{{ num }}</a>
+            </li>
+          {% endfor %}
+          {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">&raquo;</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Excluir Caixa</h1>
+<p>Confirma exclusão da caixa <strong>{{ caixa.identificador }}</strong>?</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Excluir</button>
+  <a href="{% url 'opme:caixa_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

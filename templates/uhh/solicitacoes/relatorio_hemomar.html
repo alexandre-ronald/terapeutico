@@ -1,0 +1,438 @@
+{% extends 'base_pdf.html' %}
+{% load hemoterapia_tags %}
+
+{% load static %}
+
+{% block title %}
+Solicitação de Hemocomponentes ao HEMOMAR
+{% endblock %}
+
+{% block extra_css %}
+<style>
+
+    @page {
+        size: A4;
+        margin: 6mm;
+    }
+
+    html, body {
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        padding: 0;
+    }
+
+    .pagina-a4 {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .conteudo-formulario{
+        flex:1;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+    }
+
+    th, td{
+        border:1px solid #000;
+        padding:1px 2px;
+        font-size:9px;
+        line-height:1;
+    }
+
+    .pagina-a4 {
+        width: 200mm;
+        height: 287mm;
+        padding: 6mm;
+        margin: auto;
+        background: white;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 10px;
+    }
+
+
+   
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+
+    th,
+    td {
+        border: 1px solid #000;
+        padding: 3px;
+        max-height: 1px;
+    }
+
+     th, td{
+        border:1px solid #000;
+        padding:1px 3px;
+        font-size:10px;
+        line-height:1.5;
+    }
+
+    th {
+        text-align: center;
+    }
+
+    .titulo {
+        text-align: center;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .subtitulo {
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .cabecalho-topo {
+        font-size: 10px;
+    }
+
+    .controle-temp td {
+        height: 22px;
+    }
+
+    .assinaturas td {
+        height: 35px;
+    }
+
+    @media print {
+
+    body{
+        margin:0;
+    }
+
+    .pagina-a4{
+        page-break-after:always;
+    }
+
+    .pagina-a4:last-child{
+        page-break-after:auto;
+    }
+
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="pagina-a4">
+
+    <!-- CABEÇALHO -->
+    <table class="cabecalho-topo">
+        <tr>
+            <td class="text-center" style="width:120px">
+                <img src="{% static 'assets/images/hu-ufma.png' %}" height="30">
+            </td>
+
+            <td style="text-align:center">
+                <strong>HOSPITAL UNIVERSITÁRIO DA UNIVERSIDADE FEDERAL DO MARANHÃO</strong><br>
+                GERÊNCIA DE ATENÇÃO À SAÚDE
+            </td>
+            <td class="text-center"  style="width:10%">
+                <strong>HUPD ☐</strong>
+            </td>
+            <td class="text-center"  style="width:10%">
+                <strong>HUMI ☐</strong>
+            </td>
+        </tr>
+    </table>
+
+    <table>
+        <tr>
+            <td><strong>Tipo de Documento:</strong> Formulário</td>
+            <td><strong>FOR.GAS.552 - F</strong></td>
+            <td><strong>Emissão:</strong> 12/04/2023</td>
+            <td><strong>Versão:</strong> 01</td>
+            <td><strong>Próxima Revisão:</strong> NA</td>
+        </tr>
+    </table>
+
+    <table>
+        <tr>
+            <td class="titulo">SOLICITAÇÃO DE HEMOCOMPONENTES AO HEMOMAR</td>
+        </tr>
+    </table>
+
+
+    <!-- HEMÁCIAS -->
+    <table>
+        <tr>
+            <th rowspan="2" style="width: 90px;">CONCENTRADO DE HEMÁCIAS</th>
+            <th colspan="2">QUANTIDADE</th>
+
+            <th rowspan="2" >CONCENTRADO DE HEMÁCIAS FILTRADO</th>
+            <th colspan="2">QUANTIDADE</th>
+
+            <th colspan="2">FRAÇÃO CONCENTRADO DE HEMÁCIAS / ML</th>
+            <th colspan="2">QUANTIDADE</th>
+        </tr>
+
+        <tr>
+            <th>SOLICITADA</th>
+            <th>ATENDIDA</th>
+
+            <th>SOLICITADA</th>
+            <th>ATENDIDA</th>
+
+            <th style="width: 110px;">GRUPO SANGUINEO</th>
+            <th style="width: 60px;">ML</th>
+
+            <th>SOLICITADA</th>
+            <th>ATENDIDA</th>
+        </tr>
+        <tr>
+            <td class="text-center">O+</td> <td></td> <td></td> <td class="text-center">O+</td> <td></td>  <td></td><td>FILTRADAS</td> <td></td> <td></td> <td></td>
+        </tr>
+        <tr>
+            <td class="text-center">A+</td> <td></td> <td></td> <td class="text-center">A+</td> <td></td> <td></td> <td>FILTRADAS</td> <td></td> <td></td> <td></td>
+        </tr>
+        <tr>
+            <td class="text-center">B+</td> <td></td> <td></td> <td class="text-center">B+</td> <td></td> <td></td> <td>FILTRADAS</td> <td></td> <td></td> <td></td>
+        </tr>
+        <tr>
+            <td class="text-center">AB+</td> <td></td> <td></td> <td class="text-center">AB+</td> <td></td> <td></td>  <td>FILTRADAS</td> <td></td> <td></td> <td></td>
+        </tr>
+        <tr>
+            <td class="text-center">O-</td> <td></td> <td></td> <td class="text-center">O-</td> <td></td> <td></td>  <td>FILTRADAS</td> <td></td> <td></td> <td></td>
+        </tr>
+        <tr>
+            <td class="text-center">A-</td> <td></td> <td></td> <td class="text-center">A-</td> <td></td> <td></td>  <td>FILTRADAS</td>  <td></td><td></td> <td></td>
+        </tr>
+        <tr>
+            <td class="text-center">B-</td> <td></td> <td></td> <td class="text-center">B-</td> <td></td> <td></td>  <td>FILTRADAS</td> <td></td> <td></td> <td></td> 
+        </tr>
+        <tr>
+            <td class="text-center">AB-</td> <td></td> <td></td> <td class="text-center">AB-</td> <td></td> <td></td> <td>IRRADIADAS</td> <td></td> <td></td><td></td> 
+        </tr>
+
+
+        <tr>
+            <td colspan="3"></td>
+            <td style="width: 100px;"><strong>CH FENOTIPADO:</strong></td>
+            <td></td> <td></td> 
+            <td>IRRADIADAS:</td>
+            <td></td> <td></td> <td></td> 
+        </tr>
+        <tr>
+            <td>.</td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> 
+        </tr>
+        <tr>
+            <td>.</td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> 
+        </tr>
+
+    </table>
+
+
+    <!-- CIRURGIA / TRANSPLANTE -->
+    <table style="margin-top:5px">
+
+        <tr>
+            <th colspan="5">
+                SOLICITAÇÃO DE CONCENTRADOS DE HEMÁCIAS FILTRADAS E/OU IRRADIADAS
+            </th>
+        </tr>
+
+        <tr>
+            <th>TIPAGEM SANGUÍNEA</th>
+            <th>CIRURGIA CARDÍACA (UNID)</th>
+            <th>TRANSPLANTE HEPÁTICO (UNID)</th>
+            <th>TMO (UNID. IRRADIADAS)</th>
+            <th>QUANTIDADE ATENDIDA</th>
+        </tr>
+
+        {% for i in "123"|make_list %}
+            <tr>
+                <td>.</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        {% endfor %}
+
+    </table>
+
+
+    <!-- CONTROLE TEMPERATURA -->
+    <table class="controle-temp " style="margin-top:-1px">
+        <tr>
+            <th colspan="4">CONTROLE DE TEMPERATURA DA CAIXA TÉRMICA / CX Nº</th>
+        </tr>
+
+        <tr>
+            <td style="width: 30%;">TEMP. CX (SAÍDA U.T.)</td>
+            <td></td>
+            <td style="width: 30%;">TEMP. CX (CHEGADA HEMOMAR)</td>
+            <td></td>
+        </tr>
+
+        <tr>
+            <td>TEMP. CX (SAÍDA HEMOMAR)</td>
+            <td></td>
+            <td>TEMP. CX (CHEGADA U.T.)</td>
+            <td></td>
+        </tr>
+    </table>
+
+
+    <!-- PLAQUETAS -->
+    <table style="margin-top:5px">
+
+        <tr>
+            <th colspan="5">SOLICITAÇÃO DE CONCENTRADO DE PLAQUETAS</th>
+        </tr>
+
+        <tr>
+            <th>TIPAGEM SANGUÍNEA</th>
+            <th>OUTRAS CIRURGIAS</th>
+            <th>TRANSPLANTE HEPÁTICO</th>
+            <th>CIRURGIA CARDÍACA</th>
+            <th>QUANTIDADE ATENDIDA</th>
+        </tr>
+
+        {% for i in "123"|make_list %}
+        <tr>
+            <td>.</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        {% endfor %}
+
+    </table>
+
+
+    <!-- CONTROLE TEMPERATURA -->
+    <table class="controle-temp" style="margin-top:-1px">
+
+        <tr>
+            <th colspan="4">CONTROLE DE TEMPERATURA DA CAIXA TÉRMICA / CX Nº</th>
+        </tr>
+
+        <tr>
+            <td style="width: 30%;">TEMP. CX (SAÍDA U.T.)</td>
+            <td></td>
+            <td style="width: 30%;">TEMP. CX (CHEGADA HEMOMAR)</td>
+            <td></td>
+        </tr>
+
+        <tr>
+            <td>TEMP. CX (SAÍDA HEMOMAR)</td>
+            <td></td>
+            <td>TEMP. CX (CHEGADA U.T.)</td>
+            <td></td>
+        </tr>
+
+    </table>
+
+
+    <!-- PLASMA -->
+    <table style="margin-top:6px">
+
+        <tr>
+            <th colspan="5">SOLICITAÇÃO DE PLASMA FRESCO CONGELADO</th>
+        </tr>
+
+        <tr>
+            <th>TIPAGEM SANGUÍNEA</th>
+            <th>OUTRAS CIRURGIAS</th>
+            <th>TRANSPLANTE HEPÁTICO</th>
+            <th>CIRURGIA CARDÍACA</th>
+            <th>QUANTIDADE ATENDIDA</th>
+        </tr>
+
+        {% for i in "123"|make_list %}
+        <tr>
+            <td>.</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        {% endfor %}
+
+    </table>
+
+
+    <!-- CRIO -->
+    <table style="margin-top:6px">
+
+        <tr>
+            <th colspan="5">SOLICITAÇÃO DE CRIO PRECIPITADO</th>
+        </tr>
+
+        <tr>
+            <th>TIPAGEM SANGUÍNEA</th>
+            <th>OUTRAS CIRURGIAS</th>
+            <th>TRANSPLANTE HEPÁTICO</th>
+            <th>CIRURGIA CARDÍACA</th>
+            <th>QUANTIDADE ATENDIDA</th>
+        </tr>
+
+        {% for i in "123"|make_list %}
+        <tr>
+            <td>.</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        {% endfor %}
+
+    </table>
+
+
+    <!-- CONTROLE TEMPERATURA -->
+    <table class="controle-temp" style="margin-top:-1px">
+
+        <tr>
+            <th colspan="4">CONTROLE DE TEMPERATURA DA CAIXA TÉRMICA / CX Nº</th>
+        </tr>
+
+        <tr>
+            <td style="width: 30%;">TEMP. CX (SAÍDA U.T.)</td>
+            <td></td>
+            <td style="width: 30%;">TEMP. CX (CHEGADA HEMOMAR)</td>
+            <td></td>
+        </tr>
+
+        <tr>
+            <td>TEMP. CX (SAÍDA HEMOMAR)</td>
+            <td></td>
+            <td>TEMP. CX (CHEGADA U.T.)</td>
+            <td></td>
+        </tr>
+
+    </table>
+
+
+    <!-- ASSINATURAS -->
+    <table class="assinaturas" style="margin-top:10px">
+
+        <tr>
+            <td style="width: 50%; vertical-align: top;"><sub>Data:</sub></td>
+            <td style="width: 50%; vertical-align: top;"><sub>Responsável Solicitação (Médico/Chefe da Unidade Transfusional)</sub></td>
+        </tr>
+
+        <tr>
+            <td style="width: 50%; vertical-align: top;"><sub>Entregue por:</sub></td>
+            <td style="width: 50%; vertical-align: top;"><sub>Responsável pelo transporte:</sub></td>
+        </tr>
+
+    </table>
+
+</div>
+
+{% endblock %}

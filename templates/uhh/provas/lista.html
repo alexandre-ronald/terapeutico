@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Provas Cruzadas{% endblock %}
+{% block breadcrumb %}Hemoterapia / Provas Cruzadas{% endblock %}
+{% block page_title %}Provas Cruzadas{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-2" style="width: 90%;">
+
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="mb-0">
+                    <i class="bi bi-shuffle me-1"></i> Provas Cruzadas
+                </h4>
+                <small class="text-muted">
+                    Compatibilidade paciente x bolsa.
+                </small>
+            </div>
+
+            <div>
+                <a href="{% url 'uhh:nova_prova' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i> Nova Prova
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <form method="GET" class="mb-3">
+            <div class="row g-2 align-items-center">
+
+                <div class="col-md-4">
+                    <input type="text"
+                           name="busca"
+                           class="form-control"
+                           placeholder="Pesquisar paciente..."
+                           value="{{ busca }}">
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-search me-1"></i> Buscar
+                    </button>
+                </div>
+
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Paciente</th>
+                        <th>Bolsa</th>
+                        <th>Grupo</th>
+                        <th>Resultado</th>
+                        <th style="width:160px;" class="text-center">Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                {% for p in page_obj %}
+                <tr>
+
+                    <td class="text-muted">{{ p.id }}</td>
+
+                    <td class="fw-semibold">
+                        {{ p.paciente.nome }}
+                    </td>
+
+                    <td>
+                        {{ p.bolsa.numero_bolsa }}
+                    </td>
+
+                    <td>
+                        {{ p.bolsa.grupo_sanguineo }}{{ p.bolsa.fator_rh }}
+                    </td>
+
+                    <td>
+                        {% if p.resultado == "compativel" %}
+                            <span class="badge bg-success-subtle text-success border border-success">
+                                Compatível
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger">
+                                Incompatível
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm">
+
+                            <a href="#" class="btn btn-outline-warning">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            <a href="#" class="btn btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+
+                        </div>
+                    </td>
+
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-4 d-block mb-1"></i>
+                        Nenhuma prova cruzada encontrada.
+                    </td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINAÇÃO -->
+        {% if page_obj.has_other_pages %}
+        <div class="card-footer bg-light border-0">
+        <nav aria-label="Paginação de produtos">
+            <ul class="pagination justify-content-center mb-0">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.unidade %}&unidade={{ request.GET.unidade }}{% endif %}" aria-label="Anterior">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                <span class="page-link">&laquo;</span>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.unidade %}&unidade={{ request.GET.unidade }}{% endif %}">
+                    {{ num }}
+                </a>
+                </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.unidade %}&unidade={{ request.GET.unidade }}{% endif %}" aria-label="Próximo">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                <span class="page-link">&raquo;</span>
+                </li>
+            {% endif %}
+            </ul>
+        </nav>
+
+        <div class="text-center mt-2 text-muted small">
+            Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }} produtos
+        </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+</div>
+{% endblock %}

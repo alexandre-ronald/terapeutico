@@ -1,0 +1,2681 @@
+{% load static %}
+
+<!doctype html>
+<html lang="pt-BR"
+      data-layout="vertical"
+      data-topbar="light"
+      data-sidebar="dark"
+      data-sidebar-size="lg">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <title>Giro de Sala | Centro Cirúrgico</title>
+
+    <link rel="shortcut icon"
+          href="{% static 'assets/images/favicon.ico' %}">
+
+    <script src="{% static 'assets/js/layout.js' %}"></script>
+
+    <link href="{% static 'assets/css/bootstrap.min.css' %}"
+          rel="stylesheet">
+
+    <link href="{% static 'assets/css/icons.min.css' %}"
+          rel="stylesheet">
+
+    <link href="{% static 'assets/css/app.min.css' %}"
+          rel="stylesheet">
+
+    <link href="{% static 'assets/css/custom.min.css' %}"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+
+    <style>
+        /* =========================================================
+        BASE
+        ========================================================= */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5f7fa;
+            color: #343a40;
+        }
+
+        .giro-page {
+            width: 100%;
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+
+        /* =========================================================
+        HEADER
+        ========================================================= */
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: #212529;
+            margin: 0;
+        }
+
+        .page-subtitle {
+            color: #74788d;
+            font-size: .85rem;
+            margin-top: .25rem;
+        }
+
+
+        /* =========================================================
+        PACIENTE
+        ========================================================= */
+
+        .patient-card {
+            background: #fff;
+            border: 1px solid #e9edf2;
+            border-radius: 14px;
+            box-shadow: 0 3px 12px rgba(18, 38, 63, .05);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .patient-main {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 1.25rem 1.4rem;
+        }
+
+        .patient-avatar {
+            width: 52px;
+            height: 52px;
+            min-width: 52px;
+            border-radius: 12px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #e9f2ff;
+            color: #0d6efd;
+
+            font-size: 1.5rem;
+        }
+
+        .patient-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #212529;
+        }
+
+        .patient-info {
+            font-size: .82rem;
+            color: #74788d;
+            margin-top: 3px;
+        }
+
+        .patient-info strong {
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .patient-meta {
+            margin-left: auto;
+
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .meta-item {
+            padding: .55rem .8rem;
+
+            border-radius: 9px;
+
+            background: #f8f9fa;
+            border: 1px solid #edf0f2;
+
+            text-align: center;
+
+            min-width: 90px;
+        }
+
+        .meta-label {
+            display: block;
+
+            font-size: .68rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+
+            color: #8a93a2;
+        }
+
+        .meta-value {
+            display: block;
+
+            font-size: .85rem;
+            font-weight: 700;
+
+            color: #343a40;
+
+            margin-top: 2px;
+        }
+
+
+        /* =========================================================
+        STATUS DO GIRO
+        ========================================================= */
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: .8rem 1.25rem;
+
+            background: #fafbfc;
+            border-top: 1px solid #edf0f2;
+        }
+
+        .status-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            font-size: .82rem;
+            font-weight: 600;
+
+            color: #495057;
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+
+            border-radius: 50%;
+
+            background: #0ab39c;
+
+            box-shadow:
+                0 0 0 4px rgba(10,179,156,.12);
+        }
+
+        .status-text {
+            color: #0ab39c;
+            font-size: .8rem;
+        }
+
+
+        /* =========================================================
+        SEÇÃO
+        ========================================================= */
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            margin: 1.7rem 0 1rem;
+        }
+
+        .section-title h5 {
+            margin: 0;
+
+            font-size: 1rem;
+            font-weight: 700;
+
+            color: #343a40;
+        }
+
+        .section-title span {
+            font-size: .75rem;
+            color: #8a93a2;
+        }
+
+
+        /* =========================================================
+        GRID DAS ETAPAS
+        ========================================================= */
+
+        /*
+            Bootstrap:
+            
+            col-lg-4 = 3 cards por linha
+            col-xl-4 = 3 cards por linha
+        */
+
+        .etapa-col {
+            margin-bottom: 1rem;
+        }
+
+
+        /* =========================================================
+        CARD DA ETAPA
+        ========================================================= */
+
+        .etapa-card {
+            position: relative;
+
+            width: 100%;
+            height: 100%;
+            min-height: 245px;
+
+            background: #ffffff;
+
+            border: 1px solid #e6eaf0;
+            border-radius: 14px;
+
+            padding: 1.15rem;
+
+            box-shadow:
+                0 3px 12px rgba(18, 38, 63, .045);
+
+            display: flex;
+            flex-direction: column;
+
+            transition:
+                transform .18s ease,
+                box-shadow .18s ease,
+                border-color .18s ease;
+        }
+
+        .etapa-card:hover {
+            transform: translateY(-2px);
+
+            border-color: #d6dde6;
+
+            box-shadow:
+                0 8px 22px rgba(18, 38, 63, .08);
+        }
+
+
+        /* =========================================================
+        ESTADOS
+        ========================================================= */
+
+        .etapa-card.concluida {
+            border-color: #bfe9df;
+            background:
+                linear-gradient(
+                    180deg,
+                    #ffffff 0%,
+                    #fcfffe 100%
+                );
+        }
+
+        .etapa-card.atual {
+            border-color: #b7d1ff;
+
+            box-shadow:
+                0 0 0 2px rgba(13,110,253,.04),
+                0 7px 20px rgba(13,110,253,.09);
+        }
+
+        .etapa-card.bloqueada {
+            opacity: .65;
+            background: #fafbfc;
+        }
+
+
+        /* =========================================================
+        BARRA SUPERIOR DO CARD
+        ========================================================= */
+
+        .etapa-card.concluida::before,
+        .etapa-card.atual::before {
+            content: "";
+
+            position: absolute;
+
+            top: 0;
+            left: 18px;
+            right: 18px;
+
+            height: 3px;
+
+            border-radius: 0 0 4px 4px;
+        }
+
+        .etapa-card.concluida::before {
+            background: #0ab39c;
+        }
+
+        .etapa-card.atual::before {
+            background: #0d6efd;
+        }
+
+
+        /* =========================================================
+        CABEÇALHO DO CARD
+        ========================================================= */
+
+        .etapa-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+
+            gap: 12px;
+
+            min-height: 62px;
+        }
+
+        .etapa-identificacao {
+            display: flex;
+            align-items: flex-start;
+
+            gap: 11px;
+
+            min-width: 0;
+        }
+
+
+        /* =========================================================
+        ÍCONE
+        ========================================================= */
+
+        .etapa-icone {
+            width: 42px;
+            height: 42px;
+
+            min-width: 42px;
+
+            border-radius: 11px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #f1f4f8;
+            color: #6c757d;
+
+            font-size: 1.15rem;
+        }
+
+        .etapa-card.concluida .etapa-icone {
+            background: #e9f8f5;
+            color: #0ab39c;
+        }
+
+        .etapa-card.atual .etapa-icone {
+            background: #edf4ff;
+            color: #0d6efd;
+        }
+
+        .etapa-card.bloqueada .etapa-icone {
+            background: #f3f4f6;
+            color: #adb5bd;
+        }
+
+
+        /* =========================================================
+        TÍTULO E DESCRIÇÃO
+        ========================================================= */
+
+        .etapa-titulo {
+            font-size: .92rem;
+            font-weight: 700;
+
+            line-height: 1.3;
+
+            color: #343a40;
+        }
+
+        .etapa-descricao {
+            font-size: .73rem;
+
+            color: #8a93a2;
+
+            margin-top: 4px;
+
+            line-height: 1.4;
+        }
+
+
+        /* =========================================================
+        STATUS DO CARD
+        ========================================================= */
+
+        .etapa-status {
+            display: inline-flex;
+            align-items: center;
+
+            font-size: .64rem;
+            font-weight: 700;
+
+            padding: .34rem .58rem;
+
+            border-radius: 20px;
+
+            white-space: nowrap;
+        }
+
+        .status-concluida {
+            color: #087f6b;
+            background: #e9f8f5;
+        }
+
+        .status-atual {
+            color: #0d6efd;
+            background: #edf4ff;
+        }
+
+        .status-pendente {
+            color: #6c757d;
+            background: #f1f3f5;
+        }
+
+
+        /* =========================================================
+        HORÁRIO
+        ========================================================= */
+
+        .etapa-horario {
+            margin-top: 1.1rem;
+
+            padding: .85rem;
+
+            border-radius: 10px;
+
+            background: #f8f9fa;
+
+            border: 1px solid #edf0f2;
+
+            text-align: center;
+        }
+
+        .etapa-card.concluida .etapa-horario {
+            background: #f3fbf9;
+            border-color: #dff4ef;
+        }
+
+        .etapa-card.atual .etapa-horario {
+            background: #f5f8ff;
+            border-color: #e1ebff;
+        }
+
+        .horario-label {
+            display: block;
+
+            font-size: .64rem;
+
+            text-transform: uppercase;
+            letter-spacing: .04em;
+
+            color: #8a93a2;
+        }
+
+        .horario-valor {
+            display: block;
+
+            margin-top: 3px;
+
+            font-size: 1.35rem;
+            line-height: 1.2;
+
+            font-weight: 700;
+
+            color: #343a40;
+        }
+
+        .horario-valor.vazio {
+            color: #adb5bd;
+            font-weight: 500;
+        }
+
+
+        /* =========================================================
+        ÁREA DE AÇÕES
+        ========================================================= */
+
+        .etapa-acoes {
+            margin-top: auto;
+
+            padding-top: 1rem;
+        }
+
+        .etapa-acoes .btn {
+            width: 100%;
+
+            min-height: 36px;
+
+            border-radius: 8px;
+
+            font-size: .73rem;
+            font-weight: 600;
+        }
+
+        .etapa-acoes-dupla {
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 7px;
+        }
+
+        .etapa-acoes-dupla .btn {
+            width: 100%;
+        }
+
+        .btn-manual {
+            border-style: dashed;
+        }
+
+
+        /* =========================================================
+        RODAPÉ DA ETAPA
+        ========================================================= */
+
+        /*
+        IMPORTANTE:
+        O status "Registrado" fica abaixo das ações.
+        */
+
+        .etapa-footer {
+            margin-top: .85rem;
+
+            padding-top: .7rem;
+
+            border-top: 1px solid #edf0f2;
+
+            min-height: 36px;
+
+            display: flex;
+            align-items: center;
+
+            justify-content: flex-end;
+
+            gap: .5rem;
+        }
+
+        .etapa-footer .btn {
+            width: 100%;
+
+            padding: 10px;
+
+            border-radius: 8px;
+
+            font-size: .73rem;
+            font-weight: 600;
+        }
+
+        .etapa-footer .badge-status {
+            margin-left: auto;
+        }
+
+
+        /* =========================================================
+        BADGES
+        ========================================================= */
+
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+
+            font-size: .68rem;
+            font-weight: 600;
+
+            padding: .35rem .58rem;
+
+            border-radius: 20px;
+
+            white-space: nowrap;
+        }
+
+        .badge-ok {
+            color: #087f6b;
+            background: #e9f8f5;
+        }
+
+        .badge-pendente {
+            color: #6c757d;
+            background: #f1f3f5;
+        }
+
+        .badge-manual {
+            color: #6f42c1;
+            background: #f3edff;
+        }
+
+
+        /* =========================================================
+        ESTADO REGISTRADO
+        ========================================================= */
+
+        .etapa-card.concluida .etapa-footer {
+            border-top-color: #e3f3ef;
+        }
+
+        .etapa-card.concluida .badge-ok {
+            font-weight: 700;
+        }
+
+
+        /* =========================================================
+        INDICADORES / KPI
+        ========================================================= */
+
+        .kpi-card {
+            display: flex;
+            flex-direction: column;
+
+            background: #fff;
+
+            border: 1px solid #e9edf2;
+
+            border-radius: 13px;
+
+            padding: 1rem 1.1rem;
+
+            height: 100%;
+
+            box-shadow:
+                0 3px 12px rgba(18,38,63,.04);
+        }
+
+        .kpi-label {
+            font-size: .72rem;
+
+            color: #8a93a2;
+
+            text-transform: uppercase;
+            letter-spacing: .04em;
+
+            font-weight: 600;
+        }
+
+        .kpi-value {
+            font-size: 1.35rem;
+
+            font-weight: 700;
+
+            color: #212529;
+
+            margin-top: .25rem;
+        }
+
+        .kpi-description {
+            font-size: .72rem;
+
+            color: #8a93a2;
+
+            margin-top: .15rem;
+        }
+
+        .kpi-icon {
+            width: 38px;
+            height: 38px;
+
+            border-radius: 10px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 1.15rem;
+        }
+
+        .kpi-card > .etapa-footer {
+            margin-top: auto;
+        }
+
+
+        /* =========================================================
+        OBSERVAÇÃO
+        ========================================================= */
+
+        .observacao-card {
+            background: #fff;
+
+            border: 1px solid #e9edf2;
+
+            border-radius: 13px;
+
+            box-shadow:
+                0 3px 12px rgba(18,38,63,.04);
+        }
+
+        .observacao-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 1rem 1.15rem;
+
+            border-bottom: 1px solid #edf0f2;
+        }
+
+        .observacao-body {
+            padding: 1.1rem;
+        }
+
+        .observacao-body textarea {
+            width: 100%;
+
+            border-radius: 9px;
+
+            border-color: #e1e5ea;
+
+            font-size: .85rem;
+
+            resize: vertical;
+
+            min-height: 100px;
+        }
+
+        .observacao-body textarea:focus {
+            border-color: #86b7fe;
+
+            box-shadow:
+                0 0 0 .15rem rgba(13,110,253,.10);
+        }
+
+
+        /* =========================================================
+        MODAL
+        ========================================================= */
+
+        .modal-content {
+            border: none;
+
+            border-radius: 15px;
+
+            box-shadow:
+                0 15px 50px rgba(0,0,0,.18);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #edf0f2;
+
+            padding: 1.1rem 1.25rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #edf0f2;
+
+            padding: .9rem 1.25rem;
+        }
+
+        .modal-icon {
+            width: 55px;
+            height: 55px;
+
+            margin: 0 auto 1rem;
+
+            border-radius: 14px;
+
+            background: #edf4ff;
+            color: #0d6efd;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 1.5rem;
+        }
+
+        .modal-etapa {
+            font-size: 1.05rem;
+
+            font-weight: 700;
+
+            color: #343a40;
+        }
+
+        .modal-ajuda {
+            font-size: .78rem;
+
+            color: #8a93a2;
+        }
+
+        #data_hora {
+            border-radius: 9px;
+
+            min-height: 48px;
+        }
+
+
+        /* =========================================================
+        BOTÕES
+        ========================================================= */
+
+        .btn-giro {
+            border-radius: 8px;
+
+            font-size: .73rem;
+
+            font-weight: 600;
+        }
+
+        .btn-giro:hover {
+            transform: translateY(-1px);
+        }
+
+
+        /* =========================================================
+        GRID BOOTSTRAP
+        ========================================================= */
+
+        /*
+        Em telas grandes:
+        3 cards por linha.
+
+        Exemplo:
+        
+        ┌──────────┐ ┌──────────┐ ┌──────────┐
+        │  ETAPA 1 │ │  ETAPA 2 │ │  ETAPA 3 │
+        └──────────┘ └──────────┘ └──────────┘
+
+        ┌──────────┐ ┌──────────┐ ┌──────────┐
+        │  ETAPA 4 │ │  ETAPA 5 │ │  ETAPA 6 │
+        └──────────┘ └──────────┘ └──────────┘
+        */
+
+        .etapas-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, minmax(0, 1fr));
+
+            gap: 1rem;
+        }
+
+        .etapas-grid > * {
+            min-width: 0;
+        }
+
+
+        /* =========================================================
+        RESPONSIVO — TABLET
+        ========================================================= */
+
+        @media (max-width: 1199.98px) {
+
+            .giro-page {
+                max-width: 100%;
+            }
+
+            .etapas-grid {
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+            }
+
+        }
+
+
+        /* =========================================================
+        RESPONSIVO — 992px
+        ========================================================= */
+
+        @media (max-width: 992px) {
+
+            .patient-main {
+                align-items: flex-start;
+
+                flex-wrap: wrap;
+            }
+
+            .patient-meta {
+                width: 100%;
+
+                margin-left: 68px;
+
+                justify-content: flex-start;
+            }
+
+        }
+
+
+        /* =========================================================
+        RESPONSIVO — MOBILE
+        ========================================================= */
+
+        @media (max-width: 767.98px) {
+
+            .page-header {
+                align-items: flex-start;
+
+                flex-direction: column;
+            }
+
+            .patient-meta {
+                margin-left: 0;
+            }
+
+            .etapas-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .etapa-card {
+                min-height: auto;
+            }
+
+            .etapa-header {
+                min-height: auto;
+            }
+
+        }
+
+
+        /* =========================================================
+        RESPONSIVO — MOBILE PEQUENO
+        ========================================================= */
+
+        @media (max-width: 576px) {
+
+            .container-fluid {
+                padding-left: .75rem !important;
+                padding-right: .75rem !important;
+            }
+
+            .patient-main {
+                padding: 1rem;
+            }
+
+            .patient-meta {
+                width: 100%;
+            }
+
+            .meta-item {
+                flex: 1;
+                min-width: 80px;
+            }
+
+            .status-bar {
+                align-items: flex-start;
+
+                flex-direction: column;
+
+                gap: 6px;
+            }
+
+            .section-title {
+                align-items: flex-start;
+
+                flex-direction: column;
+
+                gap: 4px;
+            }
+
+            .etapa-acoes-dupla {
+                grid-template-columns: 1fr;
+            }
+
+            .etapa-footer {
+                justify-content: flex-start;
+            }
+
+            .etapa-footer .badge-status {
+                margin-left: 0;
+            }
+
+        }
+
+
+        /* =========================================================
+        ACESSIBILIDADE / FOCO
+        ========================================================= */
+
+        .etapa-card .btn:focus-visible,
+        .observacao-body textarea:focus-visible,
+        .modal-content input:focus-visible {
+            outline: none;
+
+            box-shadow:
+                0 0 0 .2rem rgba(13,110,253,.15);
+        }
+
+
+        /* =========================================================
+        AJUSTES VISUAIS FINAIS
+        ========================================================= */
+
+        .text-truncate-card {
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            white-space: nowrap;
+        }
+
+        .etapa-card .bi {
+            vertical-align: -0.08em;
+        }
+
+
+        /* =========================================================
+        ESTADO DE CONCLUSÃO
+        ========================================================= */
+
+        .etapa-card.concluida .horario-valor {
+            color: #087f6b;
+        }
+
+        .etapa-card.atual .horario-valor {
+            color: #0d6efd;
+        }
+
+
+        /* =========================================================
+        ETAPA BLOQUEADA
+        ========================================================= */
+
+        .etapa-card.bloqueada .etapa-horario {
+            background: #f5f6f7;
+        }
+
+        .etapa-card.bloqueada .etapa-titulo {
+            color: #6c757d;
+        }
+
+        .etapa-card.bloqueada .horario-valor {
+            color: #adb5bd;
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container-fluid py-4">
+
+<div class="giro-page">
+
+
+    {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+
+                <div class="alert
+                            {% if message.tags == 'error' %}
+                                alert-danger
+                            {% elif message.tags == 'success' %}
+                                alert-success
+                            {% elif message.tags == 'warning' %}
+                                alert-warning
+                            {% elif message.tags == 'info' %}
+                                alert-info
+                            {% else %}
+                                alert-secondary
+                            {% endif %}
+                            alert-dismissible fade show shadow-sm"
+                    role="alert">
+
+                    {% if message.tags == 'error' %}
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    {% elif message.tags == 'success' %}
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    {% else %}
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                    {% endif %}
+
+                    {{ message }}
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert"
+                            aria-label="Fechar">
+                    </button>
+
+                </div>
+
+            {% endfor %}
+        </div>
+    {% endif %}
+    <!-- =========================================================
+         CABEÇALHO
+    ========================================================== -->
+
+    <div class="page-header">
+
+        <div>
+
+            <h1 class="page-title">
+                Giro de Sala
+            </h1>
+
+            <div class="page-subtitle">
+                Acompanhamento operacional da cirurgia
+            </div>
+
+        </div>
+
+
+        <a href="{% url 'centrocirurgico:giro' %}"
+           class="btn btn-light border btn-sm">
+
+            <i class="bi bi-arrow-left me-1"></i>
+
+            Voltar para pacientes
+
+        </a>
+
+    </div>
+
+
+    <!-- =========================================================
+         PACIENTE
+    ========================================================== -->
+
+    <div class="patient-card">
+
+        <div class="patient-main">
+
+            <div class="patient-avatar">
+
+                <i class="bi bi-person"></i>
+
+            </div>
+
+
+            <div>
+
+                <div class="patient-name">
+
+                    {{ paciente.nome }}
+
+                </div>
+
+                <div class="patient-info">
+
+                    Prontuário:
+                    <strong>{{ paciente.prontuario }}</strong>
+
+                    <span class="mx-2">•</span>
+
+                    Procedimento:
+                    <strong>{{ giro.cirurgia.procedimento }}</strong>
+
+                </div>
+
+                
+
+            </div>
+
+
+            <div class="patient-meta">
+                <div class="meta-item">
+
+                    <span class="meta-label">
+                        Médico
+                    </span>
+
+                    <span class="meta-value">
+                        {{ giro.cirurgia.medico }}
+                    </span>
+
+                </div>
+
+                <div class="meta-item">
+
+                    <span class="meta-label">
+                        Data
+                    </span>
+
+                    <span class="meta-value">
+                        {{ data|date:'d/m/Y' }}
+                    </span>
+
+                </div>
+
+
+                <div class="meta-item">
+
+                    <span class="meta-label">
+                        Início previsto
+                    </span>
+
+                    <span class="meta-value">
+                        {{ hora }}
+                    </span>
+
+                </div>
+
+
+                <div class="meta-item">
+
+                    <span class="meta-label">
+                        Sala
+                    </span>
+
+                    <span class="meta-value">
+                        {{ giro.cirurgia.sala }}
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         ETAPAS
+    ========================================================== -->
+
+    <div class="section-title">
+
+        <h5>
+
+            <i class="bi bi-list-check me-2 text-primary"></i>
+
+            Etapas do Giro
+
+        </h5>
+
+        <span>
+            Registre cada etapa conforme ela ocorrer
+        </span>
+
+    </div>
+
+    
+
+    <div class="row g-3">
+
+        <!-- =====================================================
+             1 - INÍCIO CIRURGIA
+        ====================================================== -->
+
+        <div class="col-12 col-md-6 col-xl-4 etapa-col">
+
+            <div class="etapa-card
+                        {% if giro.dataInicioCirurgia %}
+                            concluida
+                        {% else %}
+                            atual
+                        {% endif %}">
+
+                <div class="etapa-header">
+
+                    <div class="etapa-identificacao">
+
+                        <div class="etapa-icone">
+
+                            {% if giro.dataInicioCirurgia %}
+                                <i class="bi bi-check-lg"></i>
+                            {% else %}
+                                <i class="bi bi-play-fill"></i>
+                            {% endif %}
+
+                        </div>
+
+                        <div>
+
+                            <div class="etapa-titulo">
+                                Início dos anestésicos cirúrgicos
+                            </div>
+
+                            <div class="etapa-descricao">
+                                Início efetivo do procedimento
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {% if giro.dataInicioCirurgia %}
+
+                        <span class="etapa-status status-concluida">
+                            Concluída
+                        </span>
+
+                    {% else %}
+
+                        <span class="etapa-status status-atual">
+                            Atual
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="etapa-horario">
+
+                    <span class="horario-label">
+                        Horário registrado
+                    </span>
+
+                    <span class="horario-valor
+                                 {% if not giro.dataInicioCirurgia %}vazio{% endif %}">
+
+                        {% if giro.dataInicioCirurgia %}
+                            {{ giro.dataInicioCirurgia|date:'d/m/Y H\:i' }}
+                        {% else %}
+                            --:--
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+                {% if giro.dataInicioCirurgia %}
+
+                    <div class="etapa-footer">
+
+                        <span class="badge-status badge-ok">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Registrado
+                        </span>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="etapa-footer">
+
+                        <a href="{% url 'centrocirurgico:inicio_cirurgia' giro.id %}"
+                        class="btn btn-primary btn-sm btn-giro">
+
+                            <i class="bi bi-play-fill me-1"></i>
+                            Registrar agora
+
+                        </a>
+
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-sm btn-giro btn-manual btn-informar-horario"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalHorario"
+                                data-etapa="dataInicioCirurgia"
+                                data-etapa-nome="Início dos anestésicos cirúrgicos"
+                                data-action="{% url 'centrocirurgico:registrar_etapa_manual' giro.id %}">
+
+                            <i class="bi bi-calendar-clock me-1"></i>
+                            Informar horário
+
+                        </button>
+                        
+
+                    </div>
+
+                {% endif %}
+
+
+                
+
+            </div>
+
+        </div>
+
+      
+        <!-- =====================================================
+             2 - FINAL CIRURGIA
+        ====================================================== -->
+
+        <div class="col-12 col-md-6 col-xl-4 etapa-col">
+
+            <div class="etapa-card
+                        {% if giro.dataFinalCirurgia %}
+                            concluida
+                        {% elif giro.dataInicioCirurgia %}
+                            atual
+                        {% else %}
+                            bloqueada
+                        {% endif %}">
+
+                <div class="etapa-header">
+
+                    <div class="etapa-identificacao">
+
+                        <div class="etapa-icone">
+
+                            {% if giro.dataFinalCirurgia %}
+                                <i class="bi bi-check-lg"></i>
+                            {% else %}
+                                <i class="bi bi-stop-fill"></i>
+                            {% endif %}
+
+                        </div>
+
+                        <div>
+
+                            <div class="etapa-titulo">
+                                Final dos anestésicos cirúrgicos
+                            </div>
+
+                            <div class="etapa-descricao">
+                                Encerramento do procedimento cirúrgico
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {% if giro.dataFinalCirurgia %}
+
+                        <span class="etapa-status status-concluida">
+                            Concluída
+                        </span>
+
+                    {% elif giro.dataInicioCirurgia %}
+
+                        <span class="etapa-status status-atual">
+                            Atual
+                        </span>
+
+                    {% else %}
+
+                        <span class="etapa-status status-pendente">
+                            Aguardando
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="etapa-horario">
+
+                    <span class="horario-label">
+                        Horário registrado
+                    </span>
+
+                    <span class="horario-valor
+                                 {% if not giro.dataFinalCirurgia %}vazio{% endif %}">
+
+                        {% if giro.dataFinalCirurgia %}
+                            {{ giro.dataFinalCirurgia|date:'d/m/Y H\:i' }}
+                        {% else %}
+                            --:--
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+
+                {% if giro.dataInicioCirurgia and not giro.dataFinalCirurgia %}
+                    
+
+                    <div class="etapa-footer">
+
+                        <a href="{% url 'centrocirurgico:fim_cirurgia' giro.id %}"
+                           class="btn btn-success btn-giro">
+
+                            <i class="bi bi-check-lg me-1"></i>
+                            Registrar agora
+
+                        </a>
+
+
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-giro btn-manual btn-informar-horario"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalHorario"
+                                data-etapa="dataFinalCirurgia"
+                                data-etapa-nome="Final dos anestésicos cirúrgicos"
+                                data-action="{% url 'centrocirurgico:registrar_etapa_manual' giro.id %}">
+
+                            <i class="bi bi-calendar-clock me-1"></i>
+                            Horário
+
+                        </button>
+
+                    </div>
+
+                {% endif %}
+                {% if giro.dataFinalCirurgia %}
+                    <div class="etapa-footer">
+
+                        <span class="badge-status badge-ok">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Registrado
+                        </span>
+
+                    </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             3 - SAÍDA DA SALA
+        ====================================================== -->
+
+        <div class="col-12 col-md-6 col-xl-4 etapa-col">
+
+            <div class="etapa-card
+                        {% if giro.dataSaidaSala %}
+                            concluida
+                        {% elif giro.dataFinalCirurgia %}
+                            atual
+                        {% else %}
+                            bloqueada
+                        {% endif %}">
+
+                <div class="etapa-header">
+
+                    <div class="etapa-identificacao">
+
+                        <div class="etapa-icone">
+
+                            {% if giro.dataSaidaSala %}
+                                <i class="bi bi-check-lg"></i>
+                            {% else %}
+                                <i class="bi bi-box-arrow-right"></i>
+                            {% endif %}
+
+                        </div>
+
+                        <div>
+
+                            <div class="etapa-titulo">
+                                Saída da sala
+                            </div>
+
+                            <div class="etapa-descricao">
+                                Saída do paciente da sala cirúrgica
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {% if giro.dataSaidaSala %}
+
+                        <span class="etapa-status status-concluida">
+                            Concluída
+                        </span>
+
+                    {% elif giro.dataFinalCirurgia %}
+
+                        <span class="etapa-status status-atual">
+                            Atual
+                        </span>
+
+                    {% else %}
+
+                        <span class="etapa-status status-pendente">
+                            Aguardando
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="etapa-horario">
+
+                    <span class="horario-label">
+                        Horário registrado
+                    </span>
+
+                    <span class="horario-valor
+                                 {% if not giro.dataSaidaSala %}vazio{% endif %}">
+
+                        {% if giro.dataSaidaSala %}
+                            {{ giro.dataSaidaSala|date:'d/m/Y H\:i' }}
+                        {% else %}
+                            --:--
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+
+                {% if giro.dataFinalCirurgia and not giro.dataSaidaSala %}
+
+                    <div class="etapa-footer">
+
+                        <a href="{% url 'centrocirurgico:saida_sala' giro.id %}"
+                           class="btn btn-dark btn-giro">
+
+                            <i class="bi bi-box-arrow-right me-1"></i>
+                            Registrar agora
+
+                        </a>
+
+
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-giro btn-manual btn-informar-horario"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalHorario"
+                                data-etapa="dataSaidaSala"
+                                data-etapa-nome="Saída da sala"
+                                data-action="{% url 'centrocirurgico:registrar_etapa_manual' giro.id %}">
+
+                            <i class="bi bi-calendar-clock me-1"></i>
+                            Horário
+
+                        </button>
+
+                    </div>
+
+                {% endif %}
+                {% if giro.dataSaidaSala %}
+                    <div class="etapa-footer">
+
+                        <span class="badge-status badge-ok">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Registrado
+                        </span>
+
+                    </div>
+                {% endif %}
+
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             4 - INÍCIO DESMONTAGEM
+        ====================================================== -->
+
+        <div class="col-12 col-md-6 col-xl-4 etapa-col">
+
+            <div class="etapa-card
+                        {% if giro.dataInicioDesmontagemSala %}
+                            concluida
+                        {% elif giro.dataSaidaSala %}
+                            atual
+                        {% else %}
+                            bloqueada
+                        {% endif %}">
+
+                <div class="etapa-header">
+
+                    <div class="etapa-identificacao">
+
+                        <div class="etapa-icone">
+
+                            {% if giro.dataInicioDesmontagemSala %}
+                                <i class="bi bi-check-lg"></i>
+                            {% else %}
+                                <i class="bi bi-tools"></i>
+                            {% endif %}
+
+                        </div>
+
+                        <div>
+
+                            <div class="etapa-titulo">
+                                Início da desmontagem
+                            </div>
+
+                            <div class="etapa-descricao">
+                                Início da preparação da sala
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {% if giro.dataInicioDesmontagemSala %}
+
+                        <span class="etapa-status status-concluida">
+                            Concluída
+                        </span>
+
+                    {% elif giro.dataSaidaSala %}
+
+                        <span class="etapa-status status-atual">
+                            Atual
+                        </span>
+
+                    {% else %}
+
+                        <span class="etapa-status status-pendente">
+                            Aguardando
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="etapa-horario">
+
+                    <span class="horario-label">
+                        Horário registrado
+                    </span>
+
+                    <span class="horario-valor
+                                 {% if not giro.dataInicioDesmontagemSala %}vazio{% endif %}">
+
+                        {% if giro.dataInicioDesmontagemSala %}
+                            {{ giro.dataInicioDesmontagemSala|date:'d/m/Y H\:i' }}
+                        {% else %}
+                            --:--
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+
+                {% if giro.dataSaidaSala and not giro.dataInicioDesmontagemSala %}
+
+                    <div class="etapa-footer">
+
+                        <a href="{% url 'centrocirurgico:inicio_desmontagem' giro.id %}"
+                           class="btn btn-warning btn-giro">
+
+                            <i class="bi bi-tools me-1"></i>
+                            Registrar agora
+
+                        </a>
+
+
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-giro btn-manual btn-informar-horario"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalHorario"
+                                data-etapa="dataInicioDesmontagemSala"
+                                data-etapa-nome="Início da desmontagem"
+                                data-action="{% url 'centrocirurgico:registrar_etapa_manual' giro.id %}">
+
+                            <i class="bi bi-calendar-clock me-1"></i>
+                            Horário
+
+                        </button>
+
+                    </div>
+
+                {% endif %}
+                {% if giro.dataInicioDesmontagemSala %}
+                    <div class="etapa-footer">
+
+                        <span class="badge-status badge-ok">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Registrado
+                        </span>
+
+                    </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             5 - FINAL DESMONTAGEM
+        ====================================================== -->
+
+        <div class="col-12 col-md-6 col-xl-4 etapa-col">
+
+            <div class="etapa-card
+                        {% if giro.dataFinalDesmontagemSala %}
+                            concluida
+                        {% elif giro.dataInicioDesmontagemSala %}
+                            atual
+                        {% else %}
+                            bloqueada
+                        {% endif %}">
+
+                <div class="etapa-header">
+
+                    <div class="etapa-identificacao">
+
+                        <div class="etapa-icone">
+
+                            {% if giro.dataFinalDesmontagemSala %}
+                                <i class="bi bi-check-lg"></i>
+                            {% else %}
+                                <i class="bi bi-wrench-adjustable"></i>
+                            {% endif %}
+
+                        </div>
+
+                        <div>
+
+                            <div class="etapa-titulo">
+                                Final da desmontagem
+                            </div>
+
+                            <div class="etapa-descricao">
+                                Conclusão da desmontagem da sala
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {% if giro.dataFinalDesmontagemSala %}
+
+                        <span class="etapa-status status-concluida">
+                            Concluída
+                        </span>
+
+                    {% elif giro.dataInicioDesmontagemSala %}
+
+                        <span class="etapa-status status-atual">
+                            Atual
+                        </span>
+
+                    {% else %}
+
+                        <span class="etapa-status status-pendente">
+                            Aguardando
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="etapa-horario">
+
+                    <span class="horario-label">
+                        Horário registrado
+                    </span>
+
+                    <span class="horario-valor
+                                 {% if not giro.dataFinalDesmontagemSala %}vazio{% endif %}">
+
+                        {% if giro.dataFinalDesmontagemSala %}
+                            {{ giro.dataFinalDesmontagemSala|date:'d/m/Y H\:i' }}
+                        {% else %}
+                            --:--
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+
+                {% if giro.dataInicioDesmontagemSala and not giro.dataFinalDesmontagemSala %}
+
+                    <div class="etapa-footer">
+
+                        <a href="{% url 'centrocirurgico:final_desmontagem' giro.id %}"
+                           class="btn btn-warning btn-giro">
+
+                            <i class="bi bi-check-lg me-1"></i>
+                            Registrar agora
+
+                        </a>
+
+
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-giro btn-manual btn-informar-horario"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalHorario"
+                                data-etapa="dataFinalDesmontagemSala"
+                                data-etapa-nome="Final da desmontagem"
+                                data-action="{% url 'centrocirurgico:registrar_etapa_manual' giro.id %}">
+
+                            <i class="bi bi-calendar-clock me-1"></i>
+                            Horário
+
+                        </button>
+
+                    </div>
+
+                {% endif %}
+                {% if giro.dataFinalDesmontagemSala %}
+                    <div class="etapa-footer">
+
+                        <span class="badge-status badge-ok">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Registrado
+                        </span>
+
+                    </div>
+                {% endif %}
+
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             6 - INÍCIO LIMPEZA
+        ====================================================== -->
+
+        <div class="col-12 col-md-6 col-xl-4 etapa-col">
+
+            <div class="etapa-card
+                        {% if giro.dataInicioLimpeza %}
+                            concluida
+                        {% elif giro.dataFinalDesmontagemSala %}
+                            atual
+                        {% else %}
+                            bloqueada
+                        {% endif %}">
+
+                <div class="etapa-header">
+
+                    <div class="etapa-identificacao">
+
+                        <div class="etapa-icone">
+
+                            {% if giro.dataInicioLimpeza %}
+                                <i class="bi bi-check-lg"></i>
+                            {% else %}
+                                <i class="bi bi-stars"></i>
+                            {% endif %}
+
+                        </div>
+
+                        <div>
+
+                            <div class="etapa-titulo">
+                                Início da limpeza
+                            </div>
+
+                            <div class="etapa-descricao">
+                                Início da higienização da sala
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {% if giro.dataInicioLimpeza %}
+
+                        <span class="etapa-status status-concluida">
+                            Concluída
+                        </span>
+
+                    {% elif giro.dataFinalDesmontagemSala %}
+
+                        <span class="etapa-status status-atual">
+                            Atual
+                        </span>
+
+                    {% else %}
+
+                        <span class="etapa-status status-pendente">
+                            Aguardando
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="etapa-horario">
+
+                    <span class="horario-label">
+                        Horário registrado
+                    </span>
+
+                    <span class="horario-valor
+                                 {% if not giro.dataInicioLimpeza %}vazio{% endif %}">
+
+                        {% if giro.dataInicioLimpeza %}
+                            {{ giro.dataInicioLimpeza|date:'d/m/Y H\:i' }}
+                        {% else %}
+                            --:--
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+
+                {% if giro.dataFinalDesmontagemSala and not giro.dataInicioLimpeza %}
+
+                    <div class="etapa-acoes">
+
+                        <div class="d-grid gap-2">
+
+                            <div class="d-flex gap-2">
+
+                                <a href="{% url 'centrocirurgico:inicio_limpeza_tipo' 'C' giro.id %}"
+                                   class="btn btn-primary btn-giro flex-fill">
+
+                                    <i class="bi bi-stars me-1"></i>
+                                    Concorrente
+
+                                </a>
+
+
+                                <a href="{% url 'centrocirurgico:inicio_limpeza_tipo' 'T' giro.id %}"
+                                   class="btn btn-info btn-giro flex-fill">
+
+                                    <i class="bi bi-stars me-1"></i>
+                                    Terminal
+
+                                </a>
+
+                            </div>
+
+
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-giro btn-manual btn-informar-horario"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalHorario"
+                                    data-etapa="dataInicioLimpeza"
+                                    data-etapa-nome="Início da limpeza"
+                                    data-action="{% url 'centrocirurgico:registrar_etapa_manual' giro.id %}">
+
+                                <i class="bi bi-calendar-clock me-1"></i>
+                                Informar horário
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+                {% if giro.dataInicioLimpeza %}
+                    <div class="etapa-footer">
+
+                        <span class="badge-status badge-ok">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Registrado
+                        </span>
+
+                    </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             7 - FINAL LIMPEZA
+        ====================================================== -->
+
+        <div class="col-12 col-md-6 col-xl-4 etapa-col">
+
+            <div class="etapa-card
+                        {% if giro.dataFinalLimpeza %}
+                            concluida
+                        {% elif giro.dataInicioLimpeza %}
+                            atual
+                        {% else %}
+                            bloqueada
+                        {% endif %}">
+
+                <div class="etapa-header">
+
+                    <div class="etapa-identificacao">
+
+                        <div class="etapa-icone">
+
+                            {% if giro.dataFinalLimpeza %}
+                                <i class="bi bi-check-lg"></i>
+                            {% else %}
+                                <i class="bi bi-trash"></i>
+                            {% endif %}
+
+                        </div>
+
+                        <div>
+
+                            <div class="etapa-titulo">
+                                Final da limpeza
+                            </div>
+
+                            <div class="etapa-descricao">
+                                Conclusão da higienização
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {% if giro.dataFinalLimpeza %}
+
+                        <span class="etapa-status status-concluida">
+                            Concluída
+                        </span>
+
+                    {% elif giro.dataInicioLimpeza %}
+
+                        <span class="etapa-status status-atual">
+                            Atual
+                        </span>
+
+                    {% else %}
+
+                        <span class="etapa-status status-pendente">
+                            Aguardando
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="etapa-horario">
+
+                    <span class="horario-label">
+                        Horário registrado
+                    </span>
+
+                    <span class="horario-valor
+                                 {% if not giro.dataFinalLimpeza %}vazio{% endif %}">
+
+                        {% if giro.dataFinalLimpeza %}
+                            {{ giro.dataFinalLimpeza|date:'d/m/Y H\:i' }}
+                        {% else %}
+                            --:--
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+
+                {% if giro.dataInicioLimpeza and not giro.dataFinalLimpeza %}
+
+                    <div class="etapa-footer">
+
+                        <a href="{% url 'centrocirurgico:final_limpeza' giro.id %}"
+                           class="btn btn-danger btn-giro">
+
+                            <i class="bi bi-check-lg me-1"></i>
+                            Registrar agora
+
+                        </a>
+
+
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-giro btn-manual btn-informar-horario"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalHorario"
+                                data-etapa="dataFinalLimpeza"
+                                data-etapa-nome="Final da limpeza"
+                                data-action="{% url 'centrocirurgico:registrar_etapa_manual' giro.id %}">
+
+                            <i class="bi bi-calendar-clock me-1"></i>
+                            Horário
+
+                        </button>
+
+                    </div>
+
+                {% endif %}
+                {% if giro.dataFinalLimpeza %}
+                    <div class="etapa-footer">
+
+                        <span class="badge-status badge-ok">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Registrado
+                        </span>
+
+                    </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             8 - SALA LIBERADA
+        ====================================================== -->
+
+        <div class="col-12 col-md-6 col-xl-4 etapa-col">
+
+            <div class="etapa-card
+                        {% if giro.dataSalaLiberada %}
+                            concluida
+                        {% elif giro.dataFinalLimpeza %}
+                            atual
+                        {% else %}
+                            bloqueada
+                        {% endif %}">
+
+                <div class="etapa-header">
+
+                    <div class="etapa-identificacao">
+
+                        <div class="etapa-icone">
+
+                            {% if giro.dataSalaLiberada %}
+                                <i class="bi bi-check-lg"></i>
+                            {% else %}
+                                <i class="bi bi-door-open"></i>
+                            {% endif %}
+
+                        </div>
+
+                        <div>
+
+                            <div class="etapa-titulo">
+                                Sala liberada para prox. Cirurgia
+                            </div>
+
+                            <div class="etapa-descricao">
+                                Sala disponível para o próximo procedimento
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {% if giro.dataSalaLiberada %}
+
+                        <span class="etapa-status status-concluida">
+                            Concluída
+                        </span>
+
+                    {% elif giro.dataFinalLimpeza %}
+
+                        <span class="etapa-status status-atual">
+                            Atual
+                        </span>
+
+                    {% else %}
+
+                        <span class="etapa-status status-pendente">
+                            Aguardando
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="etapa-horario">
+
+                    <span class="horario-label">
+                        Horário registrado
+                    </span>
+
+                    <span class="horario-valor
+                                 {% if not giro.dataSalaLiberada %}vazio{% endif %}">
+
+                        {% if giro.dataSalaLiberada %}
+                            {{ giro.dataSalaLiberada|date:'d/m/Y H\:i' }}
+                        {% else %}
+                            --:--
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+
+                {% if giro.dataFinalLimpeza and not giro.dataSalaLiberada %}
+
+                    <div class="etapa-footer">
+
+                        <a href="{% url 'centrocirurgico:sala_liberada' giro.id %}"
+                           class="btn btn-danger btn-giro">
+
+                            <i class="bi bi-door-open me-1"></i>
+                            Registrar agora
+
+                        </a>
+
+
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-giro btn-manual btn-informar-horario"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalHorario"
+                                data-etapa="dataSalaLiberada"
+                                data-etapa-nome="Sala liberada"
+                                data-action="{% url 'centrocirurgico:registrar_etapa_manual' giro.id %}">
+
+                            <i class="bi bi-calendar-clock me-1"></i>
+                            Horário
+
+                        </button>
+
+                    </div>
+
+                {% endif %}
+                {% if giro.dataSalaLiberada %}
+                    <div class="etapa-footer">
+
+                        <span class="badge-status badge-ok">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Registrado
+                        </span>
+
+                    </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         OBSERVAÇÕES
+    ========================================================== -->
+
+    <div class="section-title">
+
+        <h5>
+
+            <i class="bi bi-chat-left-text me-2 text-primary"></i>
+
+            Observações
+
+        </h5>
+
+        <span>
+            Informações adicionais do giro
+        </span>
+
+    </div>
+
+
+    <div class="observacao-card mb-4">
+
+        <div class="observacao-header">
+
+            <strong class="small">
+                Observações gerais
+            </strong>
+
+            <span class="text-muted small">
+                <i class="bi bi-pencil-square me-1"></i>
+                Registro operacional
+            </span>
+
+        </div>
+
+
+        <div class="observacao-body">
+
+            <form method="post"
+                  action="{% url 'centrocirurgico:salvar_observacao_giro' giro.id %}">
+
+                {% csrf_token %}
+
+                <textarea rows="4"
+                          class="form-control"
+                          name="observacao"
+                          placeholder="Digite aqui alguma observação importante sobre o giro...">{{ giro.observacao|default:"" }}</textarea>
+
+
+                <div class="d-flex justify-content-end mt-3">
+
+                    <button type="submit"
+                            class="btn btn-info btn-sm">
+
+                        <i class="bi bi-save me-1"></i>
+
+                        Salvar observação
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+</div>
+
+
+<!-- =============================================================
+     MODAL — INFORMAR HORÁRIO
+============================================================== -->
+
+<div class="modal fade"
+     id="modalHorario"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold mb-1">
+                        Informar horário
+                    </h5>
+                    <div class="text-muted small">
+                        Registro manual da etapa
+                    </div>
+                </div>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+            <form method="post"
+                  id="formHorarioManual"
+                  action="">
+                {% csrf_token %}
+                <div class="modal-body text-center">
+                    <div class="modal-icon">
+                        <i class="bi bi-calendar4-event"></i>
+                    </div>
+                    <div class="modal-etapa mb-2"
+                         id="nomeEtapaModal">
+                        Etapa
+                    </div>
+                    <div class="modal-ajuda mb-4">
+                        Informe a data e o horário em que a etapa
+                        realmente ocorreu.
+                    </div>
+                    <div class="text-start">
+                        <label for="data_hora"
+                               class="form-label fw-semibold">
+                            Data e hora da ocorrência
+                        </label>
+                        <input type="datetime-local"
+                               class="form-control"
+                               id="data_hora"
+                               name="data_hora"
+                               required>
+                        <input type="hidden"
+                               id="etapa"
+                               name="etapa">
+                        <!-- Campo dinâmico de Tipo de Limpeza -->
+                        <div id="containerTipoLimpeza" class="mt-3 mb-3 d-none">
+                            <label for="tipo_limpeza" class="form-label fw-semibold">
+                                Tipo de limpeza
+                            </label>
+                            <select class="form-select" id="tipo_limpeza" name="tipo_limpeza">
+                                <option value="C" selected>Concorrente</option>
+                                <option value="T">Terminal</option>
+                            </select>
+                        </div>
+                        <div class="alert alert-light border mt-3 mb-0 small">
+                            <i class="bi bi-info-circle text-primary me-1"></i>
+                            Use esta opção quando a etapa ocorreu,
+                            mas não foi registrada no momento.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-light"
+                            data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                            class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>
+                        Registrar horário
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- =============================================================
+     JAVASCRIPT
+============================================================== -->
+
+<script src="{% static 'assets/libs/bootstrap/js/bootstrap.bundle.min.js' %}">
+</script>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const modal = document.getElementById("modalHorario");
+
+    const form = document.getElementById("formHorarioManual");
+
+    const campoEtapa = document.getElementById("etapa");
+
+    const campoDataHora = document.getElementById("data_hora");
+
+    const nomeEtapa = document.getElementById("nomeEtapaModal");
+
+    const tipoLimpeza = document.getElementById("tipoLimpezaModal");
+
+    // Elementos do Tipo de Limpeza
+    const containerTipoLimpeza = document.getElementById("containerTipoLimpeza");
+    const selectTipoLimpeza = document.getElementById("tipo_limpeza");
+
+
+    /*
+     * Retorna a data/hora local no formato aceito
+     * pelo input datetime-local:
+     *
+     * YYYY-MM-DDTHH:mm
+     */
+    function obterDataHoraLocal() {
+
+        const agora = new Date();
+
+        const ano = agora.getFullYear();
+
+        const mes = String(agora.getMonth() + 1)
+            .padStart(2, "0");
+
+        const dia = String(agora.getDate())
+            .padStart(2, "0");
+
+        const hora = String(agora.getHours())
+            .padStart(2, "0");
+
+        const minuto = String(agora.getMinutes())
+            .padStart(2, "0");
+
+        return `${ano}-${mes}-${dia}T${hora}:${minuto}`;
+
+    }
+
+
+    /*
+     * Abertura do modal
+     */
+    document
+        .querySelectorAll(".btn-informar-horario")
+        .forEach(function (botao) {
+
+            botao.addEventListener("click", function () {
+
+                const etapa =
+                    this.dataset.etapa;
+
+                const etapaNome =
+                    this.dataset.etapaNome;
+
+                const action =
+                    this.dataset.action;
+
+
+                campoEtapa.value =
+                    etapa;
+
+
+                nomeEtapa.textContent =
+                    etapaNome;
+
+
+                form.action =
+                    action;
+
+
+                /*
+                 * Preenche automaticamente com
+                 * a data/hora local atual.
+                 */
+                campoDataHora.value =
+                    obterDataHoraLocal();
+
+                // Verifica se a etapa é "Início da Limpeza"
+                if (etapa === "dataInicioLimpeza") {
+                    containerTipoLimpeza.classList.remove("d-none");
+                    selectTipoLimpeza.value = "C"; // Default: concorrente
+                    selectTipoLimpeza.disabled = false;
+                } else {
+                    containerTipoLimpeza.classList.add("d-none");
+                    selectTipoLimpeza.disabled = true; // Evita enviar o valor caso não seja essa etapa
+                }
+
+
+                setTimeout(function () {
+
+                    campoDataHora.focus();
+
+                }, 300);
+
+            });
+
+        });
+
+
+    /*
+     * Limpeza ao fechar o modal
+     */
+    modal.addEventListener(
+        "hidden.bs.modal",
+        function () {
+
+            campoEtapa.value = "";
+            campoDataHora.value = "";
+            form.action = "";
+
+            // Reset do campo de limpeza
+            containerTipoLimpeza.classList.add("d-none");
+            selectTipoLimpeza.value = "concorrente";
+            selectTipoLimpeza.disabled = true;
+
+        }
+    );
+
+});
+
+</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,877 @@
+{% extends "base.html" %}
+
+{% block title %}
+Relatório de Limpezas | Centro Cirúrgico
+{% endblock %}
+
+{% block content %}
+
+    <style>
+
+        body {
+            background: #f5f7fa;
+        }
+
+        .relatorio-page {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+
+        /* ======================================================
+           CABEÇALHO
+        ====================================================== */
+
+        .page-header {
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 20px;
+
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+
+            font-size: 1.5rem;
+            font-weight: 700;
+
+            color: #212529;
+
+            margin: 0;
+        }
+
+        .page-subtitle {
+
+            color: #74788d;
+
+            font-size: .85rem;
+
+            margin-top: .25rem;
+        }
+
+
+        /* ======================================================
+           FILTROS
+        ====================================================== */
+
+        .filtros-card {
+
+            background: #fff;
+
+            border: 1px solid #e9edf2;
+
+            border-radius: 14px;
+
+            padding: 1.25rem;
+
+            box-shadow:
+                0 3px 12px rgba(18,38,63,.05);
+
+            margin-bottom: 1.5rem;
+        }
+
+        .filtro-label {
+
+            font-size: .72rem;
+
+            text-transform: uppercase;
+
+            letter-spacing: .04em;
+
+            color: #8a93a2;
+
+            font-weight: 600;
+
+            margin-bottom: .4rem;
+        }
+
+        .form-control,
+        .form-select {
+
+            border-radius: 8px;
+
+            border-color: #dfe4ea;
+
+            font-size: .85rem;
+
+            min-height: 42px;
+        }
+
+        .btn-filtro {
+
+            min-height: 42px;
+
+            border-radius: 8px;
+
+            font-size: .82rem;
+
+            font-weight: 600;
+        }
+
+
+        /* ======================================================
+           CARDS RESUMO
+        ====================================================== */
+
+        .resumo-card {
+
+            background: #fff;
+
+            border: 1px solid #e9edf2;
+
+            border-radius: 13px;
+
+            padding: 1rem 1.1rem;
+
+            height: 100%;
+
+            box-shadow:
+                0 3px 12px rgba(18,38,63,.04);
+        }
+
+        .resumo-label {
+
+            font-size: .7rem;
+
+            text-transform: uppercase;
+
+            letter-spacing: .04em;
+
+            color: #8a93a2;
+
+            font-weight: 600;
+        }
+
+        .resumo-value {
+
+            font-size: 1.6rem;
+
+            font-weight: 700;
+
+            color: #212529;
+
+            margin-top: .2rem;
+        }
+
+        .resumo-icon {
+
+            width: 42px;
+            height: 42px;
+
+            border-radius: 10px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 1.2rem;
+        }
+
+
+        /* ======================================================
+           TABELA
+        ====================================================== */
+
+        .tabela-card {
+
+            background: #fff;
+
+            border: 1px solid #e9edf2;
+
+            border-radius: 14px;
+
+            overflow: hidden;
+
+            box-shadow:
+                0 3px 12px rgba(18,38,63,.04);
+        }
+
+        .tabela-header {
+
+            padding: 1rem 1.2rem;
+
+            border-bottom: 1px solid #edf0f2;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+        }
+
+        .tabela-header h5 {
+
+            margin: 0;
+
+            font-size: .95rem;
+
+            font-weight: 700;
+
+            color: #343a40;
+        }
+
+        .tabela-wrapper {
+
+            overflow-x: auto;
+        }
+
+        .tabela {
+
+            margin: 0;
+
+            min-width: 700px;
+        }
+
+        .tabela thead th {
+
+            background: #f8f9fa;
+
+            color: #6c757d;
+
+            font-size: .72rem;
+
+            text-transform: uppercase;
+
+            letter-spacing: .03em;
+
+            font-weight: 700;
+
+            padding: .9rem 1rem;
+
+            border-bottom: 1px solid #e9edf2;
+
+            white-space: nowrap;
+        }
+
+        .tabela tbody td {
+
+            padding: .85rem 1rem;
+
+            font-size: .82rem;
+
+            color: #495057;
+
+            border-bottom: 1px solid #f0f2f4;
+
+            vertical-align: middle;
+        }
+
+        .tabela tbody tr:hover {
+
+            background: #fafbfc;
+        }
+
+        .total-coluna {
+
+            font-weight: 700;
+
+            color: #212529 !important;
+        }
+
+
+        /* ======================================================
+           BADGES
+        ====================================================== */
+
+        .badge-concorrente {
+
+            background: #e9f2ff;
+
+            color: #0d6efd;
+
+            font-size: .7rem;
+
+            padding: .4rem .65rem;
+
+            border-radius: 20px;
+
+            font-weight: 600;
+        }
+
+        .badge-terminal {
+
+            background: #fff0f0;
+
+            color: #dc3545;
+
+            font-size: .7rem;
+
+            padding: .4rem .65rem;
+
+            border-radius: 20px;
+
+            font-weight: 600;
+        }
+
+
+        /* ======================================================
+           VAZIO
+        ====================================================== */
+
+        .empty-state {
+
+            padding: 4rem 1rem;
+
+            text-align: center;
+
+            color: #8a93a2;
+        }
+
+        .empty-state i {
+
+            font-size: 2.5rem;
+
+            display: block;
+
+            margin-bottom: .75rem;
+        }
+
+
+        /* ======================================================
+           IMPRESSÃO
+        ====================================================== */
+
+        @media print {
+
+            body {
+                background: #fff;
+            }
+
+            .filtros-card,
+            .btn-print,
+            .btn-voltar {
+                display: none !important;
+            }
+
+            .tabela-card {
+                box-shadow: none;
+
+                border: 1px solid #ccc;
+            }
+
+            .relatorio-page {
+                max-width: 100%;
+            }
+        }
+
+
+        /* ======================================================
+           RESPONSIVO
+        ====================================================== */
+
+        @media (max-width: 768px) {
+
+            .page-header {
+
+                align-items: flex-start;
+
+                flex-direction: column;
+            }
+
+        }
+
+    </style>
+
+
+
+<div class="container-fluid py-4">
+
+    <div class="relatorio-page">
+
+
+        <!-- ==================================================
+             CABEÇALHO
+        =================================================== -->
+
+        <div class="page-header">
+
+            <div>
+
+                <h1 class="page-title">
+
+                    <i class="bi bi-droplet-half text-primary me-2"></i>
+
+                    Relatório de Limpezas
+
+                </h1>
+
+                <div class="page-subtitle">
+
+                    Quantidade de Limpezas por período e sala
+
+                </div>
+
+            </div>
+
+
+            <div class="d-flex gap-2">
+
+                <button
+                    type="button"
+                    onclick="window.print()"
+                    class="btn btn-light border btn-sm btn-print"
+                >
+
+                    <i class="bi bi-printer me-1"></i>
+
+                    Imprimir
+
+                </button>
+
+
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             FILTROS
+        =================================================== -->
+
+        <div class="filtros-card">
+
+            <form method="get">
+
+                <div class="row g-3 align-items-end">
+
+
+                    <!-- DATA INICIAL -->
+
+                    <div class="col-12 col-md-3">
+
+                        <label class="filtro-label">
+
+                            Data inicial
+
+                        </label>
+
+                        <input
+                            type="date"
+                            name="data_inicio"
+                            class="form-control"
+                            value="{{ data_inicio|default:'' }}"
+                        >
+
+                    </div>
+
+
+                    <!-- DATA FINAL -->
+
+                    <div class="col-12 col-md-3">
+
+                        <label class="filtro-label">
+
+                            Data final
+
+                        </label>
+
+                        <input
+                            type="date"
+                            name="data_fim"
+                            class="form-control"
+                            value="{{ data_fim|default:'' }}"
+                        >
+
+                    </div>
+
+
+                    <!-- SALA -->
+
+                    <div class="col-12 col-md-3">
+
+                        <label class="filtro-label">
+
+                            Sala
+
+                        </label>
+
+                        <select
+                            name="sala"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                Todas as salas
+                            </option>
+
+                            {% for item in salas %}
+
+                                <option
+                                    value="{{ item }}"
+                                    {% if sala_selecionada == item %}
+                                        selected
+                                    {% endif %}
+                                >
+
+                                    {{ item }}
+
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- BOTÕES -->
+
+                    <div class="col-12 col-md-3">
+
+                        <div class="d-flex gap-2">
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary btn-filtro flex-grow-1"
+                            >
+
+                                <i class="bi bi-search me-1"></i>
+
+                                Filtrar
+
+                            </button>
+
+
+                            <a
+                                href="{% url 'centrocirurgico:relatorio_lavagens' %}"
+                                class="btn btn-light border btn-filtro"
+                                title="Limpar filtros"
+                            >
+
+                                <i class="bi bi-x-lg"></i>
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+
+        <!-- ==================================================
+             RESUMO
+        =================================================== -->
+
+        <div class="row g-3 mb-4">
+
+
+            <!-- CONCORRENTE -->
+
+            <div class="col-12 col-md-4">
+
+                <div class="resumo-card">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <div class="resumo-label">
+
+                                Limpeza concorrente
+
+                            </div>
+
+                            <div class="resumo-value">
+
+                                {{ totais.concorrente|default:0 }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="resumo-icon bg-primary-subtle text-primary">
+
+                            <i class="bi bi-droplet"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- TERMINAL -->
+
+            <div class="col-12 col-md-4">
+
+                <div class="resumo-card">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <div class="resumo-label">
+
+                                Limpeza terminal
+
+                            </div>
+
+                            <div class="resumo-value">
+
+                                {{ totais.terminal|default:0 }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="resumo-icon bg-danger-subtle text-danger">
+
+                            <i class="bi bi-stars"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- TOTAL -->
+
+            <div class="col-12 col-md-4">
+
+                <div class="resumo-card">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <div class="resumo-label">
+
+                                Total de lavagens
+
+                            </div>
+
+                            <div class="resumo-value">
+
+                                {{ totais.total|default:0 }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="resumo-icon bg-success-subtle text-success">
+
+                            <i class="bi bi-bar-chart"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ==================================================
+             TABELA
+        =================================================== -->
+
+        <div class="tabela-card">
+
+            <div class="tabela-header">
+
+                <h5>
+
+                    <i class="bi bi-table me-2 text-primary"></i>
+
+                    Lavagens realizadas
+
+                </h5>
+
+                <span class="text-muted small">
+
+                    {{ relatorio|length }} registro(s)
+
+                </span>
+
+            </div>
+
+
+            <div class="tabela-wrapper">
+
+                <table class="table tabela">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Data
+                            </th>
+
+                            <th>
+                                Sala
+                            </th>
+
+                            <th class="text-center">
+                                Concorrente
+                            </th>
+
+                            <th class="text-center">
+                                Terminal
+                            </th>
+
+                            <th class="text-center">
+                                Total
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+    {% regroup relatorio by cirurgia__data as datas_agrupadas %}
+
+    {% for grupo in datas_agrupadas %}
+
+        {% for item in grupo.list %}
+
+            <tr>
+
+                {% if forloop.first %}
+
+                    <td
+                        rowspan="{{ grupo.list|length }}"
+                        class="align-middle fw-semibold text-primary"
+                        style="background: #f8f9fa;"
+                    >
+
+                        <div class="d-flex align-items-center gap-2">
+
+                            <i class="bi bi-calendar3"></i>
+
+                            <span>
+                                {{ grupo.grouper|date:"d/m/Y" }}
+                            </span>
+
+                        </div>
+
+                    </td>
+
+                {% endif %}
+
+
+                <td>
+
+                    <strong>
+                        {{ item.cirurgia__sala }}
+                    </strong>
+
+                </td>
+
+
+                <td class="text-center">
+
+                    {% if item.concorrente %}
+
+                        <span class="badge-concorrente">
+
+                            {{ item.concorrente }}
+
+                        </span>
+
+                    {% else %}
+
+                        <span class="text-muted">
+                            0
+                        </span>
+
+                    {% endif %}
+
+                </td>
+
+
+                <td class="text-center">
+
+                    {% if item.terminal %}
+
+                        <span class="badge-terminal">
+
+                            {{ item.terminal }}
+
+                        </span>
+
+                    {% else %}
+
+                        <span class="text-muted">
+                            0
+                        </span>
+
+                    {% endif %}
+
+                </td>
+
+
+                <td class="text-center total-coluna">
+
+                    {{ item.total }}
+
+                </td>
+
+            </tr>
+
+        {% endfor %}
+
+    {% empty %}
+
+        <tr>
+
+            <td colspan="5">
+
+                <div class="empty-state">
+
+                    <i class="bi bi-inbox"></i>
+
+                    <strong>
+                        Nenhum registro encontrado
+                    </strong>
+
+                    <div class="small mt-1">
+
+                        Não existem lavagens para os filtros selecionados.
+
+                    </div>
+
+                </div>
+
+            </td>
+
+        </tr>
+
+    {% endfor %}
+
+</tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+{% endblock %}

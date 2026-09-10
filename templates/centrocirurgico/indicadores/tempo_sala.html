@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}
+Indicador de Tempo de Sala
+{% endblock %}
+
+{% block content %}
+
+<div class="row ">
+    <!-- CARD PRINCIPAL / RESUMO -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-1">
+                            <i class="bi bi-clock-history text-primary me-2"></i>
+                            Tempo de Sala
+                        </h5>
+                        <small class="text-muted">
+                            Janela operacional: 07:30 às 19:00 (11h30m / dia)
+                        </small>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary">
+                        Últimos 30 dias
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="display-4 fw-bold text-primary">
+                        {{ media_geral_percentual|default:"--"|stringformat:"s" }}%
+                    </div>
+                    <div class="text-muted">
+                        Taxa Média de Ocupação Geral
+                    </div>
+                </div>
+
+                <div class="alert alert-light border">
+                    <small class="text-muted d-block mb-1">📐 **Parâmetro de Cálculo:**</small>
+                    <span class="small">Considera o período de <code>Inicio da Cirurgia</code> até <code>Sala Liberada</code> nos últimos 30 dias, comparado com a capacidade diária da sala (690 min).</span>
+                </div>
+            </div>
+        </div>
+        <a href="{% url 'centrocirurgico:exportar_relatorio_tempo_sala_pdf' %}" class="btn btn-danger btn-sm" target="_blank">
+            <i class="bi bi-file-earmark-pdf me-1"></i> Baixar Relatório PDF
+        </a>
+    </div>
+
+    <!-- TABELA DE SALAS -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0">
+                        Ocupação e Horas Utilizadas por Sala
+                    </h6>
+                    <small class="text-muted">
+                        Clique em detalhes para investigar
+                    </small>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sala</th>
+                            <th class="text-center">Cirurgias</th>
+                            <th class="text-center">Tempo Utilizado</th>
+                            <th class="text-center">Ocupação</th>
+                            <th width="70" class="text-center">Detalhe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in salas %}
+                        <tr class="linha-sala">
+                            <td>
+                                <strong>{{ s.sala }}</strong>
+                            </td>
+                            <td class="text-center">
+                                {{ s.cirurgias }}
+                            </td>
+                            <td class="text-center">
+                                <strong>{{ s.horas_utilizadas }}h</strong> 
+                                <small class="text-muted">({{ s.minutos_utilizados }} min)</small>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <div class="progress flex-grow-1 me-2" style="height: 8px; width: 80px;">
+                                        <div class="progress-bar bg-{{ s.badge }}" style="width: {{ s.percentual|stringformat:'s' }}%;"></div>
+                                    </div>
+                                    <small class="fw-semibold">{{ s.percentual|stringformat:'s' }}%</small>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <button
+                                    class="btn btn-light btn-sm border btn-detalhe"
+                                    title="Ver Detalhes"
+                                    data-sala="{{ s.sala }}">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <!-- Linha de detalhe oculta para cada sala -->
+                        <tr class="detalhe-sala d-none bg-light">
+                            <td colspan="5">
+                                <div class="p-4">
+                                    <h5 class="fw-bold mb-3">Detalhes da Sala: <span class="text-primary">{{ s.sala }}</span></h5>
+                                    
+                                    <!-- RESUMO DA SALA -->
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <div class="card border-0 shadow-sm">
+                                                <div class="card-body text-center">
+                                                    <small class="text-muted">Tempo Total Utilizado</small>
+                                                    <h3 class="fw-bold text-primary tempo-total-sala">--</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card border-0 shadow-sm">
+                                                <div class="card-body text-center">
+                                                    <small class="text-muted">Taxa de Ocupação da Sala</small>
+                                                    <h3 class="fw-bold text-success ocupacao-sala">--</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- TABELA DE CIRURGIAS DA SALA -->
+                                    <div class="table-responsive bg-white rounded shadow-sm">
+                                        <table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Data</th>
+                                                    <th>Procedimento</th>
+                                                    <th>Cirurgião</th>
+                                                    <th>Especialidade</th>
+                                                    <th class="text-center">Duração</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="tbody-cirurgias">
+                                                <tr>
+                                                    <td colspan="5" class="text-center text-muted py-4">
+                                                        Carregando...
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-5">
+                                Nenhum registro encontrado nos últimos 30 dias.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll(".btn-detalhe").forEach(function(botao) {
+    botao.addEventListener("click", async function() {
+        const sala = this.dataset.sala;
+        const linhaAtual = this.closest("tr");
+        const linhaDetalhe = linhaAtual.nextElementSibling;
+        
+        const estaVisivel = !linhaDetalhe.classList.contains("d-none");
+        
+        // Fecha todas as outras linhas abertas
+        document.querySelectorAll(".detalhe-sala").forEach(tr => tr.classList.add("d-none"));
+
+        if (estaVisivel) {
+            linhaDetalhe.classList.add("d-none");
+            return;
+        }
+
+        linhaDetalhe.classList.remove("d-none");
+
+        const elTempoTotal = linhaDetalhe.querySelector(".tempo-total-sala");
+        const elOcupacao = linhaDetalhe.querySelector(".ocupacao-sala");
+        const elTbody = linhaDetalhe.querySelector(".tbody-cirurgias");
+
+        elTempoTotal.textContent = "--";
+        elOcupacao.textContent = "--";
+        elTbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary"></div> Carregando...
+                </td>
+            </tr>
+        `;
+
+        try {
+            // Altere a URL abaixo conforme a rota configurada no seu urls.py para a API de tempo de sala
+            const response = await fetch(`/centrocirurgico/api/tempo-sala/${encodeURIComponent(sala)}/`);
+            if (!response.ok) throw new Error("Erro ao buscar dados.");
+
+            const dados = await response.json();
+
+            elTempoTotal.textContent = dados.resumo.horas_utilizadas + "h (" + dados.resumo.minutos_utilizados + " min)";
+            elOcupacao.textContent = dados.resumo.percentual + "%";
+
+            let htmlCirurgias = "";
+            if (dados.cirurgias.length === 0) {
+                htmlCirurgias = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            Nenhuma cirurgia encontrada.
+                        </td>
+                    </tr>
+                `;
+            } else {
+                dados.cirurgias.forEach(function(c) {
+                    htmlCirurgias += `
+                        <tr>
+                            <td>${c.data}</td>
+                            <td>${c.procedimento}</td>
+                            <td>${c.medico}</td>
+                            <td>${c.especialidade}</td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary-subtle text-dark border">
+                                    ${c.duracao_horas}h (${c.duracao_minutos} min)
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            elTbody.innerHTML = htmlCirurgias;
+
+        } catch (e) {
+            console.error(e);
+            elTbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-danger text-center py-4">
+                        Erro ao carregar os dados da sala.
+                    </td>
+                </tr>
+            `;
+        }
+    });
+});
+</script>
+
+{% endblock %}

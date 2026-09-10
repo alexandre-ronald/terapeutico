@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Hemoterapia › {% if editando %}Editar Prova Cruzada{% else %}Nova Prova Cruzada{% endif %}{% endblock %}
+{% block breadcrumb %}Hemoterapia › Provas Cruzadas{% endblock %}
+{% block page_title %}{% if editando %}Editar Prova Cruzada{% else %}Registrar Prova Cruzada{% endif %}{% endblock %}
+
+{% block content %}
+
+<style>
+.result-icon{
+font-size:2rem;
+float:right;
+opacity:.8;
+}
+</style>
+
+<div class="container-fluid py-2" style="width:95%;">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+<div>
+<h4>
+<i class="bi bi-shuffle"></i>
+{% if editando %}Editar Prova Cruzada{% else %}Nova Prova Cruzada{% endif %}
+</h4>
+
+<p class="text-muted">
+Registro de compatibilidade entre paciente e bolsa de sangue.
+</p>
+</div>
+
+<div>
+<a href="{% url 'uhh:lista_provas' %}" class="btn btn-outline-secondary">
+← Voltar para Lista
+</a>
+</div>
+
+</div>
+
+<div class="card border-0 shadow-sm">
+
+<div class="card-body">
+
+<form method="post">
+{% csrf_token %}
+
+<div class="row g-4">
+
+<div class="col-md-6">
+
+<label class="form-label fw-medium">Paciente *</label>
+
+<select name="paciente" class="form-select" required>
+
+<option value="">Selecione</option>
+
+{% for p in pacientes %}
+
+<option value="{{p.id}}"
+{% if prova.paciente.id == p.id %}selected{% endif %}
+>
+{{p.nome}}
+</option>
+{% endfor %}
+
+</select>
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label fw-medium">Bolsa de Sangue *</label>
+
+<select name="bolsa" class="form-select" required>
+
+<option value="">Selecione</option>
+
+{% for b in bolsas %}
+
+<option value="{{b.id}}"
+{% if prova.bolsa.id == b.id %}selected{% endif %}
+>
+Bolsa {{b.numero_bolsa}} - {{b.grupo_sanguineo}}{{b.fator_rh}}
+</option>
+{% endfor %}
+
+</select>
+
+</div>
+
+<div class="col-md-4">
+
+<label class="form-label fw-medium">Resultado *</label>
+
+<select name="resultado" class="form-select" required>
+
+<option value="">Selecione</option>
+
+<option value="compativel"
+{% if prova.resultado == "compativel" %}selected{% endif %}
+>
+Compatível
+</option>
+
+<option value="incompativel"
+{% if prova.resultado == "incompativel" %}selected{% endif %}
+>
+Incompatível
+</option>
+
+</select>
+
+</div>
+
+<div class="col-md-8">
+
+<label class="form-label fw-medium">Realizado por *</label>
+
+<input type="text"
+name="realizado_por"
+class="form-control"
+value="{{ prova.realizado_por|default:'' }}"
+placeholder="Nome do profissional que realizou a prova"
+required>
+
+</div>
+
+<div class="col-12">
+
+<label class="form-label fw-medium">Observações</label>
+
+<textarea
+name="observacoes"
+class="form-control"
+rows="3"
+placeholder="Observações adicionais sobre a prova cruzada"
+>{{ prova.observacoes|default:'' }}</textarea>
+
+</div>
+
+</div>
+
+<hr class="my-4">
+
+<div class="d-flex justify-content-end gap-3">
+
+<a href="{% url 'uhh:lista_provas' %}" class="btn btn-outline-secondary">
+Cancelar
+</a>
+
+<button class="btn btn-success">
+<i class="bi bi-check-circle"></i>
+{% if editando %}Salvar Alterações{% else %}Registrar Prova{% endif %}
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}
