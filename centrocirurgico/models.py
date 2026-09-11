@@ -197,6 +197,61 @@ class NecessidadeCirurgica(models.Model):
         return self.nome
 
 
+class ProgramacaoCirurgia(models.Model):
+    RASCUNHO = "rascunho"
+    ENVIADA = "enviada"
+    FINALIZADA = "finalizada"
+    STATUS_CHOICES = (
+        (RASCUNHO, "Rascunho"),
+        (ENVIADA, "Enviada ao painel"),
+        (FINALIZADA, "Finalizada"),
+    )
+
+    cirurgia = models.OneToOneField(Cirurgia, on_delete=models.PROTECT, related_name="programacao")
+    anestesistas = models.TextField(blank=True)
+    instrumentador = models.CharField(max_length=250, blank=True)
+    outros_profissionais = models.TextField(blank=True)
+    observacao = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=RASCUNHO)
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="programacoes_criadas")
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="programacoes_atualizadas")
+    atualizado_em = models.DateTimeField(auto_now=True)
+    enviado_em = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ("cirurgia__data", "cirurgia__hora", "cirurgia__sala")
+        verbose_name = "Programação de cirurgia"
+        verbose_name_plural = "Programações de cirurgia"
+
+    def __str__(self):
+        return f"{self.cirurgia} — {self.get_status_display()}"
+
+
+class ProgramacaoNecessidade(models.Model):
+    programacao = models.ForeignKey(ProgramacaoCirurgia, on_delete=models.CASCADE, related_name="necessidades")
+    necessidade = models.ForeignKey(NecessidadeCirurgica, on_delete=models.PROTECT, related_name="programacoes")
+    complemento = models.CharField(max_length=250, blank=True)
+    atendida = models.BooleanField(default=False)
+    atendida_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True, related_name="necessidades_cirurgicas_atendidas")
+    atendida_em = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ("necessidade__ordem", "necessidade__nome")
+        constraints = [models.UniqueConstraint(fields=("programacao", "necessidade"), name="centrocirurgico_programacao_necessidade_uniq")]
+        verbose_name = "Necessidade da programação"
+        verbose_name_plural = "Necessidades da programação"
+
+    def clean(self):
+        super().clean()
+        self.complemento = (self.complemento or "").strip()
+        if self.necessidade_id and self.necessidade.complemento_obrigatorio and not self.complemento:
+            raise ValidationError({"complemento": "Informe o complemento desta necessidade."})
+
+    def __str__(self):
+        return f"{self.programacao} — {self.necessidade}"
+
+
 class LimpezaTerminal(models.Model):
     CENTRO_CIRURGICO_CHOICES = [
         ('CCA', 'Centro Cirúrgico Adulto'),

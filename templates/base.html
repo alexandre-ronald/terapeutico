@@ -423,6 +423,9 @@
                                 {% if grupo.name == "CENTRO_CIRURGICO" %}
 
                                     <li class="menu-title"><span data-key="t-menu">Centros Cirúrgicos</span></li>
+                                    {% if perms.centrocirurgico.view_programacaocirurgia %}
+                                    <li class="nav-item"><a class="nav-link menu-link" href="{% url 'centrocirurgico:programador_mapa' %}"><i class="ri-calendar-check-line"></i><span>Programador de Cirurgias</span></a></li>
+                                    {% endif %}
                                     {% if perms.centrocirurgico.view_necessidadecirurgica %}
                                     <li class="nav-item">
                                         <a class="nav-link menu-link" href="{% url 'centrocirurgico:necessidade_lista' %}">
