@@ -1,6 +1,14 @@
 from django.contrib import admin
 
-from .models import MotivoSuspensao, SuspensaoCirurgia, TipoSuspensao
+from .models import NecessidadeCirurgica, MotivoSuspensao, SuspensaoCirurgia, TipoSuspensao
+
+
+@admin.register(NecessidadeCirurgica)
+class NecessidadeCirurgicaAdmin(admin.ModelAdmin):
+    list_display = ("nome", "dica_complemento", "complemento_obrigatorio", "ordem", "ativo")
+    list_filter = ("ativo", "complemento_obrigatorio")
+    search_fields = ("nome", "descricao", "dica_complemento")
+    ordering = ("ordem", "nome")
 
 
 @admin.register(TipoSuspensao)

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Necessidades Cirúrgicas{% endblock %}
+{% block content %}
+<div class="container-fluid py-3">
+  <div class="mb-3">
+    <h4 class="mb-1">Necessidades Cirúrgicas</h4>
+    <p class="text-muted mb-0">Configure necessidades que poderão ser informadas no Programador de Cirurgias.</p>
+  </div>
+  <form method="get" class="card card-body mb-3">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-6"><label class="form-label" for="q">Buscar</label><input class="form-control" id="q" name="q" value="{{ busca }}" placeholder="Nome, descrição ou exemplo"></div>
+      <div class="col-md-3"><label class="form-label" for="status">Situação</label><select class="form-select" id="status" name="status"><option value="ativos" {% if status == 'ativos' %}selected{% endif %}>Ativas</option><option value="inativos" {% if status == 'inativos' %}selected{% endif %}>Inativas</option><option value="todos" {% if status == 'todos' %}selected{% endif %}>Todas</option></select></div>
+      <div class="col-md-3 d-flex gap-2"><button class="btn btn-primary flex-grow-1">Filtrar</button><a class="btn btn-light" href="{% url 'centrocirurgico:necessidade_lista' %}">Limpar</a></div>
+    </div>
+  </form>
+  <div class="row g-3">
+    <div class="col-xl-7">
+      <div class="card"><div class="card-header"><h5 class="mb-0">Necessidades cadastradas</h5></div><div class="table-responsive">
+        <table class="table align-middle mb-0"><thead class="table-light"><tr><th>Necessidade</th><th>Complemento</th><th>Situação</th><th class="text-end">Ações</th></tr></thead><tbody>
+        {% for item in necessidades %}<tr>
+          <td><strong>{{ item.nome }}</strong>{% if item.descricao %}<small class="text-muted d-block">{{ item.descricao }}</small>{% endif %}<small class="text-muted">Ordem {{ item.ordem }}</small></td>
+          <td>{% if item.dica_complemento %}{{ item.dica_complemento }}{% else %}<span class="text-muted">Livre</span>{% endif %}{% if item.complemento_obrigatorio %}<span class="badge bg-info-subtle text-info d-block mt-1" style="width:max-content">Obrigatório</span>{% endif %}</td>
+          <td>{% if item.ativo %}<span class="badge bg-success-subtle text-success">Ativa</span>{% else %}<span class="badge bg-secondary-subtle text-secondary">Inativa</span>{% endif %}</td>
+          <td class="text-end">
+            {% if perms.centrocirurgico.change_necessidadecirurgica %}<a class="btn btn-sm btn-outline-primary" href="?editar={{ item.id }}&status=todos">Editar</a><form class="d-inline" method="post" action="{% url 'centrocirurgico:necessidade_alternar' item.id %}">{% csrf_token %}<button class="btn btn-sm btn-outline-secondary">{% if item.ativo %}Desativar{% else %}Ativar{% endif %}</button></form>{% endif %}
+            {% if perms.centrocirurgico.delete_necessidadecirurgica %}<form class="d-inline" method="post" action="{% url 'centrocirurgico:necessidade_excluir' item.id %}" onsubmit="return confirm('Confirma a exclusão desta necessidade?');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Excluir</button></form>{% endif %}
+          </td>
+        </tr>{% empty %}<tr><td colspan="4" class="text-center text-muted py-4">Nenhuma necessidade encontrada.</td></tr>{% endfor %}
+        </tbody></table>
+      </div></div>
+    </div>
+    <div class="col-xl-5"><div class="card"><div class="card-header"><h5 class="mb-0">{% if edicao %}Editar necessidade{% else %}Nova necessidade{% endif %}</h5></div><div class="card-body">
+      <form method="post" action="{% url 'centrocirurgico:necessidade_salvar' %}">{% csrf_token %}{% if edicao %}<input type="hidden" name="id" value="{{ edicao.id }}">{% endif %}
+        <div class="mb-3"><label class="form-label">Nome *</label>{{ form.nome }}{% for error in form.nome.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
+        <div class="mb-3"><label class="form-label">Descrição</label>{{ form.descricao }}</div>
+        <div class="mb-3"><label class="form-label">Exemplo/orientação do complemento</label>{{ form.dica_complemento }}<div class="form-text">Ex.: P1, Plaquetas ou Sangue O+.</div></div>
+        <div class="mb-3"><label class="form-label">Ordem</label>{{ form.ordem }}</div>
+        <div class="form-check mb-2">{{ form.complemento_obrigatorio }}<label class="form-check-label" for="{{ form.complemento_obrigatorio.id_for_label }}">Exigir complemento na programação</label></div>
+        <div class="form-check">{{ form.ativo }}<label class="form-check-label" for="{{ form.ativo.id_for_label }}">Ativa</label></div>
+        {% for error in form.non_field_errors %}<div class="text-danger small mt-2">{{ error }}</div>{% endfor %}
+        <div class="d-flex justify-content-end gap-2 mt-3">{% if edicao %}<a class="btn btn-light" href="{% url 'centrocirurgico:necessidade_lista' %}?status=todos">Cancelar</a>{% endif %}<button class="btn btn-primary">Salvar necessidade</button></div>
+      </form>
+    </div></div></div>
+  </div>
+</div>
+{% endblock %}
