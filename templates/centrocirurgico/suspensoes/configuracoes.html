@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Tipos e Motivos de Suspensão{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h4 class="mb-1">Tipos e Motivos de Suspensão</h4>
+            <p class="text-muted mb-0">Configure a classificação usada no cancelamento de cirurgias.</p>
+        </div>
+        <a href="{% url 'centrocirurgico:mapa_cirurgico_list_novo' %}" class="btn btn-outline-secondary">
+            <i class="ri-arrow-left-line me-1"></i>Mapa Cirúrgico
+        </a>
+    </div>
+
+    <form method="get" class="card card-body mb-3">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-6">
+                <label for="q" class="form-label">Buscar</label>
+                <input id="q" name="q" class="form-control" value="{{ busca }}" placeholder="Nome ou descrição">
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label">Situação</label>
+                <select id="status" name="status" class="form-select">
+                    <option value="ativos" {% if status == "ativos" %}selected{% endif %}>Ativos</option>
+                    <option value="inativos" {% if status == "inativos" %}selected{% endif %}>Inativos</option>
+                    <option value="todos" {% if status == "todos" %}selected{% endif %}>Todos</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button class="btn btn-primary flex-grow-1" type="submit">
+                    <i class="ri-search-line me-1"></i>Filtrar
+                </button>
+                <a href="{% url 'centrocirurgico:configuracoes_suspensao' %}" class="btn btn-light">Limpar</a>
+            </div>
+        </div>
+    </form>
+
+    <div class="row g-3">
+        <div class="col-xl-5">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">Tipos</h5>
+                        <small class="text-muted">{{ tipos|length }} registro{{ tipos|length|pluralize }}</small>
+                    </div>
+                    {% if perms.centrocirurgico.add_tiposuspensao %}
+                    <a href="{% url 'centrocirurgico:configuracoes_suspensao' %}?status={{ status }}" class="btn btn-sm btn-primary">
+                        <i class="ri-add-line me-1"></i>Novo tipo
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for tipo in tipos %}
+                    <div class="list-group-item {% if tipo_selecionado.id == tipo.id %}bg-primary-subtle{% endif %}">
+                        <div class="d-flex justify-content-between gap-2">
+                            <a class="text-body flex-grow-1" href="?tipo={{ tipo.id }}&status={{ status }}{% if busca %}&q={{ busca|urlencode }}{% endif %}">
+                                <div class="d-flex align-items-center gap-2">
+                                    <strong>{{ tipo.nome }}</strong>
+                                    {% if tipo.ativo %}
+                                    <span class="badge bg-success-subtle text-success">Ativo</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary">Inativo</span>
+                                    {% endif %}
+                                </div>
+                                {% if tipo.descricao %}<small class="text-muted d-block">{{ tipo.descricao }}</small>{% endif %}
+                                <small class="text-muted">Ordem {{ tipo.ordem }} · {{ tipo.motivos.count }} motivo{{ tipo.motivos.count|pluralize }}</small>
+                            </a>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-label="Ações do tipo">
+                                    <i class="ri-more-2-fill"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    {% if perms.centrocirurgico.change_tiposuspensao %}
+                                    <a class="dropdown-item" href="?tipo={{ tipo.id }}&editar_tipo={{ tipo.id }}&status=todos">Editar</a>
+                                    <form method="post" action="{% url 'centrocirurgico:tipo_suspensao_alternar' tipo.id %}">
+                                        {% csrf_token %}
+                                        <button class="dropdown-item" type="submit">{% if tipo.ativo %}Desativar{% else %}Ativar{% endif %}</button>
+                                    </form>
+                                    {% endif %}
+                                    {% if perms.centrocirurgico.delete_tiposuspensao %}
+                                    <form method="post" action="{% url 'centrocirurgico:tipo_suspensao_excluir' tipo.id %}" onsubmit="return confirm('Confirma a exclusão deste tipo?');">
+                                        {% csrf_token %}
+                                        <button class="dropdown-item text-danger" type="submit">Excluir</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted py-5">Nenhum tipo encontrado.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-7">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">{% if tipo_edicao %}Editar tipo{% else %}Novo tipo{% endif %}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'centrocirurgico:tipo_suspensao_salvar' %}">
+                        {% csrf_token %}
+                        {% if tipo_edicao %}<input type="hidden" name="id" value="{{ tipo_edicao.id }}">{% endif %}
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label" for="{{ tipo_form.nome.id_for_label }}">Nome *</label>
+                                {{ tipo_form.nome }}
+                                {% for error in tipo_form.nome.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="{{ tipo_form.ordem.id_for_label }}">Ordem</label>
+                                {{ tipo_form.ordem }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" for="{{ tipo_form.descricao.id_for_label }}">Descrição</label>
+                                {{ tipo_form.descricao }}
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    {{ tipo_form.ativo }}
+                                    <label class="form-check-label" for="{{ tipo_form.ativo.id_for_label }}">Ativo</label>
+                                </div>
+                                {% for error in tipo_form.non_field_errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-3">
+                            {% if tipo_edicao %}
+                            <a class="btn btn-light" href="?tipo={{ tipo_edicao.id }}&status=todos">Cancelar</a>
+                            {% endif %}
+                            <button class="btn btn-primary" type="submit">Salvar tipo</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">Motivos{% if tipo_selecionado %} — {{ tipo_selecionado.nome }}{% endif %}</h5>
+                        <small class="text-muted">Cada motivo pertence a um único tipo.</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if tipo_selecionado %}
+                    {% if perms.centrocirurgico.add_motivosuspensao or motivo_edicao %}
+                    <form method="post" action="{% url 'centrocirurgico:motivo_suspensao_salvar' %}" class="border rounded p-3 mb-3">
+                        {% csrf_token %}
+                        {% if motivo_edicao %}<input type="hidden" name="id" value="{{ motivo_edicao.id }}">{% endif %}
+                        <div class="row g-3">
+                            <div class="col-12 d-none">{{ motivo_form.tipo }}</div>
+                            <div class="col-md-8">
+                                <label class="form-label" for="{{ motivo_form.nome.id_for_label }}">Motivo *</label>
+                                {{ motivo_form.nome }}
+                                {% for error in motivo_form.nome.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="{{ motivo_form.ordem.id_for_label }}">Ordem</label>
+                                {{ motivo_form.ordem }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" for="{{ motivo_form.descricao.id_for_label }}">Descrição</label>
+                                {{ motivo_form.descricao }}
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    {{ motivo_form.ativo }}
+                                    <label class="form-check-label" for="{{ motivo_form.ativo.id_for_label }}">Ativo</label>
+                                </div>
+                                {% for error in motivo_form.ativo.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                                {% for error in motivo_form.non_field_errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-3">
+                            {% if motivo_edicao %}
+                            <a class="btn btn-light" href="?tipo={{ tipo_selecionado.id }}&status=todos">Cancelar</a>
+                            {% endif %}
+                            <button class="btn btn-primary" type="submit">{% if motivo_edicao %}Salvar alteração{% else %}Adicionar motivo{% endif %}</button>
+                        </div>
+                    </form>
+                    {% endif %}
+
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead class="table-light">
+                                <tr><th>Motivo</th><th>Ordem</th><th>Situação</th><th class="text-end">Ações</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for motivo in motivos %}
+                                <tr>
+                                    <td><strong>{{ motivo.nome }}</strong>{% if motivo.descricao %}<small class="text-muted d-block">{{ motivo.descricao }}</small>{% endif %}</td>
+                                    <td>{{ motivo.ordem }}</td>
+                                    <td>{% if motivo.ativo %}<span class="badge bg-success-subtle text-success">Ativo</span>{% else %}<span class="badge bg-secondary-subtle text-secondary">Inativo</span>{% endif %}</td>
+                                    <td class="text-end">
+                                        {% if perms.centrocirurgico.change_motivosuspensao %}
+                                        <a class="btn btn-sm btn-outline-primary" href="?tipo={{ tipo_selecionado.id }}&editar_motivo={{ motivo.id }}&status=todos">Editar</a>
+                                        <form class="d-inline" method="post" action="{% url 'centrocirurgico:motivo_suspensao_alternar' motivo.id %}">
+                                            {% csrf_token %}
+                                            <button class="btn btn-sm btn-outline-secondary" type="submit">{% if motivo.ativo %}Desativar{% else %}Ativar{% endif %}</button>
+                                        </form>
+                                        {% endif %}
+                                        {% if perms.centrocirurgico.delete_motivosuspensao %}
+                                        <form class="d-inline" method="post" action="{% url 'centrocirurgico:motivo_suspensao_excluir' motivo.id %}" onsubmit="return confirm('Confirma a exclusão deste motivo?');">
+                                            {% csrf_token %}
+                                            <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="4" class="text-center text-muted py-4">Nenhum motivo encontrado para este tipo.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mb-0">Cadastre ou selecione um tipo para gerenciar seus motivos.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
