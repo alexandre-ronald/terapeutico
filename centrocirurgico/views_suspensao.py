@@ -327,7 +327,7 @@ def suspensao_nova(request):
 
         if SuspensaoCirurgia.objects.filter(cirurgia=cirurgia).exists():
             messages.warning(request, "Esta cirurgia já possui uma suspensão registrada.")
-            return redirect("centrocirurgico:mapa_cirurgico_list_novo")
+            return redirect("centrocirurgico:mapa_cirurgico_list")
 
         token_cirurgia = signing.dumps(
             {"cirurgia_id": cirurgia.id},
@@ -361,7 +361,7 @@ def suspensao_nova(request):
     )
     if SuspensaoCirurgia.objects.filter(cirurgia=cirurgia).exists():
         messages.warning(request, "Esta cirurgia já possui uma suspensão registrada.")
-        return redirect("centrocirurgico:mapa_cirurgico_list_novo")
+        return redirect("centrocirurgico:mapa_cirurgico_list")
 
     form = SuspensaoCirurgiaForm(request.POST)
     if form.is_valid():
@@ -371,7 +371,7 @@ def suspensao_nova(request):
         suspensao.full_clean()
         suspensao.save()
         messages.success(request, "Suspensão da cirurgia registrada com sucesso.")
-        return redirect("centrocirurgico:mapa_cirurgico_list_novo")
+        return redirect("centrocirurgico:mapa_cirurgico_list")
 
     messages.error(request, "Revise os dados da suspensão.")
     return _renderizar_suspensao(
