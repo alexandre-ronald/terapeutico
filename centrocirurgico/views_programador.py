@@ -117,7 +117,16 @@ def _salvar_necessidades(request, programacao):
         return erros
     programacao.necessidades.exclude(necessidade_id__in=selecionadas).delete()
     for necessidade in catalogo:
-        ProgramacaoNecessidade.objects.update_or_create(programacao=programacao, necessidade=necessidade, defaults={"complemento": _texto(request.POST.get(f"complemento_{necessidade.pk}"))})
+        atendida = request.POST.get(f"atendida_{necessidade.pk}") == "1"
+        vinculo, _ = ProgramacaoNecessidade.objects.get_or_create(
+            programacao=programacao, necessidade=necessidade
+        )
+        vinculo.complemento = _texto(request.POST.get(f"complemento_{necessidade.pk}"))
+        if vinculo.atendida != atendida:
+            vinculo.atendida = atendida
+            vinculo.atendida_por = request.user if atendida else None
+            vinculo.atendida_em = timezone.now() if atendida else None
+        vinculo.save()
     return []
 
 
@@ -150,6 +159,13 @@ def programacao_editar(request, pk):
 @transaction.atomic
 def programacao_enviar(request, pk):
     programacao = get_object_or_404(ProgramacaoCirurgia.objects.select_for_update().select_related("cirurgia"), pk=pk)
+    pendentes = list(
+        programacao.necessidades.filter(atendida=False)
+        .values_list("necessidade__nome", flat=True)
+    )
+    if pendentes:
+        messages.error(request, "Confirme todas as necessidades antes do envio: " + ", ".join(pendentes) + ".")
+        return redirect("centrocirurgico:programacao_editar", pk=pk)
     sala = programacao.sala_painel
     ocupantes = ProgramacaoCirurgia.objects.select_for_update().filter(
         status=ProgramacaoCirurgia.ENVIADA,

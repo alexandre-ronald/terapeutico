@@ -3,7 +3,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 from django.urls import reverse
-from .models import Cirurgia, GiroSala, Paciente, ProgramacaoCirurgia
+from .models import (
+    Cirurgia, GiroSala, NecessidadeCirurgica, Paciente,
+    ProgramacaoCirurgia, ProgramacaoNecessidade,
+)
 
 
 class ProgramadorCirurgiasTests(TestCase):
@@ -57,3 +60,36 @@ class ProgramadorCirurgiasTests(TestCase):
         })
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Faça uma escolha válida")
+
+    def test_bloqueia_envio_com_necessidade_pendente(self):
+        catalogo = NecessidadeCirurgica.objects.create(nome="Leito de UTI")
+        ProgramacaoNecessidade.objects.create(
+            programacao=self.b, necessidade=catalogo, complemento="P1"
+        )
+        response = self.client.post(
+            reverse("centrocirurgico:programacao_enviar", args=[self.b.pk]),
+            follow=True,
+        )
+        self.b.refresh_from_db()
+        self.assertEqual(self.b.status, ProgramacaoCirurgia.RASCUNHO)
+        self.assertContains(response, "Confirme todas as necessidades")
+        self.assertContains(response, "Leito de UTI")
+
+    def test_confirmacao_da_necessidade_e_auditada_no_programador(self):
+        catalogo = NecessidadeCirurgica.objects.create(nome="Sangue")
+        response = self.client.post(
+            reverse("centrocirurgico:programacao_editar", args=[self.b.pk]),
+            {
+                "sala_painel": "1", "hora_painel": "10:00",
+                "anestesistas": "", "instrumentador": "", "circulante": "",
+                "residente": "", "enfermeiro": "", "outros_profissionais": "",
+                "observacao": "", "necessidades": [str(catalogo.pk)],
+                f"complemento_{catalogo.pk}": "Plaquetas",
+                f"atendida_{catalogo.pk}": "1",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        vinculo = ProgramacaoNecessidade.objects.get(programacao=self.b)
+        self.assertTrue(vinculo.atendida)
+        self.assertEqual(vinculo.atendida_por, self.user)
+        self.assertIsNotNone(vinculo.atendida_em)

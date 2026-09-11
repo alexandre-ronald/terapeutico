@@ -1,6 +1,12 @@
-{% extends "base.html" %}
-{% block title %}Painel Programador{% endblock %}
-{% block content %}
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel Programador</title>
+<link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet">
+<link href="{% static 'assets/css/icons.min.css' %}" rel="stylesheet">
 <style>
   .painel-programador { background:#f3f6fa; min-height:calc(100vh - 105px); }
   .painel-tabela { table-layout:fixed; min-width:1400px; background:#fff; }
@@ -17,6 +23,8 @@
   .necessidade-atendida { background:#dcfce7; border:1px solid #86efac; color:#166534; }
   .legenda-cor { display:inline-block; width:16px; height:16px; border-radius:4px; vertical-align:-3px; margin-right:5px; }
 </style>
+</head>
+<body>
 <div class="painel-programador p-3 p-xl-4">
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <div><h3 class="mb-1">Painel Programador</h3><div class="text-muted">Cirurgias enviadas para as salas cirúrgicas</div></div>
@@ -29,7 +37,7 @@
       <td><div class="sala-numero">{{ sala.rotulo }}</div>{% if item %}<div class="badge w-100 mt-2 {{ item.status_classe }}">{{ item.status_painel }}</div><small class="d-block text-center mt-1">{{ item.etapa_giro }}</small>{% endif %}</td>
       {% if item %}<td><div class="paciente-nome">{{ item.cirurgia.paciente.nome }}</div><div class="text-muted mt-1">Prontuário: {{ item.cirurgia.paciente.prontuario|default:'—' }}</div><div class="text-muted">Nascimento: {{ item.cirurgia.paciente.nascimento|date:'d/m/Y'|default:'—' }}</div></td>
       <td class="text-center"><strong class="fs-5">{{ item.hora_painel|time:'H:i'|default:'—' }}</strong></td><td><strong>{{ item.cirurgia.procedimento|default:'—' }}</strong></td><td>{{ item.cirurgia.medico|default:'—' }}</td><td>{{ item.anestesistas|default:'—'|linebreaksbr }}</td><td><strong>Enf.:</strong> {{ item.enfermeiro|default:'—' }}<br><strong>Res.:</strong> {{ item.residente|default:'—' }}{% if item.outros_profissionais %}<br><strong>Outros:</strong> {{ item.outros_profissionais|linebreaksbr }}{% endif %}</td><td><strong>Circ.:</strong> {{ item.circulante|default:'—' }}<br><strong>Instr.:</strong> {{ item.instrumentador|default:'—' }}</td>
-      <td>{% if item.observacao %}<div class="mb-2">{{ item.observacao|linebreaksbr }}</div>{% endif %}{% for necessidade in item.necessidades.all %}<form method="post" action="{% url 'centrocirurgico:necessidade_alternar_atendimento' necessidade.id %}" class="mb-1">{% csrf_token %}<button type="submit" class="btn btn-sm w-100 text-start {% if necessidade.atendida %}necessidade-atendida{% else %}necessidade-pendente{% endif %}" {% if not perms.centrocirurgico.change_programacaonecessidade %}disabled{% endif %}><i class="{% if necessidade.atendida %}ri-checkbox-circle-fill{% else %}ri-close-circle-fill{% endif %} me-1"></i>{{ necessidade.necessidade.nome }}{% if necessidade.complemento %}: {{ necessidade.complemento }}{% endif %}</button></form>{% empty %}<span class="text-muted">Sem observações especiais</span>{% endfor %}</td>
+      <td>{% if item.observacao %}<div class="mb-2">{{ item.observacao|linebreaksbr }}</div>{% endif %}{% for necessidade in item.necessidades.all %}<div class="rounded p-1 mb-1 {% if necessidade.atendida %}necessidade-atendida{% else %}necessidade-pendente{% endif %}"><i class="{% if necessidade.atendida %}ri-checkbox-circle-fill{% else %}ri-close-circle-fill{% endif %} me-1"></i>{{ necessidade.necessidade.nome }}{% if necessidade.complemento %}: {{ necessidade.complemento }}{% endif %}</div>{% empty %}<span class="text-muted">Sem observações especiais</span>{% endfor %}</td>
       {% else %}<td colspan="8" class="vazio">Sala sem cirurgia enviada ao painel</td>{% endif %}
     </tr>{% endwith %}{% endfor %}</tbody>
   </table></div></div>
@@ -41,4 +49,5 @@
   setInterval(() => { restante -= 1; if (contador) contador.textContent = restante; if (restante <= 0) window.location.reload(); }, 1000);
   document.getElementById('tela-cheia')?.addEventListener('click', () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen());
 </script>
-{% endblock %}
+</body>
+</html>

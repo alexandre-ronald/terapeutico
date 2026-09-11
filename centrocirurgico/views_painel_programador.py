@@ -1,11 +1,9 @@
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.db import transaction
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import render
 from django.utils import timezone
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET
 
-from .models import GiroSala, ProgramacaoCirurgia, ProgramacaoNecessidade
+from .models import GiroSala, ProgramacaoCirurgia
 
 
 def etapa_giro(giro):
@@ -73,21 +71,3 @@ def painel_programador(request):
         "atualizado_em": timezone.localtime(),
         "intervalo_atualizacao": 60,
     })
-
-
-@login_required
-@permission_required("centrocirurgico.change_programacaonecessidade", raise_exception=True)
-@require_POST
-@transaction.atomic
-def necessidade_alternar_atendimento(request, pk):
-    item = get_object_or_404(
-        ProgramacaoNecessidade.objects.select_for_update().select_related("programacao"),
-        pk=pk,
-        programacao__status=ProgramacaoCirurgia.ENVIADA,
-    )
-    item.atendida = not item.atendida
-    item.atendida_por = request.user if item.atendida else None
-    item.atendida_em = timezone.now() if item.atendida else None
-    item.save(update_fields=("atendida", "atendida_por", "atendida_em"))
-    messages.success(request, "Necessidade marcada como atendida." if item.atendida else "Necessidade reaberta como pendente.")
-    return redirect("centrocirurgico:painel_programador")

@@ -16,7 +16,10 @@ class PainelProgramadorTests(TestCase):
         self.programacao = ProgramacaoCirurgia.objects.create(cirurgia=cirurgia, sala_painel="2", hora_painel=time(9), criado_por=self.user, atualizado_por=self.user, status=ProgramacaoCirurgia.ENVIADA)
         GiroSala.objects.create(paciente=paciente, cirurgia=cirurgia, dataInicioCirurgia="2026-09-11T09:00:00Z")
         catalogo = NecessidadeCirurgica.objects.create(nome="Leito de UTI")
-        self.necessidade = ProgramacaoNecessidade.objects.create(programacao=self.programacao, necessidade=catalogo, complemento="P1")
+        self.necessidade = ProgramacaoNecessidade.objects.create(
+            programacao=self.programacao, necessidade=catalogo, complemento="P1",
+            atendida=True, atendida_por=self.user,
+        )
 
     def test_exibe_dados_operacionais_e_etapa(self):
         response = self.client.get(reverse("centrocirurgico:painel_programador"))
@@ -29,12 +32,11 @@ class PainelProgramadorTests(TestCase):
         self.assertContains(response, "Sala sem cirurgia enviada ao painel", count=8)
         self.assertContains(response, "Cirurgia iniciada")
 
-    def test_alterna_atendimento_com_auditoria(self):
-        self.client.post(reverse("centrocirurgico:necessidade_alternar_atendimento", args=[self.necessidade.pk]))
-        self.necessidade.refresh_from_db()
-        self.assertTrue(self.necessidade.atendida)
-        self.assertEqual(self.necessidade.atendida_por, self.user)
-        self.assertIsNotNone(self.necessidade.atendida_em)
+    def test_painel_e_somente_leitura_e_sem_layout_do_sistema(self):
+        response = self.client.get(reverse("centrocirurgico:painel_programador"))
+        self.assertNotContains(response, "app-menu navbar-menu")
+        self.assertNotContains(response, "necessidade_alternar_atendimento")
+        self.assertNotContains(response, "<form")
 
     def test_sala_liberada_retira_cirurgia_do_painel(self):
         giro = GiroSala.objects.get(cirurgia=self.programacao.cirurgia)

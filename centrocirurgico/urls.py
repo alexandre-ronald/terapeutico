@@ -9,7 +9,6 @@ app_name = 'centrocirurgico'
 
 urlpatterns = [
     path("painel-programador/", views_painel_programador.painel_programador, name="painel_programador"),
-    path("painel-programador/necessidades/<int:pk>/alternar/", views_painel_programador.necessidade_alternar_atendimento, name="necessidade_alternar_atendimento"),
     path("programador/", views_programador.programador_mapa, name="programador_mapa"),
     path("programador/abrir/", views_programador.programacao_abrir, name="programacao_abrir"),
     path("programador/<int:pk>/", views_programador.programacao_editar, name="programacao_editar"),
