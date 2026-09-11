@@ -148,7 +148,7 @@ def motivo_salvar(request):
 
     instance = get_object_or_404(MotivoSuspensao, pk=pk) if pk else None
     form = MotivoSuspensaoForm(request.POST, instance=instance, prefix="motivo")
-    tipo_id = request.POST.get("tipo")
+    tipo_id = request.POST.get("motivo-tipo")
     if form.is_valid():
         motivo = form.save()
         messages.success(request, "Motivo de suspensão salvo com sucesso.")
