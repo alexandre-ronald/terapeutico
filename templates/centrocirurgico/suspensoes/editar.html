@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Editar Suspensão{% endblock %}
+{% block content %}
+<div class="container-fluid py-3">
+ <div class="d-flex justify-content-between align-items-center mb-3"><div><h4 class="mb-1">Editar Suspensão</h4><p class="text-muted mb-0">{{ suspensao.cirurgia.paciente.nome }} · {{ suspensao.cirurgia.procedimento }}</p></div><a class="btn btn-outline-secondary" href="{% url 'centrocirurgico:suspensao_detalhe' suspensao.pk %}">Cancelar</a></div>
+ <div class="card"><div class="card-body"><div class="alert alert-info">Paciente, cirurgia, usuário e data do registro original não podem ser alterados.</div>
+ <form method="post">{% csrf_token %}<div class="row g-3">
+  <div class="col-md-6"><label class="form-label">Tipo *</label>{{ form.tipo }}{% for e in form.tipo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+  <div class="col-md-6"><label class="form-label">Motivo *</label>{{ form.motivo }}{% for e in form.motivo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+  <div class="col-12"><label class="form-label">Observação <span class="text-muted">(opcional)</span></label>{{ form.observacao }}{% for e in form.observacao.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+ </div><div class="d-flex justify-content-end mt-3"><button class="btn btn-primary">Salvar alterações</button></div></form>
+ </div></div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded",function(){const tipo=document.getElementById("{{ form.tipo.id_for_label }}"),motivo=document.getElementById("{{ form.motivo.id_for_label }}"),base="{% url 'centrocirurgico:motivos_ativos_por_tipo' 0 %}";tipo.addEventListener("change",async function(){motivo.innerHTML='<option value="">---------</option>';if(!tipo.value)return;const r=await fetch(base.replace("/0/","/"+tipo.value+"/"));if(!r.ok)return;const d=await r.json();d.motivos.forEach(x=>motivo.add(new Option(x.nome,x.id)));});});
+</script>
+{% endblock %}
