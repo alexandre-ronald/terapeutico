@@ -7,6 +7,7 @@ from django.http import HttpResponseRedirect
 from django.http import JsonResponse
 from django.urls import reverse
 from django.core.paginator import Paginator
+from django.core import signing
 from datetime import date
 from django.utils import timezone
 from datetime import datetime
@@ -671,36 +672,41 @@ def relatorio_lavagens(request):
         }
     )
 
+@login_required
 def mapa_cirurgico_list_novo(request):
-
-    data_mapa = request.GET.get('data_mapa')
+    data_mapa = request.GET.get("data_mapa")
     dados = []
-    if request.method == 'GET':
-        if data_mapa:
-            dados = buscar_mapa_cirurgico_aghu(data=data_mapa)
+
+    if data_mapa:
+        dados = buscar_mapa_cirurgico_aghu(data=data_mapa)
+
+    def serializar_data(valor, formato):
+        return valor.strftime(formato) if valor else ""
 
     for dado in dados:
-        prontuario = dado['prontuario']
-        procedimento = dado['procedimento']
-        especialidade = dado['especialidade']
+        inicio = dado.get("data_inicio_cirurgia")
+        dado["suspensao_token"] = signing.dumps(
+            {
+                "prontuario": str(dado.get("prontuario") or ""),
+                "nome": dado.get("nome_paciente") or "",
+                "data_nascimento": serializar_data(
+                    dado.get("data_nascimento"), "%Y-%m-%d"
+                ),
+                "especialidade": dado.get("especialidade") or "",
+                "procedimento": dado.get("procedimento") or "",
+                "medico": dado.get("medico") or "",
+                "sala": dado.get("sala") or "",
+                "data_cirurgia": serializar_data(inicio, "%Y-%m-%d"),
+                "hora_cirurgia": serializar_data(inicio, "%H:%M:%S"),
+            },
+            salt="centrocirurgico.suspensao.mapa",
+        )
 
-        paciente = Paciente.objects.filter(prontuario=prontuario).first()
-        if paciente:
-            cirurgia = Cirurgia.objects.filter(paciente = paciente, 
-                                               procedimento = procedimento, 
-                                               especialidade = especialidade)
-            
-            
-
-    #paginator = Paginator(dados, 8)  # 10 pacientes por página
-    #page_number = request.GET.get('page')
-    #page_obj = paginator.get_page(page_number)
-
-    context = {
-        'mapa': dados,
-    }
-
-    return render(request, 'centrocirurgico/mapa_cirurgico_listar_novo.html', context)
+    return render(
+        request,
+        "centrocirurgico/mapa_cirurgico_listar_novo.html",
+        {"mapa": dados},
+    )
 
 def giro_sala_novo(request):
 
