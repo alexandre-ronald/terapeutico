@@ -37,5 +37,6 @@ class SuspensaoCirurgiaAdmin(admin.ModelAdmin):
         "cirurgia__procedimento",
         "observacao",
     )
-    autocomplete_fields = ("cirurgia", "tipo", "motivo", "registrado_por")
+    raw_id_fields = ("cirurgia",)
+    autocomplete_fields = ("tipo", "motivo", "registrado_por")
     readonly_fields = ("registrado_em",)
