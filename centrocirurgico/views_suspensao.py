@@ -386,9 +386,16 @@ def suspensao_nova(request):
 
 
 @login_required
-@permission_required("centrocirurgico.add_suspensaocirurgia", raise_exception=True)
 @require_GET
 def motivos_ativos_por_tipo(request, tipo_id):
+    permissoes = (
+        "centrocirurgico.add_suspensaocirurgia",
+        "centrocirurgico.view_suspensaocirurgia",
+        "centrocirurgico.change_suspensaocirurgia",
+    )
+    if not any(request.user.has_perm(permissao) for permissao in permissoes):
+        raise PermissionDenied
+
     motivos = MotivoSuspensao.objects.filter(
         tipo_id=tipo_id,
         tipo__ativo=True,
