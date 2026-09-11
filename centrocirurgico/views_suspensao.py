@@ -72,10 +72,11 @@ def configuracoes_suspensao(request):
             MotivoSuspensao, pk=request.GET["editar_motivo"]
         )
 
-    tipo_form = TipoSuspensaoForm(instance=tipo_edicao)
+    tipo_form = TipoSuspensaoForm(instance=tipo_edicao, prefix="tipo")
     motivo_form = MotivoSuspensaoForm(
         instance=motivo_edicao,
         initial={"tipo": tipo_selecionado},
+        prefix="motivo",
     )
 
     return render(
@@ -109,7 +110,7 @@ def tipo_salvar(request):
         raise PermissionDenied
 
     instance = get_object_or_404(TipoSuspensao, pk=pk) if pk else None
-    form = TipoSuspensaoForm(request.POST, instance=instance)
+    form = TipoSuspensaoForm(request.POST, instance=instance, prefix="tipo")
     if form.is_valid():
         tipo = form.save()
         messages.success(request, "Tipo de suspensão salvo com sucesso.")
@@ -124,7 +125,7 @@ def tipo_salvar(request):
             "motivos": instance.motivos.all() if instance else MotivoSuspensao.objects.none(),
             "tipo_selecionado": instance,
             "tipo_form": form,
-            "motivo_form": MotivoSuspensaoForm(initial={"tipo": instance}),
+            "motivo_form": MotivoSuspensaoForm(initial={"tipo": instance}, prefix="motivo"),
             "tipo_edicao": instance,
             "status": "todos",
         },
@@ -146,7 +147,7 @@ def motivo_salvar(request):
         raise PermissionDenied
 
     instance = get_object_or_404(MotivoSuspensao, pk=pk) if pk else None
-    form = MotivoSuspensaoForm(request.POST, instance=instance)
+    form = MotivoSuspensaoForm(request.POST, instance=instance, prefix="motivo")
     tipo_id = request.POST.get("tipo")
     if form.is_valid():
         motivo = form.save()
@@ -162,7 +163,7 @@ def motivo_salvar(request):
             "tipos": TipoSuspensao.objects.all(),
             "motivos": tipo.motivos.all() if tipo else MotivoSuspensao.objects.none(),
             "tipo_selecionado": tipo,
-            "tipo_form": TipoSuspensaoForm(),
+            "tipo_form": TipoSuspensaoForm(prefix="tipo"),
             "motivo_form": form,
             "motivo_edicao": instance,
             "status": "todos",
