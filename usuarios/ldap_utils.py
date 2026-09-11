@@ -1,36 +1,67 @@
-from ldap3 import Server, Connection, ALL, core, NTLM
+import logging
+from urllib.parse import urlparse
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+from ldap3 import ALL, SIMPLE, Connection, Server
+from ldap3.core.exceptions import LDAPBindError, LDAPSocketOpenError
+
+
+logger = logging.getLogger(__name__)
+
+
+def _criar_servidor_ldap():
+    """Cria o servidor LDAP a partir de uma URI ou de um hostname."""
+    endereco = settings.AUTH_LDAP_SERVER_URI.strip()
+    if not endereco:
+        raise ImproperlyConfigured("AUTH_LDAP_SERVER_URI não foi configurado.")
+
+    uri = endereco if "://" in endereco else f"ldap://{endereco}"
+    parsed = urlparse(uri)
+
+    if not parsed.hostname or parsed.scheme not in {"ldap", "ldaps"}:
+        raise ImproperlyConfigured(
+            "AUTH_LDAP_SERVER_URI deve usar o formato "
+            "ldap://servidor:389 ou ldaps://servidor:636."
+        )
+
+    use_ssl = parsed.scheme == "ldaps"
+    port = parsed.port or (636 if use_ssl else 389)
+
+    return Server(
+        parsed.hostname,
+        port=port,
+        use_ssl=use_ssl,
+        get_info=ALL,
+    )
+
 
 def autenticar_usuario_ldap(username, password):
     """
-    Autentica um usuário no servidor LDAP/AD usando NTLM.
-    Retorna True se a autenticação for bem-sucedida, False caso contrário.
+    Autentica no Active Directory com o mesmo bind SIMPLE usado pelo sistema legado.
+
+    Retorna True quando o bind é bem-sucedido e False para credenciais
+    inválidas ou indisponibilidade do servidor.
     """
+    if not username or not password:
+        return False
 
-    
-    LDAP_SERVER = Server(settings.AUTH_LDAP_SERVER_URI, get_info=ALL)  # Substitua pelo endereço real
-    DOMAIN = f"{settings.AUTH_LDAP_DOMAIN}\\{username}"                # Substitua pelo seu domínio real
-
-    user_dn = f'{DOMAIN}\\{username}'  # Para AD, usa-se NTLM: DOMÍNIO\\usuário
-    # Configurações do LDAP
-    server = Server(settings.AUTH_LDAP_SERVER_URI, get_info=ALL)
-    user_dn = f"{settings.AUTH_LDAP_DOMAIN}\\{username}"  # Formato: ebserhnet\username
-
+    server = _criar_servidor_ldap()
+    usuario_ad = f"{settings.AUTH_LDAP_DOMAIN}\\{username}"
 
     try:
-       # server = Server(LDAP_SERVER, get_info=ALL)
-
         conn = Connection(
-                server,
-                user=user_dn,
-                password=password,
-                authentication='SIMPLE',
-                auto_bind=True,
-                auto_referrals=False
-            )
-        
+            server,
+            user=usuario_ad,
+            password=password,
+            authentication=SIMPLE,
+            auto_bind=True,
+            auto_referrals=False,
+        )
         conn.unbind()
         return True
-    except core.exceptions.LDAPBindError:
+    except LDAPBindError:
+        return False
+    except LDAPSocketOpenError:
+        logger.exception("Não foi possível estabelecer conexão com o servidor LDAP.")
         return False
