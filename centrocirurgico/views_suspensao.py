@@ -4,13 +4,15 @@ from urllib.parse import urlencode
 from django.contrib import messages
 from django.core import signing
 from django.core.signing import BadSignature, SignatureExpired
+from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.db.models.deletion import ProtectedError
 from django.http import HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_POST
+from django.utils import timezone
 
 from .forms_suspensao import (
     MotivoSuspensaoForm,
@@ -393,3 +395,136 @@ def motivos_ativos_por_tipo(request, tipo_id):
         ativo=True,
     ).values("id", "nome")
     return JsonResponse({"motivos": list(motivos)})
+
+
+
+@login_required
+@permission_required("centrocirurgico.view_suspensaocirurgia", raise_exception=True)
+@require_GET
+def suspensoes_lista(request):
+    hoje = timezone.localdate()
+    inicio_padrao = hoje.replace(day=1)
+    data_inicio = request.GET.get("data_inicio") or inicio_padrao.isoformat()
+    data_fim = request.GET.get("data_fim") or hoje.isoformat()
+    busca = request.GET.get("q", "").strip()
+    tipo_id = request.GET.get("tipo")
+    motivo_id = request.GET.get("motivo")
+    especialidade = request.GET.get("especialidade", "").strip()
+    sala = request.GET.get("sala", "").strip()
+
+    suspensoes = SuspensaoCirurgia.objects.select_related(
+        "cirurgia__paciente",
+        "tipo",
+        "motivo",
+        "registrado_por",
+        "atualizado_por",
+    )
+
+    try:
+        inicio = date.fromisoformat(data_inicio)
+        suspensoes = suspensoes.filter(cirurgia__data__gte=inicio)
+    except ValueError:
+        data_inicio = ""
+    try:
+        fim = date.fromisoformat(data_fim)
+        suspensoes = suspensoes.filter(cirurgia__data__lte=fim)
+    except ValueError:
+        data_fim = ""
+
+    if busca:
+        suspensoes = suspensoes.filter(
+            Q(cirurgia__paciente__nome__icontains=busca)
+            | Q(cirurgia__paciente__prontuario__icontains=busca)
+            | Q(cirurgia__procedimento__icontains=busca)
+        )
+    if tipo_id:
+        suspensoes = suspensoes.filter(tipo_id=tipo_id)
+    if motivo_id:
+        suspensoes = suspensoes.filter(motivo_id=motivo_id)
+    if especialidade:
+        suspensoes = suspensoes.filter(
+            cirurgia__especialidade__icontains=especialidade
+        )
+    if sala:
+        suspensoes = suspensoes.filter(cirurgia__sala__icontains=sala)
+
+    total_periodo = suspensoes.count()
+    suspensoes_hoje = suspensoes.filter(cirurgia__data=hoje).count()
+    distribuicao_tipos = list(
+        suspensoes.values("tipo__nome")
+        .annotate(total=Count("id"))
+        .order_by("-total", "tipo__nome")[:5]
+    )
+    pagina = Paginator(suspensoes.order_by("-cirurgia__data", "-registrado_em"), 15)
+    page_obj = pagina.get_page(request.GET.get("page"))
+
+    return render(
+        request,
+        "centrocirurgico/suspensoes/lista.html",
+        {
+            "page_obj": page_obj,
+            "total_periodo": total_periodo,
+            "suspensoes_hoje": suspensoes_hoje,
+            "distribuicao_tipos": distribuicao_tipos,
+            "tipos": TipoSuspensao.objects.all(),
+            "motivos": MotivoSuspensao.objects.filter(tipo_id=tipo_id)
+            if tipo_id
+            else MotivoSuspensao.objects.none(),
+            "data_inicio": data_inicio,
+            "data_fim": data_fim,
+            "busca": busca,
+            "tipo_id": str(tipo_id or ""),
+            "motivo_id": str(motivo_id or ""),
+            "especialidade": especialidade,
+            "sala": sala,
+        },
+    )
+
+
+@login_required
+@permission_required("centrocirurgico.view_suspensaocirurgia", raise_exception=True)
+@require_GET
+def suspensao_detalhe(request, pk):
+    suspensao = get_object_or_404(
+        SuspensaoCirurgia.objects.select_related(
+            "cirurgia__paciente",
+            "tipo",
+            "motivo",
+            "registrado_por",
+            "atualizado_por",
+        ),
+        pk=pk,
+    )
+    return render(
+        request,
+        "centrocirurgico/suspensoes/detalhe.html",
+        {"suspensao": suspensao},
+    )
+
+
+@login_required
+@permission_required("centrocirurgico.change_suspensaocirurgia", raise_exception=True)
+def suspensao_editar(request, pk):
+    suspensao = get_object_or_404(
+        SuspensaoCirurgia.objects.select_related("cirurgia__paciente"),
+        pk=pk,
+    )
+    form = SuspensaoCirurgiaForm(
+        request.POST or None,
+        instance=suspensao,
+    )
+    if request.method == "POST" and form.is_valid():
+        registro = form.save(commit=False)
+        registro.atualizado_por = request.user
+        registro.atualizado_em = timezone.now()
+        registro.full_clean()
+        registro.save()
+        messages.success(request, "Suspensão atualizada com sucesso.")
+        return redirect("centrocirurgico:suspensao_detalhe", pk=registro.pk)
+
+    return render(
+        request,
+        "centrocirurgico/suspensoes/editar.html",
+        {"suspensao": suspensao, "form": form},
+        status=400 if request.method == "POST" else 200,
+    )
