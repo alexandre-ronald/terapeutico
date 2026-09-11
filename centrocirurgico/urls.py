@@ -2,10 +2,15 @@ from django.urls import path
 from . import views
 from . import views_suspensao
 from . import views_necessidade
+from . import views_programador
 
 app_name = 'centrocirurgico'
 
 urlpatterns = [
+    path("programador/", views_programador.programador_mapa, name="programador_mapa"),
+    path("programador/abrir/", views_programador.programacao_abrir, name="programacao_abrir"),
+    path("programador/<int:pk>/", views_programador.programacao_editar, name="programacao_editar"),
+    path("programador/<int:pk>/enviar/", views_programador.programacao_enviar, name="programacao_enviar"),
     path("necessidades/", views_necessidade.necessidade_lista, name="necessidade_lista"),
     path("necessidades/salvar/", views_necessidade.necessidade_salvar, name="necessidade_salvar"),
     path("necessidades/<int:pk>/alternar/", views_necessidade.necessidade_alternar, name="necessidade_alternar"),
