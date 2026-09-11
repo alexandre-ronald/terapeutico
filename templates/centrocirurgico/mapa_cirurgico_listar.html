@@ -64,7 +64,7 @@ Giro de Leito
                                           <th>Médico</th>
                                           <th>Horário</th>
                                           <th style="width: 100px;">Sala</th>
-                                          <th style="width: 135px;">Ações</th>
+                                          <th style="width: 190px;">Ações</th>
                                           
                                         </tr>
                                     </thead>
@@ -113,6 +113,15 @@ Giro de Leito
                                                     
                                                     <button type="submit" class="btn btn-outline-success btn-sm"> <i class="ri-user-3-line"></i>  Giro Sala</button>
                                                 </form>
+                                                {% if perms.centrocirurgico.add_suspensaocirurgia %}
+                                                <form method="post" action="{% url 'centrocirurgico:suspensao_nova' %}" class="mt-1">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="mapa_token" value="{{ mp.suspensao_token }}">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                        <i class="ri-close-circle-line"></i> Suspender cirurgia
+                                                    </button>
+                                                </form>
+                                                {% endif %}
                                             </td>
                                             
                                         </tr>
