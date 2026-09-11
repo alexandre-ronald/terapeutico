@@ -20,6 +20,14 @@ def _texto(valor):
     return str(valor or "").strip()
 
 
+def _normalizar_sala(valor):
+    texto = _texto(valor)
+    for numero in range(1, 10):
+        if str(numero) in texto:
+            return str(numero)
+    return ""
+
+
 def _token(dado):
     inicio = dado.get("data_inicio_cirurgia")
     return signing.dumps({
@@ -89,7 +97,7 @@ def programacao_abrir(request):
     programacao, _ = ProgramacaoCirurgia.objects.get_or_create(
         cirurgia=cirurgia,
         defaults={
-            "sala_painel": cirurgia.sala or "",
+            "sala_painel": _normalizar_sala(cirurgia.sala),
             "hora_painel": cirurgia.hora,
             "criado_por": request.user,
             "atualizado_por": request.user,
@@ -146,7 +154,7 @@ def programacao_enviar(request, pk):
     sala = programacao.sala_painel
     ocupantes = ProgramacaoCirurgia.objects.select_for_update().filter(
         status=ProgramacaoCirurgia.ENVIADA,
-        sala_painel__iexact=sala,
+        sala_painel=sala,
     ).exclude(pk=pk)
     bloqueio = None
     for atual in ocupantes.select_related("cirurgia__paciente"):
