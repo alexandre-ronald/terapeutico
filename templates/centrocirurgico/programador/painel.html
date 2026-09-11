@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Painel Programador</title>
+<title>Painel de Cirurgias</title>
 <link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet">
 <link href="{% static 'assets/css/icons.min.css' %}" rel="stylesheet">
 <style>
@@ -19,6 +19,7 @@
   .status-preparacao { background:#fff200!important; color:#171717!important; }
   .status-iniciada { background:#4faf31!important; color:#fff!important; }
   .status-finalizada { background:#ef2020!important; color:#fff!important; }
+  .linha-sala.status-preparacao > td { background:#fff59d!important; color:#171717!important; }
   .necessidade-pendente { background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; }
   .necessidade-atendida { background:#dcfce7; border:1px solid #86efac; color:#166534; }
   .legenda-cor { display:inline-block; width:16px; height:16px; border-radius:4px; vertical-align:-3px; margin-right:5px; }
@@ -27,14 +28,14 @@
 <body>
 <div class="painel-programador p-3 p-xl-4">
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <div><h3 class="mb-1">Painel Programador</h3><div class="text-muted">Cirurgias enviadas para as salas cirúrgicas</div></div>
+    <div><h3 class="mb-1">Painel de Cirurgias</h3></div>
     <div class="d-flex align-items-center gap-3"><div class="text-end"><small class="text-muted d-block">Atualizado às {{ atualizado_em|date:'H:i:s' }}</small><span class="badge bg-primary-subtle text-primary">Nova atualização em <span id="contador">60</span>s</span></div><button type="button" class="btn btn-outline-primary" id="tela-cheia"><i class="ri-fullscreen-line"></i></button></div>
   </div>
   <div class="card border-0 shadow-sm mb-3"><div class="table-responsive"><table class="table table-bordered painel-tabela mb-0">
     <colgroup><col style="width:7%"><col style="width:17%"><col style="width:7%"><col style="width:12%"><col style="width:10%"><col style="width:10%"><col style="width:9%"><col style="width:13%"><col style="width:15%"></colgroup>
     <thead><tr><th>Sala operatória</th><th>Paciente<br><small>Prontuário · Nascimento</small></th><th>Hora</th><th>Cirurgia</th><th>Cirurgião</th><th>Anestesistas</th><th>Enfermeiro<br>Residente</th><th>Circulante<br>Instrumentador</th><th>Observação especial</th></tr></thead>
-    <tbody>{% for sala in salas %}{% with item=sala.programacao %}<tr class="linha-sala">
-      <td><div class="sala-numero">{{ sala.rotulo }}</div>{% if item %}<div class="badge w-100 mt-2 {{ item.status_classe }}">{{ item.status_painel }}</div><small class="d-block text-center mt-1">{{ item.etapa_giro }}</small>{% endif %}</td>
+    <tbody>{% for sala in salas %}{% with item=sala.programacao %}<tr class="linha-sala {% if item %}{{ item.status_classe }}{% endif %}">
+      <td><div class="sala-numero">{{ sala.rotulo }}</div>{% if item and item.status_classe != 'status-preparacao' %}<small class="d-block text-center mt-1">{{ item.etapa_giro }}</small>{% endif %}</td>
       {% if item %}<td><div class="paciente-nome">{{ item.cirurgia.paciente.nome }}</div><div class="text-muted mt-1">Prontuário: {{ item.cirurgia.paciente.prontuario|default:'—' }}</div><div class="text-muted">Nascimento: {{ item.cirurgia.paciente.nascimento|date:'d/m/Y'|default:'—' }}</div></td>
       <td class="text-center"><strong class="fs-5">{{ item.hora_painel|time:'H:i'|default:'—' }}</strong></td><td><strong>{{ item.cirurgia.procedimento|default:'—' }}</strong></td><td>{{ item.cirurgia.medico|default:'—' }}</td><td>{{ item.anestesistas|default:'—'|linebreaksbr }}</td><td><strong>Enf.:</strong> {{ item.enfermeiro|default:'—' }}<br><strong>Res.:</strong> {{ item.residente|default:'—' }}{% if item.outros_profissionais %}<br><strong>Outros:</strong> {{ item.outros_profissionais|linebreaksbr }}{% endif %}</td><td><strong>Circ.:</strong> {{ item.circulante|default:'—' }}<br><strong>Instr.:</strong> {{ item.instrumentador|default:'—' }}</td>
       <td>{% if item.observacao %}<div class="mb-2">{{ item.observacao|linebreaksbr }}</div>{% endif %}{% for necessidade in item.necessidades.all %}<div class="rounded p-1 mb-1 {% if necessidade.atendida %}necessidade-atendida{% else %}necessidade-pendente{% endif %}"><i class="{% if necessidade.atendida %}ri-checkbox-circle-fill{% else %}ri-close-circle-fill{% endif %} me-1"></i>{{ necessidade.necessidade.nome }}{% if necessidade.complemento %}: {{ necessidade.complemento }}{% endif %}</div>{% empty %}<span class="text-muted">Sem observações especiais</span>{% endfor %}</td>

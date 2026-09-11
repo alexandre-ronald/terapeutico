@@ -32,6 +32,16 @@ class PainelProgramadorTests(TestCase):
         self.assertContains(response, "Sala sem cirurgia enviada ao painel", count=8)
         self.assertContains(response, "Cirurgia iniciada")
 
+    def test_preparacao_colore_linha_sem_textos_redundantes(self):
+        giro = GiroSala.objects.get(cirurgia=self.programacao.cirurgia)
+        giro.dataInicioCirurgia = None
+        giro.save(update_fields=("dataInicioCirurgia",))
+        response = self.client.get(reverse("centrocirurgico:painel_programador"))
+        self.assertContains(response, 'class="linha-sala status-preparacao"')
+        self.assertNotContains(response, "Aguardando início da cirurgia")
+        self.assertContains(response, "Painel de Cirurgias")
+        self.assertNotContains(response, "Cirurgias enviadas para as salas cirúrgicas")
+
     def test_painel_e_somente_leitura_e_sem_layout_do_sistema(self):
         response = self.client.get(reverse("centrocirurgico:painel_programador"))
         self.assertNotContains(response, "app-menu navbar-menu")
