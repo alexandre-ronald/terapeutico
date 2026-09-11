@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from ldap3 import ALL, Connection, Server
+from ldap3 import ALL, NTLM, Connection, Server
 from ldap3.core.exceptions import LDAPBindError, LDAPSocketOpenError
 
 
@@ -38,7 +38,7 @@ def _criar_servidor_ldap():
 
 def autenticar_usuario_ldap(username, password):
     """
-    Autentica um usuário no servidor LDAP/AD.
+    Autentica um usuário no Active Directory usando NTLM.
 
     Retorna True quando o bind é bem-sucedido e False para credenciais
     inválidas ou indisponibilidade do servidor.
@@ -47,14 +47,14 @@ def autenticar_usuario_ldap(username, password):
         return False
 
     server = _criar_servidor_ldap()
-    user_dn = f"{settings.AUTH_LDAP_DOMAIN}\\\\{username}"
+    usuario_ad = f"{settings.AUTH_LDAP_DOMAIN}\\{username}"
 
     try:
         conn = Connection(
             server,
-            user=user_dn,
+            user=usuario_ad,
             password=password,
-            authentication="SIMPLE",
+            authentication=NTLM,
             auto_bind=True,
             auto_referrals=False,
         )
