@@ -91,3 +91,18 @@ class ConsultaSuspensoesTests(TestCase):
         self.assertEqual(self.suspensao.atualizado_por, self.user)
         self.assertIsNotNone(self.suspensao.atualizado_em)
         self.assertEqual(self.suspensao.observacao, "Observação alterada")
+
+
+    def test_usuario_de_consulta_pode_carregar_motivos_do_filtro(self):
+        self.user.user_permissions.add(
+            Permission.objects.get(codename="view_suspensaocirurgia")
+        )
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse(
+                "centrocirurgico:motivos_ativos_por_tipo",
+                args=[self.tipo.id],
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["motivos"][0]["id"], self.motivo.id)
