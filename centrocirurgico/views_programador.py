@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
@@ -22,10 +23,8 @@ def _texto(valor):
 
 def _normalizar_sala(valor):
     texto = _texto(valor)
-    for numero in range(1, 10):
-        if str(numero) in texto:
-            return str(numero)
-    return ""
+    numeros = re.findall(r"(?<!\\d)([1-9])(?!\\d)", texto)
+    return numeros[-1] if numeros else ""
 
 
 def _token(dado):
