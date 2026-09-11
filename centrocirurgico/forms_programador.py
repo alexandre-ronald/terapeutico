@@ -20,6 +20,8 @@ class ProgramacaoCirurgiaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs.setdefault("class", "form-control")
+        self.fields["sala_painel"].widget.attrs["class"] = "form-select"
+        self.fields["sala_painel"].choices = (("", "Selecione a sala"),) + ProgramacaoCirurgia.SALAS
 
     def clean_sala_painel(self):
         sala = (self.cleaned_data.get("sala_painel") or "").strip()
