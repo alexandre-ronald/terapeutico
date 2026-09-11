@@ -198,6 +198,7 @@ class NecessidadeCirurgica(models.Model):
 
 
 class ProgramacaoCirurgia(models.Model):
+    SALAS = tuple((str(numero), f"Sala {numero}") for numero in range(1, 10))
     RASCUNHO = "rascunho"
     ENVIADA = "enviada"
     FINALIZADA = "finalizada"
@@ -208,7 +209,7 @@ class ProgramacaoCirurgia(models.Model):
     )
 
     cirurgia = models.OneToOneField(Cirurgia, on_delete=models.PROTECT, related_name="programacao")
-    sala_painel = models.CharField(max_length=50)
+    sala_painel = models.CharField(max_length=2, choices=SALAS)
     hora_painel = models.TimeField(null=True, blank=True)
     anestesistas = models.TextField(blank=True)
     instrumentador = models.CharField(max_length=250, blank=True)
@@ -234,7 +235,9 @@ class ProgramacaoCirurgia(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.sala_painel and self.cirurgia_id:
-            self.sala_painel = self.cirurgia.sala or ""
+            sala_original = self.cirurgia.sala or ""
+            numeros = [numero for numero in range(1, 10) if str(numero) in sala_original]
+            self.sala_painel = str(numeros[-1]) if numeros else ""
         if self.hora_painel is None and self.cirurgia_id:
             self.hora_painel = self.cirurgia.hora
         super().save(*args, **kwargs)
