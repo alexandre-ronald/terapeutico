@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Detalhes da Suspensão{% endblock %}
+{% block content %}
+<div class="container-fluid py-3">
+ <div class="d-flex justify-content-between align-items-center mb-3"><div><h4 class="mb-1">Detalhes da Suspensão</h4><p class="text-muted mb-0">Registro #{{ suspensao.id }}</p></div><div class="d-flex gap-2">{% if perms.centrocirurgico.change_suspensaocirurgia %}<a class="btn btn-primary" href="{% url 'centrocirurgico:suspensao_editar' suspensao.pk %}">Editar</a>{% endif %}<a class="btn btn-outline-secondary" href="{% url 'centrocirurgico:suspensoes_lista' %}">Voltar</a></div></div>
+ <div class="row g-3">
+  <div class="col-lg-7"><div class="card h-100"><div class="card-header"><h5 class="mb-0">Paciente e cirurgia</h5></div><div class="card-body row g-3">
+   <div class="col-md-8"><small class="text-muted d-block">Paciente</small><strong>{{ suspensao.cirurgia.paciente.nome }}</strong></div><div class="col-md-4"><small class="text-muted d-block">Prontuário</small><strong>{{ suspensao.cirurgia.paciente.prontuario }}</strong></div>
+   <div class="col-12"><small class="text-muted d-block">Procedimento</small><strong>{{ suspensao.cirurgia.procedimento }}</strong></div><div class="col-md-6"><small class="text-muted d-block">Especialidade</small>{{ suspensao.cirurgia.especialidade }}</div><div class="col-md-6"><small class="text-muted d-block">Cirurgião</small>{{ suspensao.cirurgia.medico }}</div>
+   <div class="col-md-4"><small class="text-muted d-block">Data</small>{{ suspensao.cirurgia.data|date:"d/m/Y" }}</div><div class="col-md-4"><small class="text-muted d-block">Horário</small>{{ suspensao.cirurgia.hora|time:"H:i" }}</div><div class="col-md-4"><small class="text-muted d-block">Sala</small>{{ suspensao.cirurgia.sala }}</div>
+  </div></div></div>
+  <div class="col-lg-5"><div class="card h-100"><div class="card-header"><h5 class="mb-0">Suspensão</h5></div><div class="card-body">
+   <small class="text-muted d-block">Tipo</small><strong>{{ suspensao.tipo.nome }}</strong><hr><small class="text-muted d-block">Motivo</small><strong>{{ suspensao.motivo.nome }}</strong><hr><small class="text-muted d-block">Observação</small><p>{{ suspensao.observacao|default:"Nenhuma observação registrada." }}</p>
+   <hr><small class="text-muted d-block">Registrado por</small>{{ suspensao.registrado_por }} em {{ suspensao.registrado_em|date:"d/m/Y H:i" }}
+   {% if suspensao.atualizado_em %}<small class="text-muted d-block mt-2">Última alteração</small>{{ suspensao.atualizado_por }} em {{ suspensao.atualizado_em|date:"d/m/Y H:i" }}{% endif %}
+  </div></div></div>
+ </div>
+</div>
+{% endblock %}
