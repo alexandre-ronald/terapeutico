@@ -112,6 +112,46 @@ class MotivoSuspensao(models.Model):
         return f"{self.tipo} - {self.nome}"
 
 
+class SuspensaoCirurgia(models.Model):
+    cirurgia = models.OneToOneField(
+        Cirurgia,
+        on_delete=models.PROTECT,
+        related_name="suspensao",
+    )
+    tipo = models.ForeignKey(
+        TipoSuspensao,
+        on_delete=models.PROTECT,
+        related_name="suspensoes",
+    )
+    motivo = models.ForeignKey(
+        MotivoSuspensao,
+        on_delete=models.PROTECT,
+        related_name="suspensoes",
+    )
+    observacao = models.TextField(blank=True)
+    registrado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="suspensoes_cirurgicas_registradas",
+    )
+    registrado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-registrado_em",)
+        verbose_name = "Suspensão de cirurgia"
+        verbose_name_plural = "Suspensões de cirurgia"
+
+    def clean(self):
+        super().clean()
+        if self.tipo_id and self.motivo_id and self.motivo.tipo_id != self.tipo_id:
+            raise ValidationError(
+                {"motivo": "O motivo selecionado não pertence ao tipo informado."}
+            )
+
+    def __str__(self):
+        return f"{self.cirurgia} - {self.motivo.nome}"
+
+
 class LimpezaTerminal(models.Model):
     CENTRO_CIRURGICO_CHOICES = [
         ('CCA', 'Centro Cirúrgico Adulto'),
