@@ -45,11 +45,6 @@
                         <h5 class="mb-0">Tipos</h5>
                         <small class="text-muted">{{ tipos|length }} registro{{ tipos|length|pluralize }}</small>
                     </div>
-                    {% if perms.centrocirurgico.add_tiposuspensao %}
-                    <a href="{% url 'centrocirurgico:configuracoes_suspensao' %}?status={{ status }}" class="btn btn-sm btn-primary">
-                        <i class="ri-add-line me-1"></i>Novo tipo
-                    </a>
-                    {% endif %}
                 </div>
                 <div class="list-group list-group-flush">
                     {% for tipo in tipos %}
