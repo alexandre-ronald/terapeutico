@@ -43,7 +43,7 @@ class ProgramadorCirurgiasTests(TestCase):
 
         self.b.refresh_from_db()
         self.assertEqual(self.b.status, ProgramacaoCirurgia.ENVIADA)
-        self.assertEqual(self.b.sala_painel, "2"
+        self.assertEqual(self.b.sala_painel, "2")
         self.assertEqual(self.b.hora_painel, time(11, 30))
         self.assertEqual(self.b.circulante, "Circulante Teste")
         self.assertEqual(self.b.residente, "Residente Teste")
