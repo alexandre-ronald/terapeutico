@@ -32,7 +32,7 @@ class ProgramadorCirurgiasTests(TestCase):
         self.assertEqual(self.b.status, ProgramacaoCirurgia.ENVIADA)
 
     def test_sala_alterada_e_usada_no_bloqueio(self):
-        self.b.sala_painel = "SALA 2"
+        self.b.sala_painel = "2"
         self.b.hora_painel = time(11, 30)
         self.b.circulante = "Circulante Teste"
         self.b.residente = "Residente Teste"
@@ -43,8 +43,17 @@ class ProgramadorCirurgiasTests(TestCase):
 
         self.b.refresh_from_db()
         self.assertEqual(self.b.status, ProgramacaoCirurgia.ENVIADA)
-        self.assertEqual(self.b.sala_painel, "SALA 2")
+        self.assertEqual(self.b.sala_painel, "2"
         self.assertEqual(self.b.hora_painel, time(11, 30))
         self.assertEqual(self.b.circulante, "Circulante Teste")
         self.assertEqual(self.b.residente, "Residente Teste")
         self.assertEqual(self.b.enfermeiro, "Enfermeiro Teste")
+
+    def test_formulario_exige_sala_entre_um_e_nove(self):
+        response = self.client.post(reverse("centrocirurgico:programacao_editar", args=[self.b.pk]), {
+            "sala_painel": "10", "hora_painel": "11:30", "anestesistas": "",
+            "instrumentador": "", "circulante": "", "residente": "", "enfermeiro": "",
+            "outros_profissionais": "", "observacao": "",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Faça uma escolha válida")
