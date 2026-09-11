@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import MotivoSuspensao, TipoSuspensao
+from .models import MotivoSuspensao, SuspensaoCirurgia, TipoSuspensao
 
 
 @admin.register(TipoSuspensao)
@@ -18,3 +18,25 @@ class MotivoSuspensaoAdmin(admin.ModelAdmin):
     search_fields = ("nome", "descricao", "tipo__nome")
     autocomplete_fields = ("tipo",)
     ordering = ("tipo__ordem", "tipo__nome", "ordem", "nome")
+
+
+
+@admin.register(SuspensaoCirurgia)
+class SuspensaoCirurgiaAdmin(admin.ModelAdmin):
+    list_display = (
+        "cirurgia",
+        "tipo",
+        "motivo",
+        "registrado_por",
+        "registrado_em",
+    )
+    list_filter = ("tipo", "motivo", "registrado_em")
+    search_fields = (
+        "cirurgia__paciente__nome",
+        "cirurgia__paciente__prontuario",
+        "cirurgia__procedimento",
+        "observacao",
+    )
+    raw_id_fields = ("cirurgia",)
+    autocomplete_fields = ("tipo", "motivo", "registrado_por")
+    readonly_fields = ("registrado_em",)

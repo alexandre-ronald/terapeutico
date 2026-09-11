@@ -6,6 +6,16 @@ app_name = 'centrocirurgico'
 
 urlpatterns = [
     path(
+        "suspensoes/nova/",
+        views_suspensao.suspensao_nova,
+        name="suspensao_nova",
+    ),
+    path(
+        "suspensoes/motivos-ativos/<int:tipo_id>/",
+        views_suspensao.motivos_ativos_por_tipo,
+        name="motivos_ativos_por_tipo",
+    ),
+    path(
         'suspensoes/configuracoes/',
         views_suspensao.configuracoes_suspensao,
         name='configuracoes_suspensao',

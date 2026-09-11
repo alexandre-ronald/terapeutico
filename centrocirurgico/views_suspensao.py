@@ -1,16 +1,29 @@
+from datetime import date, time
 from urllib.parse import urlencode
 
 from django.contrib import messages
+from django.core import signing
+from django.core.signing import BadSignature, SignatureExpired
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db import transaction
 from django.db.models import Q
 from django.db.models.deletion import ProtectedError
-from django.http import HttpResponseNotAllowed
+from django.http import HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_POST
 
-from .forms_suspensao import MotivoSuspensaoForm, TipoSuspensaoForm
-from .models import MotivoSuspensao, TipoSuspensao
+from .forms_suspensao import (
+    MotivoSuspensaoForm,
+    SuspensaoCirurgiaForm,
+    TipoSuspensaoForm,
+)
+from .models import (
+    Cirurgia,
+    MotivoSuspensao,
+    Paciente,
+    SuspensaoCirurgia,
+    TipoSuspensao,
+)
 
 
 def _config_url(tipo_id=None, **params):
@@ -233,3 +246,150 @@ def motivo_excluir(request, pk):
             "Este motivo já foi utilizado e não pode ser excluído. Desative-o.",
         )
     return redirect(_config_url(tipo_id, status="todos"))
+
+
+
+def _renderizar_suspensao(request, cirurgia, form, token_cirurgia, status=200):
+    return render(
+        request,
+        "centrocirurgico/suspensoes/nova.html",
+        {
+            "cirurgia": cirurgia,
+            "paciente": cirurgia.paciente,
+            "form": form,
+            "token_cirurgia": token_cirurgia,
+        },
+        status=status,
+    )
+
+
+@login_required
+@permission_required("centrocirurgico.add_suspensaocirurgia", raise_exception=True)
+@require_POST
+@transaction.atomic
+def suspensao_nova(request):
+    token_mapa = request.POST.get("mapa_token")
+    token_cirurgia = request.POST.get("cirurgia_token")
+
+    if token_mapa:
+        try:
+            dados = signing.loads(
+                token_mapa,
+                salt="centrocirurgico.suspensao.mapa",
+                max_age=3600,
+            )
+        except (BadSignature, SignatureExpired):
+            return HttpResponseBadRequest(
+                "Os dados do Mapa Cirúrgico expiraram ou foram alterados. "
+                "Atualize o mapa e tente novamente."
+            )
+
+        prontuario = (dados.get("prontuario") or "").strip()
+        nome = (dados.get("nome") or "").strip()
+        if not prontuario or not nome or not dados.get("data_cirurgia"):
+            return HttpResponseBadRequest("Dados obrigatórios da cirurgia não informados.")
+
+        nascimento = (
+            date.fromisoformat(dados["data_nascimento"])
+            if dados.get("data_nascimento")
+            else None
+        )
+        data_cirurgia = date.fromisoformat(dados["data_cirurgia"])
+        hora_cirurgia = (
+            time.fromisoformat(dados["hora_cirurgia"])
+            if dados.get("hora_cirurgia")
+            else None
+        )
+
+        paciente, _ = Paciente.objects.get_or_create(
+            prontuario=prontuario,
+            defaults={"nome": nome, "nascimento": nascimento},
+        )
+        atualizacoes = []
+        if paciente.nome != nome:
+            paciente.nome = nome
+            atualizacoes.append("nome")
+        if nascimento and paciente.nascimento != nascimento:
+            paciente.nascimento = nascimento
+            atualizacoes.append("nascimento")
+        if atualizacoes:
+            paciente.save(update_fields=atualizacoes)
+
+        cirurgia, _ = Cirurgia.objects.get_or_create(
+            paciente=paciente,
+            especialidade=dados.get("especialidade") or "",
+            procedimento=dados.get("procedimento") or "",
+            medico=dados.get("medico") or "",
+            sala=dados.get("sala") or "",
+            data=data_cirurgia,
+            hora=hora_cirurgia,
+        )
+
+        if SuspensaoCirurgia.objects.filter(cirurgia=cirurgia).exists():
+            messages.warning(request, "Esta cirurgia já possui uma suspensão registrada.")
+            return redirect("centrocirurgico:mapa_cirurgico_list")
+
+        token_cirurgia = signing.dumps(
+            {"cirurgia_id": cirurgia.id},
+            salt="centrocirurgico.suspensao.cirurgia",
+        )
+        return _renderizar_suspensao(
+            request,
+            cirurgia,
+            SuspensaoCirurgiaForm(),
+            token_cirurgia,
+        )
+
+    if not token_cirurgia:
+        return HttpResponseBadRequest("Identificação da cirurgia não informada.")
+
+    try:
+        dados_token = signing.loads(
+            token_cirurgia,
+            salt="centrocirurgico.suspensao.cirurgia",
+            max_age=3600,
+        )
+    except (BadSignature, SignatureExpired):
+        return HttpResponseBadRequest(
+            "A confirmação da suspensão expirou ou foi alterada. "
+            "Retorne ao Mapa Cirúrgico."
+        )
+
+    cirurgia = get_object_or_404(
+        Cirurgia.objects.select_related("paciente"),
+        pk=dados_token.get("cirurgia_id"),
+    )
+    if SuspensaoCirurgia.objects.filter(cirurgia=cirurgia).exists():
+        messages.warning(request, "Esta cirurgia já possui uma suspensão registrada.")
+        return redirect("centrocirurgico:mapa_cirurgico_list")
+
+    form = SuspensaoCirurgiaForm(request.POST)
+    if form.is_valid():
+        suspensao = form.save(commit=False)
+        suspensao.cirurgia = cirurgia
+        suspensao.registrado_por = request.user
+        suspensao.full_clean()
+        suspensao.save()
+        messages.success(request, "Suspensão da cirurgia registrada com sucesso.")
+        return redirect("centrocirurgico:mapa_cirurgico_list")
+
+    messages.error(request, "Revise os dados da suspensão.")
+    return _renderizar_suspensao(
+        request,
+        cirurgia,
+        form,
+        token_cirurgia,
+        status=400,
+    )
+
+
+@login_required
+@permission_required("centrocirurgico.add_suspensaocirurgia", raise_exception=True)
+@require_GET
+def motivos_ativos_por_tipo(request, tipo_id):
+    motivos = MotivoSuspensao.objects.filter(
+        tipo_id=tipo_id,
+        tipo__ativo=True,
+        ativo=True,
+    ).values("id", "nome")
+    return JsonResponse({"motivos": list(motivos)})
