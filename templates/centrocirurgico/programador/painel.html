@@ -3,31 +3,37 @@
 {% block content %}
 <style>
   .painel-programador { background:#f3f6fa; min-height:calc(100vh - 105px); }
-  .sala-card { border:0; border-left:7px solid #2563eb; box-shadow:0 8px 24px rgba(15,23,42,.08); }
-  .sala-numero { min-width:92px; text-align:center; font-size:2.15rem; font-weight:800; color:#1e3a8a; }
-  .paciente-nome { font-size:1.3rem; font-weight:700; color:#0f172a; }
-  .dado-label { color:#64748b; text-transform:uppercase; letter-spacing:.04em; font-size:.7rem; font-weight:700; }
-  .necessidade-pendente { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; }
-  .necessidade-atendida { background:#ecfdf5; border:1px solid #a7f3d0; color:#166534; }
+  .painel-tabela { table-layout:fixed; min-width:1400px; background:#fff; }
+  .painel-tabela th { background:#dff3e4; color:#163522; text-align:center; vertical-align:middle; font-size:.73rem; text-transform:uppercase; letter-spacing:.025em; border-color:#b9d4c0; }
+  .painel-tabela td { vertical-align:top; border-color:#dce3eb; font-size:.8rem; padding:.75rem .6rem; }
+  .painel-tabela .linha-sala { min-height:105px; }
+  .sala-numero { text-align:center; font-size:1.65rem; font-weight:800; color:#1e3a8a; }
+  .paciente-nome { font-size:1rem; font-weight:800; color:#0f172a; }
+  .vazio { color:#94a3b8; text-align:center; vertical-align:middle!important; font-style:italic; }
+  .status-preparacao { background:#fff200!important; color:#171717!important; }
+  .status-iniciada { background:#4faf31!important; color:#fff!important; }
+  .status-finalizada { background:#ef2020!important; color:#fff!important; }
+  .necessidade-pendente { background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; }
+  .necessidade-atendida { background:#dcfce7; border:1px solid #86efac; color:#166534; }
+  .legenda-cor { display:inline-block; width:16px; height:16px; border-radius:4px; vertical-align:-3px; margin-right:5px; }
 </style>
 <div class="painel-programador p-3 p-xl-4">
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <div><h3 class="mb-1">Painel Programador</h3><div class="text-muted">Cirurgias enviadas para as salas cirúrgicas</div></div>
     <div class="d-flex align-items-center gap-3"><div class="text-end"><small class="text-muted d-block">Atualizado às {{ atualizado_em|date:'H:i:s' }}</small><span class="badge bg-primary-subtle text-primary">Nova atualização em <span id="contador">60</span>s</span></div><button type="button" class="btn btn-outline-primary" id="tela-cheia"><i class="ri-fullscreen-line"></i></button></div>
   </div>
-  <div class="row g-3">
-  {% for item in programacoes %}
-    <div class="col-12"><div class="card sala-card mb-0"><div class="card-body"><div class="row g-3 align-items-start">
-      <div class="col-xl-1 col-md-2"><div class="sala-numero"><small class="dado-label d-block">Sala</small>{{ item.get_sala_painel_display }}</div></div>
-      <div class="col-xl-3 col-md-5"><span class="dado-label">Paciente</span><div class="paciente-nome">{{ item.cirurgia.paciente.nome }}</div><div class="mt-2"><span class="dado-label">Hora</span><strong class="ms-2">{{ item.hora_painel|time:'H:i'|default:'—' }}</strong></div><span class="badge bg-{{ item.etapa_cor }} mt-2">{{ item.etapa_giro }}</span></div>
-      <div class="col-xl-3 col-md-5"><span class="dado-label">Cirurgia</span><strong class="d-block">{{ item.cirurgia.procedimento|default:'—' }}</strong><span class="dado-label d-block mt-2">Cirurgião</span><span>{{ item.cirurgia.medico|default:'—' }}</span></div>
-      <div class="col-xl-3 col-md-7"><span class="dado-label">Equipe</span><div class="small"><strong>Anestesistas:</strong> {{ item.anestesistas|default:'—'|linebreaksbr }}<br><strong>Instrumentador:</strong> {{ item.instrumentador|default:'—' }}<br><strong>Circulante:</strong> {{ item.circulante|default:'—' }}<br><strong>Residente:</strong> {{ item.residente|default:'—' }}<br><strong>Enfermeiro:</strong> {{ item.enfermeiro|default:'—' }}{% if item.outros_profissionais %}<br><strong>Outros:</strong> {{ item.outros_profissionais|linebreaksbr }}{% endif %}</div></div>
-      <div class="col-xl-2 col-md-5"><span class="dado-label">Observações</span><div class="small mb-2">{{ item.observacao|default:'Sem observações'|linebreaksbr }}</div><span class="dado-label">Necessidades</span>
-        {% for necessidade in item.necessidades.all %}<form method="post" action="{% url 'centrocirurgico:necessidade_alternar_atendimento' necessidade.id %}" class="mt-1">{% csrf_token %}<button type="submit" class="btn btn-sm w-100 text-start {% if necessidade.atendida %}necessidade-atendida{% else %}necessidade-pendente{% endif %}" {% if not perms.centrocirurgico.change_programacaonecessidade %}disabled{% endif %}><i class="{% if necessidade.atendida %}ri-checkbox-circle-fill{% else %}ri-error-warning-fill{% endif %} me-1"></i>{{ necessidade.necessidade.nome }}{% if necessidade.complemento %}: {{ necessidade.complemento }}{% endif %}</button></form>{% empty %}<div class="small text-muted">Nenhuma necessidade informada.</div>{% endfor %}
-      </div>
-    </div></div></div></div>
-  {% empty %}<div class="col-12"><div class="card border-0"><div class="card-body text-center py-5"><i class="ri-surgical-mask-line display-4 text-muted"></i><h5 class="mt-3">Nenhuma cirurgia no painel</h5><p class="text-muted mb-0">As cirurgias aparecerão após o envio pelo Programador.</p></div></div></div>{% endfor %}
-  </div>
+  <div class="card border-0 shadow-sm mb-3"><div class="table-responsive"><table class="table table-bordered painel-tabela mb-0">
+    <colgroup><col style="width:7%"><col style="width:17%"><col style="width:7%"><col style="width:12%"><col style="width:10%"><col style="width:10%"><col style="width:9%"><col style="width:13%"><col style="width:15%"></colgroup>
+    <thead><tr><th>Sala operatória</th><th>Paciente<br><small>Prontuário · Nascimento</small></th><th>Hora</th><th>Cirurgia</th><th>Cirurgião</th><th>Anestesistas</th><th>Enfermeiro<br>Residente</th><th>Circulante<br>Instrumentador</th><th>Observação especial</th></tr></thead>
+    <tbody>{% for sala in salas %}{% with item=sala.programacao %}<tr class="linha-sala">
+      <td><div class="sala-numero">{{ sala.rotulo }}</div>{% if item %}<div class="badge w-100 mt-2 {{ item.status_classe }}">{{ item.status_painel }}</div><small class="d-block text-center mt-1">{{ item.etapa_giro }}</small>{% endif %}</td>
+      {% if item %}<td><div class="paciente-nome">{{ item.cirurgia.paciente.nome }}</div><div class="text-muted mt-1">Prontuário: {{ item.cirurgia.paciente.prontuario|default:'—' }}</div><div class="text-muted">Nascimento: {{ item.cirurgia.paciente.nascimento|date:'d/m/Y'|default:'—' }}</div></td>
+      <td class="text-center"><strong class="fs-5">{{ item.hora_painel|time:'H:i'|default:'—' }}</strong></td><td><strong>{{ item.cirurgia.procedimento|default:'—' }}</strong></td><td>{{ item.cirurgia.medico|default:'—' }}</td><td>{{ item.anestesistas|default:'—'|linebreaksbr }}</td><td><strong>Enf.:</strong> {{ item.enfermeiro|default:'—' }}<br><strong>Res.:</strong> {{ item.residente|default:'—' }}{% if item.outros_profissionais %}<br><strong>Outros:</strong> {{ item.outros_profissionais|linebreaksbr }}{% endif %}</td><td><strong>Circ.:</strong> {{ item.circulante|default:'—' }}<br><strong>Instr.:</strong> {{ item.instrumentador|default:'—' }}</td>
+      <td>{% if item.observacao %}<div class="mb-2">{{ item.observacao|linebreaksbr }}</div>{% endif %}{% for necessidade in item.necessidades.all %}<form method="post" action="{% url 'centrocirurgico:necessidade_alternar_atendimento' necessidade.id %}" class="mb-1">{% csrf_token %}<button type="submit" class="btn btn-sm w-100 text-start {% if necessidade.atendida %}necessidade-atendida{% else %}necessidade-pendente{% endif %}" {% if not perms.centrocirurgico.change_programacaonecessidade %}disabled{% endif %}><i class="{% if necessidade.atendida %}ri-checkbox-circle-fill{% else %}ri-close-circle-fill{% endif %} me-1"></i>{{ necessidade.necessidade.nome }}{% if necessidade.complemento %}: {{ necessidade.complemento }}{% endif %}</button></form>{% empty %}<span class="text-muted">Sem observações especiais</span>{% endfor %}</td>
+      {% else %}<td colspan="8" class="vazio">Sala sem cirurgia enviada ao painel</td>{% endif %}
+    </tr>{% endwith %}{% endfor %}</tbody>
+  </table></div></div>
+  <div class="d-flex flex-wrap gap-3 justify-content-center small"><span><i class="legenda-cor status-preparacao"></i>Sala sendo preparada</span><span><i class="legenda-cor status-iniciada"></i>Cirurgia iniciada</span><span><i class="legenda-cor status-finalizada"></i>Cirurgia finalizada</span><span><i class="legenda-cor necessidade-atendida"></i>Necessidade confirmada</span><span><i class="legenda-cor necessidade-pendente"></i>Necessidade não confirmada</span></div>
 </div>
 <script>
   let restante = {{ intervalo_atualizacao }};

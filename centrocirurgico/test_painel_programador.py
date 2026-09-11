@@ -26,6 +26,8 @@ class PainelProgramadorTests(TestCase):
         self.assertContains(response, "Leito de UTI")
         self.assertContains(response, "P1")
         self.assertContains(response, "Nova atualização em")
+        self.assertContains(response, "Sala sem cirurgia enviada ao painel", count=8)
+        self.assertContains(response, "Cirurgia iniciada")
 
     def test_alterna_atendimento_com_auditoria(self):
         self.client.post(reverse("centrocirurgico:necessidade_alternar_atendimento", args=[self.necessidade.pk]))

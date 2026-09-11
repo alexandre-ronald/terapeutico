@@ -52,9 +52,24 @@ def painel_programador(request):
             programacao.save(update_fields=("status", "atualizado_em"))
             continue
         programacao.etapa_giro, programacao.etapa_cor = etapa_giro(giro)
+        if giro and giro.dataFinalCirurgia:
+            programacao.status_painel = "Cirurgia finalizada"
+            programacao.status_classe = "status-finalizada"
+        elif giro and giro.dataInicioCirurgia:
+            programacao.status_painel = "Cirurgia iniciada"
+            programacao.status_classe = "status-iniciada"
+        else:
+            programacao.status_painel = "Sala sendo preparada"
+            programacao.status_classe = "status-preparacao"
         exibidas.append(programacao)
+    por_sala = {item.sala_painel: item for item in exibidas}
+    salas = [
+        {"numero": str(numero), "rotulo": f"{numero:02d}", "programacao": por_sala.get(str(numero))}
+        for numero in range(1, 10)
+    ]
     return render(request, "centrocirurgico/programador/painel.html", {
         "programacoes": exibidas,
+        "salas": salas,
         "atualizado_em": timezone.localtime(),
         "intervalo_atualizacao": 60,
     })
