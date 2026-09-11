@@ -423,6 +423,14 @@
                                 {% if grupo.name == "CENTRO_CIRURGICO" %}
 
                                     <li class="menu-title"><span data-key="t-menu">Centros Cirúrgicos</span></li>
+                                    {% if perms.centrocirurgico.view_necessidadecirurgica %}
+                                    <li class="nav-item">
+                                        <a class="nav-link menu-link" href="{% url 'centrocirurgico:necessidade_lista' %}">
+                                            <i class="ri-list-settings-line"></i>
+                                            <span>Necessidades Cirúrgicas</span>
+                                        </a>
+                                    </li>
+                                    {% endif %}
                                     {% if perms.centrocirurgico.view_tiposuspensao and perms.centrocirurgico.view_motivosuspensao %}
                                     <li class="nav-item">
                                         <a class="nav-link menu-link" href="{% url 'centrocirurgico:configuracoes_suspensao' %}">

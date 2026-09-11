@@ -160,6 +160,43 @@ class SuspensaoCirurgia(models.Model):
         return f"{self.cirurgia} - {self.motivo.nome}"
 
 
+class NecessidadeCirurgica(models.Model):
+    nome = models.CharField(max_length=150)
+    descricao = models.TextField(blank=True)
+    dica_complemento = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Exemplo do complemento esperado: P1, Plaquetas ou Sangue O+.",
+    )
+    complemento_obrigatorio = models.BooleanField(default=False)
+    ativo = models.BooleanField(default=True)
+    ordem = models.PositiveIntegerField(default=0)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("ordem", "nome")
+        verbose_name = "Necessidade cirúrgica"
+        verbose_name_plural = "Necessidades cirúrgicas"
+        constraints = [
+            models.UniqueConstraint(
+                Lower("nome"),
+                name="centrocirurgico_necessidade_nome_ci_uniq",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        self.nome = (self.nome or "").strip()
+        self.descricao = (self.descricao or "").strip()
+        self.dica_complemento = (self.dica_complemento or "").strip()
+        if not self.nome:
+            raise ValidationError({"nome": "Informe o nome da necessidade."})
+
+    def __str__(self):
+        return self.nome
+
+
 class LimpezaTerminal(models.Model):
     CENTRO_CIRURGICO_CHOICES = [
         ('CCA', 'Centro Cirúrgico Adulto'),

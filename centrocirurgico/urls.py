@@ -1,10 +1,15 @@
 from django.urls import path
 from . import views
 from . import views_suspensao
+from . import views_necessidade
 
 app_name = 'centrocirurgico'
 
 urlpatterns = [
+    path("necessidades/", views_necessidade.necessidade_lista, name="necessidade_lista"),
+    path("necessidades/salvar/", views_necessidade.necessidade_salvar, name="necessidade_salvar"),
+    path("necessidades/<int:pk>/alternar/", views_necessidade.necessidade_alternar, name="necessidade_alternar"),
+    path("necessidades/<int:pk>/excluir/", views_necessidade.necessidade_excluir, name="necessidade_excluir"),
     path("suspensoes/", views_suspensao.suspensoes_lista, name="suspensoes_lista"),
     path(
         "suspensoes/<int:pk>/",
