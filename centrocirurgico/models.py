@@ -1,3 +1,5 @@
+import re
+
 from django.db import models
 from django.db.models import F
 from django.db.models.functions import Lower
@@ -236,8 +238,8 @@ class ProgramacaoCirurgia(models.Model):
     def save(self, *args, **kwargs):
         if not self.sala_painel and self.cirurgia_id:
             sala_original = self.cirurgia.sala or ""
-            numeros = [numero for numero in range(1, 10) if str(numero) in sala_original]
-            self.sala_painel = str(numeros[-1]) if numeros else ""
+            numeros = re.findall(r"(?<!\\d)([1-9])(?!\\d)", sala_original)
+            self.sala_painel = numeros[-1] if numeros else ""
         if self.hora_painel is None and self.cirurgia_id:
             self.hora_painel = self.cirurgia.hora
         super().save(*args, **kwargs)
