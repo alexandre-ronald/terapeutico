@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Suspender cirurgia{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h4 class="mb-1">Suspensão de cirurgia</h4>
+            <p class="text-muted mb-0">Confira os dados e informe o motivo da suspensão.</p>
+        </div>
+        <a href="{% url 'centrocirurgico:mapa_cirurgico_list_novo' %}" class="btn btn-outline-secondary">
+            <i class="ri-arrow-left-line me-1"></i>Voltar ao Mapa Cirúrgico
+        </a>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5 class="mb-0">Paciente e cirurgia</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <small class="text-muted d-block">Prontuário</small>
+                    <strong>{{ paciente.prontuario }}</strong>
+                </div>
+                <div class="col-md-6">
+                    <small class="text-muted d-block">Paciente</small>
+                    <strong>{{ paciente.nome }}</strong>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted d-block">Nascimento</small>
+                    <strong>{{ paciente.nascimento|date:"d/m/Y"|default:"Não informado" }}</strong>
+                </div>
+                <div class="col-md-6">
+                    <small class="text-muted d-block">Procedimento</small>
+                    <strong>{{ cirurgia.procedimento|default:"Não informado" }}</strong>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block">Especialidade</small>
+                    <strong>{{ cirurgia.especialidade|default:"Não informada" }}</strong>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block">Cirurgião</small>
+                    <strong>{{ cirurgia.medico|default:"Não informado" }}</strong>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block">Data</small>
+                    <strong>{{ cirurgia.data|date:"d/m/Y" }}</strong>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block">Horário</small>
+                    <strong>{{ cirurgia.hora|time:"H:i"|default:"Não informado" }}</strong>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block">Sala</small>
+                    <strong>{{ cirurgia.sala|default:"Não informada" }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Classificação da suspensão</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% url 'centrocirurgico:suspensao_nova' %}" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="cirurgia_token" value="{{ token_cirurgia }}">
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.tipo.id_for_label }}" class="form-label">Tipo *</label>
+                        {{ form.tipo }}
+                        {% for error in form.tipo.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.motivo.id_for_label }}" class="form-label">Motivo *</label>
+                        {{ form.motivo }}
+                        <div id="motivo-ajuda" class="form-text">Selecione primeiro o tipo.</div>
+                        {% for error in form.motivo.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-12">
+                        <label for="{{ form.observacao.id_for_label }}" class="form-label">
+                            Observação <span class="text-muted fw-normal">(opcional)</span>
+                        </label>
+                        {{ form.observacao }}
+                        {% for error in form.observacao.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% for error in form.non_field_errors %}
+                    <div class="col-12 text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="{% url 'centrocirurgico:mapa_cirurgico_list_novo' %}" class="btn btn-light">Cancelar</a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="ri-close-circle-line me-1"></i>Confirmar suspensão
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const tipo = document.getElementById("{{ form.tipo.id_for_label }}");
+    const motivo = document.getElementById("{{ form.motivo.id_for_label }}");
+    const ajuda = document.getElementById("motivo-ajuda");
+    const urlBase = "{% url 'centrocirurgico:motivos_ativos_por_tipo' 0 %}";
+    const motivoSelecionado = motivo.value;
+
+    async function carregarMotivos(preservarSelecionado) {
+        const tipoId = tipo.value;
+        motivo.innerHTML = '<option value="">---------</option>';
+        motivo.disabled = !tipoId;
+        ajuda.textContent = tipoId
+            ? "Carregando motivos..."
+            : "Selecione primeiro o tipo.";
+
+        if (!tipoId) return;
+
+        try {
+            const resposta = await fetch(urlBase.replace("/0/", "/" + tipoId + "/"));
+            if (!resposta.ok) throw new Error("Falha ao consultar motivos.");
+            const dados = await resposta.json();
+
+            dados.motivos.forEach(function (item) {
+                const opcao = new Option(item.nome, item.id);
+                if (preservarSelecionado && String(item.id) === String(motivoSelecionado)) {
+                    opcao.selected = true;
+                }
+                motivo.add(opcao);
+            });
+
+            motivo.disabled = false;
+            ajuda.textContent = dados.motivos.length
+                ? "Selecione um motivo."
+                : "Este tipo não possui motivos ativos.";
+        } catch (erro) {
+            motivo.disabled = true;
+            ajuda.textContent = "Não foi possível carregar os motivos.";
+        }
+    }
+
+    tipo.addEventListener("change", function () {
+        carregarMotivos(false);
+    });
+
+    carregarMotivos(true);
+});
+</script>
+{% endblock %}
