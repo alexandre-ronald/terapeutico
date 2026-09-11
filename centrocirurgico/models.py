@@ -208,8 +208,13 @@ class ProgramacaoCirurgia(models.Model):
     )
 
     cirurgia = models.OneToOneField(Cirurgia, on_delete=models.PROTECT, related_name="programacao")
+    sala_painel = models.CharField(max_length=50)
+    hora_painel = models.TimeField(null=True, blank=True)
     anestesistas = models.TextField(blank=True)
     instrumentador = models.CharField(max_length=250, blank=True)
+    circulante = models.CharField(max_length=250, blank=True)
+    residente = models.CharField(max_length=250, blank=True)
+    enfermeiro = models.CharField(max_length=250, blank=True)
     outros_profissionais = models.TextField(blank=True)
     observacao = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=RASCUNHO)
@@ -226,6 +231,13 @@ class ProgramacaoCirurgia(models.Model):
 
     def __str__(self):
         return f"{self.cirurgia} — {self.get_status_display()}"
+
+    def save(self, *args, **kwargs):
+        if not self.sala_painel and self.cirurgia_id:
+            self.sala_painel = self.cirurgia.sala or ""
+        if self.hora_painel is None and self.cirurgia_id:
+            self.hora_painel = self.cirurgia.hora
+        super().save(*args, **kwargs)
 
 
 class ProgramacaoNecessidade(models.Model):

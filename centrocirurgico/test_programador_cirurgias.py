@@ -30,3 +30,21 @@ class ProgramadorCirurgiasTests(TestCase):
         self.a.refresh_from_db(); self.b.refresh_from_db()
         self.assertEqual(self.a.status, ProgramacaoCirurgia.FINALIZADA)
         self.assertEqual(self.b.status, ProgramacaoCirurgia.ENVIADA)
+
+    def test_sala_alterada_e_usada_no_bloqueio(self):
+        self.b.sala_painel = "SALA 2"
+        self.b.hora_painel = time(11, 30)
+        self.b.circulante = "Circulante Teste"
+        self.b.residente = "Residente Teste"
+        self.b.enfermeiro = "Enfermeiro Teste"
+        self.b.save()
+
+        self.client.post(reverse("centrocirurgico:programacao_enviar", args=[self.b.pk]))
+
+        self.b.refresh_from_db()
+        self.assertEqual(self.b.status, ProgramacaoCirurgia.ENVIADA)
+        self.assertEqual(self.b.sala_painel, "SALA 2")
+        self.assertEqual(self.b.hora_painel, time(11, 30))
+        self.assertEqual(self.b.circulante, "Circulante Teste")
+        self.assertEqual(self.b.residente, "Residente Teste")
+        self.assertEqual(self.b.enfermeiro, "Enfermeiro Teste")

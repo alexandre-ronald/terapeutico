@@ -86,7 +86,15 @@ def programacao_abrir(request):
         messages.error(request, "Os dados do Mapa Cirúrgico expiraram ou são inválidos. Consulte novamente.")
         return redirect("centrocirurgico:programador_mapa")
     cirurgia = _obter_cirurgia(dados)
-    programacao, _ = ProgramacaoCirurgia.objects.get_or_create(cirurgia=cirurgia, defaults={"criado_por": request.user, "atualizado_por": request.user})
+    programacao, _ = ProgramacaoCirurgia.objects.get_or_create(
+        cirurgia=cirurgia,
+        defaults={
+            "sala_painel": cirurgia.sala or "",
+            "hora_painel": cirurgia.hora,
+            "criado_por": request.user,
+            "atualizado_por": request.user,
+        },
+    )
     return redirect("centrocirurgico:programacao_editar", pk=programacao.pk)
 
 
@@ -135,8 +143,11 @@ def programacao_editar(request, pk):
 @transaction.atomic
 def programacao_enviar(request, pk):
     programacao = get_object_or_404(ProgramacaoCirurgia.objects.select_for_update().select_related("cirurgia"), pk=pk)
-    sala = programacao.cirurgia.sala
-    ocupantes = ProgramacaoCirurgia.objects.select_for_update().filter(status=ProgramacaoCirurgia.ENVIADA, cirurgia__sala=sala).exclude(pk=pk)
+    sala = programacao.sala_painel
+    ocupantes = ProgramacaoCirurgia.objects.select_for_update().filter(
+        status=ProgramacaoCirurgia.ENVIADA,
+        sala_painel__iexact=sala,
+    ).exclude(pk=pk)
     bloqueio = None
     for atual in ocupantes.select_related("cirurgia__paciente"):
         giro = GiroSala.objects.filter(cirurgia=atual.cirurgia).first()
