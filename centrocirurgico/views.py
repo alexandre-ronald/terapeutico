@@ -782,6 +782,7 @@ def buscar_mapa_cirurgico_aghu(data=None):
             proc_descr as procedimento, 
             nome_equipe as medico,
             aip.dt_nascimento as data_nascimento,
+            v_cir.lto_lto_id as leito,
             situacao,
             v_cir.dthr_inicio_ordem as data_inicio_cirurgia
         FROM agh.v_lista_mbc_cirurgias  v_cir

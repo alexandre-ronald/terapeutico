@@ -8,11 +8,11 @@
 <link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet">
 <link href="{% static 'assets/css/icons.min.css' %}" rel="stylesheet">
 <style>
-  .painel-programador { background:#f3f6fa; min-height:calc(100vh - 105px); }
+  .painel-programador { background:#f3f6fa; height:100vh; overflow:hidden; }
   .painel-tabela { table-layout:fixed; min-width:1400px; background:#fff; }
   .painel-tabela th { background:#dff3e4; color:#163522; text-align:center; vertical-align:middle; font-size:.73rem; text-transform:uppercase; letter-spacing:.025em; border-color:#b9d4c0; }
-  .painel-tabela td { vertical-align:top; border-color:#dce3eb; font-size:.8rem; padding:.75rem .6rem; }
-  .painel-tabela .linha-sala { min-height:105px; }
+  .painel-tabela td { vertical-align:top; border-color:#dce3eb; font-size:.72rem; padding:.35rem .45rem; overflow:hidden; }
+  .painel-tabela tbody .linha-sala { height:calc((100vh - 205px) / 9); }
   .sala-numero { text-align:center; font-size:1.65rem; font-weight:800; color:#1e3a8a; }
   .paciente-nome { font-size:1rem; font-weight:800; color:#0f172a; }
   .vazio { color:#94a3b8; text-align:center; vertical-align:middle!important; font-style:italic; }
@@ -33,10 +33,10 @@
   </div>
   <div class="card border-0 shadow-sm mb-3"><div class="table-responsive"><table class="table table-bordered painel-tabela mb-0">
     <colgroup><col style="width:7%"><col style="width:17%"><col style="width:7%"><col style="width:12%"><col style="width:10%"><col style="width:10%"><col style="width:9%"><col style="width:13%"><col style="width:15%"></colgroup>
-    <thead><tr><th>Sala operatória</th><th>Paciente<br><small>Prontuário · Nascimento</small></th><th>Hora</th><th>Cirurgia</th><th>Cirurgião</th><th>Anestesistas</th><th>Enfermeiro<br>Residente</th><th>Circulante<br>Instrumentador</th><th>Observação especial</th></tr></thead>
+    <thead><tr><th>Sala operatória</th><th>Paciente<br><small>Prontuário · Nascimento · Leito</small></th><th>Hora</th><th>Cirurgia</th><th>Cirurgião</th><th>Anestesistas</th><th>Enfermeiro<br>Residente</th><th>Circulante<br>Instrumentador</th><th>Observação especial</th></tr></thead>
     <tbody>{% for sala in salas %}{% with item=sala.programacao %}<tr class="linha-sala {% if item %}{{ item.status_classe }}{% endif %}">
       <td><div class="sala-numero">{{ sala.rotulo }}</div>{% if item and item.status_classe != 'status-preparacao' %}<small class="d-block text-center mt-1">{{ item.etapa_giro }}</small>{% endif %}</td>
-      {% if item %}<td><div class="paciente-nome">{{ item.cirurgia.paciente.nome }}</div><div class="text-muted mt-1">Prontuário: {{ item.cirurgia.paciente.prontuario|default:'—' }}</div><div class="text-muted">Nascimento: {{ item.cirurgia.paciente.nascimento|date:'d/m/Y'|default:'—' }}</div></td>
+      {% if item %}<td><div class="paciente-nome">{{ item.cirurgia.paciente.nome }}</div><div class="text-muted mt-1">Prontuário: {{ item.cirurgia.paciente.prontuario|default:'—' }}</div><div class="text-muted">Nascimento: {{ item.cirurgia.paciente.nascimento|date:'d/m/Y'|default:'—' }}</div><div class="text-muted">Leito: {{ item.leito_paciente|default:'—' }}</div></td>
       <td class="text-center"><strong class="fs-5">{{ item.hora_painel|time:'H:i'|default:'—' }}</strong></td><td><strong>{{ item.cirurgia.procedimento|default:'—' }}</strong></td><td>{{ item.cirurgia.medico|default:'—' }}</td><td>{{ item.anestesistas|default:'—'|linebreaksbr }}</td><td><strong>Enf.:</strong> {{ item.enfermeiro|default:'—' }}<br><strong>Res.:</strong> {{ item.residente|default:'—' }}{% if item.outros_profissionais %}<br><strong>Outros:</strong> {{ item.outros_profissionais|linebreaksbr }}{% endif %}</td><td><strong>Circ.:</strong> {{ item.circulante|default:'—' }}<br><strong>Instr.:</strong> {{ item.instrumentador|default:'—' }}</td>
       <td>{% if item.observacao %}<div class="mb-2">{{ item.observacao|linebreaksbr }}</div>{% endif %}{% for necessidade in item.necessidades.all %}<div class="rounded p-1 mb-1 {% if necessidade.atendida %}necessidade-atendida{% else %}necessidade-pendente{% endif %}"><i class="{% if necessidade.atendida %}ri-checkbox-circle-fill{% else %}ri-close-circle-fill{% endif %} me-1"></i>{{ necessidade.necessidade.nome }}{% if necessidade.complemento %}: {{ necessidade.complemento }}{% endif %}</div>{% empty %}<span class="text-muted">Sem observações especiais</span>{% endfor %}</td>
       {% else %}<td colspan="8" class="vazio">Sala sem cirurgia enviada ao painel</td>{% endif %}

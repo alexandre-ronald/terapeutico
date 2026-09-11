@@ -13,7 +13,7 @@ class PainelProgramadorTests(TestCase):
         self.client.force_login(self.user)
         paciente = Paciente.objects.create(nome="Paciente Painel", prontuario="100")
         cirurgia = Cirurgia.objects.create(paciente=paciente, procedimento="Cirurgia Teste", medico="Cirurgião", sala="SALA 2", data=date.today(), hora=time(8))
-        self.programacao = ProgramacaoCirurgia.objects.create(cirurgia=cirurgia, sala_painel="2", hora_painel=time(9), criado_por=self.user, atualizado_por=self.user, status=ProgramacaoCirurgia.ENVIADA)
+        self.programacao = ProgramacaoCirurgia.objects.create(cirurgia=cirurgia, sala_painel="2", hora_painel=time(9), leito_paciente="UTI-12", criado_por=self.user, atualizado_por=self.user, status=ProgramacaoCirurgia.ENVIADA)
         GiroSala.objects.create(paciente=paciente, cirurgia=cirurgia, dataInicioCirurgia="2026-09-11T09:00:00Z")
         catalogo = NecessidadeCirurgica.objects.create(nome="Leito de UTI")
         self.necessidade = ProgramacaoNecessidade.objects.create(
@@ -28,6 +28,8 @@ class PainelProgramadorTests(TestCase):
         self.assertContains(response, "Cirurgia em andamento")
         self.assertContains(response, "Leito de UTI")
         self.assertContains(response, "P1")
+        self.assertContains(response, "Leito: UTI-12")
+        self.assertContains(response, "Prontuário · Nascimento · Leito")
         self.assertContains(response, "Nova atualização em")
         self.assertContains(response, "Sala sem cirurgia enviada ao painel", count=8)
         self.assertContains(response, "Cirurgia iniciada")

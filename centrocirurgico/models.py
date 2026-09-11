@@ -213,6 +213,7 @@ class ProgramacaoCirurgia(models.Model):
     cirurgia = models.OneToOneField(Cirurgia, on_delete=models.PROTECT, related_name="programacao")
     sala_painel = models.CharField(max_length=2, choices=SALAS)
     hora_painel = models.TimeField(null=True, blank=True)
+    leito_paciente = models.CharField(max_length=50, blank=True)
     anestesistas = models.TextField(blank=True)
     instrumentador = models.CharField(max_length=250, blank=True)
     circulante = models.CharField(max_length=250, blank=True)

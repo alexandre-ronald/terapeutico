@@ -34,6 +34,7 @@ def _token(dado):
         "data_nascimento": dado.get("data_nascimento").strftime("%Y-%m-%d") if dado.get("data_nascimento") else "",
         "especialidade": _texto(dado.get("especialidade")), "procedimento": _texto(dado.get("procedimento")),
         "medico": _texto(dado.get("medico")), "sala": _texto(dado.get("sala")),
+        "leito": _texto(dado.get("leito")),
         "data_cirurgia": inicio.strftime("%Y-%m-%d") if inicio else "", "hora_cirurgia": inicio.strftime("%H:%M:%S") if inicio else "",
     }, salt=SALT)
 
@@ -45,6 +46,7 @@ def _suspensao_token(dado):
         "data_nascimento": dado.get("data_nascimento").strftime("%Y-%m-%d") if dado.get("data_nascimento") else "",
         "especialidade": _texto(dado.get("especialidade")), "procedimento": _texto(dado.get("procedimento")),
         "medico": _texto(dado.get("medico")), "sala": _texto(dado.get("sala")),
+        "leito": _texto(dado.get("leito")),
         "data_cirurgia": inicio.strftime("%Y-%m-%d") if inicio else "", "hora_cirurgia": inicio.strftime("%H:%M:%S") if inicio else "",
     }, salt="centrocirurgico.suspensao.mapa")
 
@@ -93,15 +95,20 @@ def programacao_abrir(request):
         messages.error(request, "Os dados do Mapa Cirúrgico expiraram ou são inválidos. Consulte novamente.")
         return redirect("centrocirurgico:programador_mapa")
     cirurgia = _obter_cirurgia(dados)
-    programacao, _ = ProgramacaoCirurgia.objects.get_or_create(
+    programacao, criada = ProgramacaoCirurgia.objects.get_or_create(
         cirurgia=cirurgia,
         defaults={
             "sala_painel": _normalizar_sala(cirurgia.sala),
             "hora_painel": cirurgia.hora,
+            "leito_paciente": dados.get("leito", ""),
             "criado_por": request.user,
             "atualizado_por": request.user,
         },
     )
+    if not criada and programacao.leito_paciente != dados.get("leito", ""):
+        programacao.leito_paciente = dados.get("leito", "")
+        programacao.atualizado_por = request.user
+        programacao.save(update_fields=("leito_paciente", "atualizado_por", "atualizado_em"))
     return redirect("centrocirurgico:programacao_editar", pk=programacao.pk)
 
 

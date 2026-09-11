@@ -18,7 +18,7 @@ class ProgramacaoNecessidadeInline(admin.TabularInline):
 
 @admin.register(ProgramacaoCirurgia)
 class ProgramacaoCirurgiaAdmin(admin.ModelAdmin):
-    list_display = ("cirurgia", "sala_painel", "hora_painel", "status", "enviado_em", "atualizado_por")
+    list_display = ("cirurgia", "leito_paciente", "sala_painel", "hora_painel", "status", "enviado_em", "atualizado_por")
     list_filter = ("status", "sala_painel")
     search_fields = ("cirurgia__paciente__nome", "cirurgia__paciente__prontuario", "cirurgia__procedimento")
     raw_id_fields = ("cirurgia",)
