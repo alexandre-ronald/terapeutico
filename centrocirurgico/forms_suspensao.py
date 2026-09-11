@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Q
 
 from .models import MotivoSuspensao, SuspensaoCirurgia, TipoSuspensao
 
@@ -93,15 +94,27 @@ class SuspensaoCirurgiaForm(BootstrapModelForm):
                 ativo=True,
             )
 
+        if self.instance.pk:
+            self.fields["tipo"].queryset = TipoSuspensao.objects.filter(
+                Q(ativo=True) | Q(pk=self.instance.tipo_id)
+            )
+            self.fields["motivo"].queryset = MotivoSuspensao.objects.filter(
+                Q(tipo_id=tipo_id, tipo__ativo=True, ativo=True)
+                | Q(pk=self.instance.motivo_id)
+            )
+
     def clean(self):
         cleaned_data = super().clean()
         tipo = cleaned_data.get("tipo")
         motivo = cleaned_data.get("motivo")
 
-        if tipo and not tipo.ativo:
+        tipo_original_id = self.instance.tipo_id if self.instance.pk else None
+        motivo_original_id = self.instance.motivo_id if self.instance.pk else None
+
+        if tipo and not tipo.ativo and tipo.id != tipo_original_id:
             self.add_error("tipo", "Selecione um tipo ativo.")
         if motivo:
-            if not motivo.ativo:
+            if not motivo.ativo and motivo.id != motivo_original_id:
                 self.add_error("motivo", "Selecione um motivo ativo.")
             elif tipo and motivo.tipo_id != tipo.id:
                 self.add_error(

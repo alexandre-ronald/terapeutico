@@ -431,6 +431,14 @@
                                         </a>
                                     </li>
                                     {% endif %}
+                                    {% if perms.centrocirurgico.view_suspensaocirurgia %}
+                                    <li class="nav-item">
+                                        <a class="nav-link menu-link" href="{% url 'centrocirurgico:suspensoes_lista' %}">
+                                            <i class="ri-file-list-3-line"></i>
+                                            <span>Suspensões de Cirurgia</span>
+                                        </a>
+                                    </li>
+                                    {% endif %}
                                     <li class="nav-item">
                                         <a class="nav-link menu-link" href="{% url 'centrocirurgico:mapa_cirurgico_list' %}">
                                             <i class="ri-repeat-2-line"></i> <span data-key="t-giro-sala">Giro de Sala</span>

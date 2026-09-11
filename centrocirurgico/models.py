@@ -135,6 +135,14 @@ class SuspensaoCirurgia(models.Model):
         related_name="suspensoes_cirurgicas_registradas",
     )
     registrado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="suspensoes_cirurgicas_atualizadas",
+    )
+    atualizado_em = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ("-registrado_em",)

@@ -5,6 +5,17 @@ from . import views_suspensao
 app_name = 'centrocirurgico'
 
 urlpatterns = [
+    path("suspensoes/", views_suspensao.suspensoes_lista, name="suspensoes_lista"),
+    path(
+        "suspensoes/<int:pk>/",
+        views_suspensao.suspensao_detalhe,
+        name="suspensao_detalhe",
+    ),
+    path(
+        "suspensoes/<int:pk>/editar/",
+        views_suspensao.suspensao_editar,
+        name="suspensao_editar",
+    ),
     path(
         "suspensoes/nova/",
         views_suspensao.suspensao_nova,
