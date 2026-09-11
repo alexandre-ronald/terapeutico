@@ -20,7 +20,7 @@ class PainelProgramadorTests(TestCase):
 
     def test_exibe_dados_operacionais_e_etapa(self):
         response = self.client.get(reverse("centrocirurgico:painel_programador"))
-        self.assertContains(response, "Sala 2")
+        self.assertContains(response, '<div class="sala-numero">02</div>', html=True)
         self.assertContains(response, "09:00")
         self.assertContains(response, "Cirurgia em andamento")
         self.assertContains(response, "Leito de UTI")
