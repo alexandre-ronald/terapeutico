@@ -79,10 +79,16 @@ def programador_mapa(request):
         item["programacao_token"] = _token(item)
         item["suspensao_token"] = _suspensao_token(item)
         inicio = item.get("data_inicio_cirurgia")
-        item["ja_programada"] = ProgramacaoCirurgia.objects.filter(
+        programacao = ProgramacaoCirurgia.objects.filter(
             cirurgia__paciente__prontuario=_texto(item.get("prontuario")), cirurgia__data=inicio.date() if inicio else None,
             cirurgia__hora=inicio.time() if inicio else None, cirurgia__sala=_texto(item.get("sala")),
         ).first()
+        item["ja_programada"] = programacao
+        leito = _texto(item.get("leito"))
+        if programacao and leito and programacao.leito_paciente != leito:
+            programacao.leito_paciente = leito
+            programacao.atualizado_por = request.user
+            programacao.save(update_fields=("leito_paciente", "atualizado_por", "atualizado_em"))
     return render(request, "centrocirurgico/programador/mapa.html", {"mapa": dados})
 
 
