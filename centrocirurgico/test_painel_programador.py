@@ -13,7 +13,7 @@ class PainelProgramadorTests(TestCase):
         self.client.force_login(self.user)
         paciente = Paciente.objects.create(nome="Paciente Painel", prontuario="100")
         cirurgia = Cirurgia.objects.create(paciente=paciente, procedimento="Cirurgia Teste", medico="Cirurgião", sala="SALA 2", data=date.today(), hora=time(8))
-        self.programacao = ProgramacaoCirurgia.objects.create(cirurgia=cirurgia, sala_painel="2", hora_painel=time(9), leito_paciente="UTI-12", criado_por=self.user, atualizado_por=self.user, status=ProgramacaoCirurgia.ENVIADA)
+        self.programacao = ProgramacaoCirurgia.objects.create(cirurgia=cirurgia, sala_painel="2", hora_painel=time(9), leito_paciente="UTI-12", tipo_cirurgia=ProgramacaoCirurgia.ELETIVA, criado_por=self.user, atualizado_por=self.user, status=ProgramacaoCirurgia.ENVIADA)
         GiroSala.objects.create(paciente=paciente, cirurgia=cirurgia, dataInicioCirurgia="2026-09-11T09:00:00Z")
         catalogo = NecessidadeCirurgica.objects.create(nome="Leito de UTI")
         self.necessidade = ProgramacaoNecessidade.objects.create(
@@ -25,7 +25,7 @@ class PainelProgramadorTests(TestCase):
         response = self.client.get(reverse("centrocirurgico:painel_programador"))
         self.assertContains(response, '<div class="sala-numero">02</div>', html=True)
         self.assertContains(response, "09:00")
-        self.assertContains(response, "Cirurgia em andamento")
+        self.assertContains(response, "Cirurgia iniciada")
         self.assertContains(response, "Leito de UTI")
         self.assertContains(response, "P1")
         self.assertContains(response, "Leito: UTI-12")
@@ -33,6 +33,33 @@ class PainelProgramadorTests(TestCase):
         self.assertContains(response, "Nova atualização em")
         self.assertContains(response, "Sala sem cirurgia enviada ao painel", count=8)
         self.assertContains(response, "Cirurgia iniciada")
+
+    def test_inicio_anestesia_colore_linha_de_azul(self):
+        giro = GiroSala.objects.get(cirurgia=self.programacao.cirurgia)
+        giro.dataInicioCirurgia = None
+        giro.dataInicioAnestesia = "2026-09-11T08:45:00Z"
+        giro.save(update_fields=("dataInicioCirurgia", "dataInicioAnestesia"))
+
+        response = self.client.get(reverse("centrocirurgico:painel_programador"))
+
+        self.assertContains(response, 'class="linha-sala status-anestesia"')
+        self.assertContains(response, "Anestesia iniciada")
+
+    def test_exibe_necessidades_atendidas_e_pendentes(self):
+        pendente = NecessidadeCirurgica.objects.create(nome="Hemoderivados")
+        ProgramacaoNecessidade.objects.create(
+            programacao=self.programacao,
+            necessidade=pendente,
+            complemento="Plaquetas",
+            atendida=False,
+        )
+
+        response = self.client.get(reverse("centrocirurgico:painel_programador"))
+
+        self.assertContains(response, "Leito de UTI")
+        self.assertContains(response, "Hemoderivados")
+        self.assertContains(response, "Plaquetas")
+        self.assertContains(response, "necessidade-pendente")
 
     def test_preparacao_colore_linha_sem_textos_redundantes(self):
         giro = GiroSala.objects.get(cirurgia=self.programacao.cirurgia)
