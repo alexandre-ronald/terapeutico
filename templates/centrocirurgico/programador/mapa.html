@@ -4,6 +4,40 @@
 <div class="container-fluid py-3">
   <div class="mb-3"><h4 class="mb-1">Programador de Cirurgias</h4><p class="text-muted mb-0">Consulte o mapa, programe ou suspenda uma cirurgia.</p></div>
   <form method="get" class="card card-body mb-3"><div class="row align-items-end g-2"><div class="col-md-3"><label class="form-label">Data do mapa</label><input type="date" class="form-control" name="data_mapa" value="{{ request.GET.data_mapa }}"></div><div class="col-md-3"><button class="btn btn-primary"><i class="ri-search-line me-1"></i>Consultar</button></div></div></form>
+  {% if perms.centrocirurgico.change_programacaocirurgia %}
+  <div class="card mb-3">
+    <div class="card-header"><h5 class="mb-0"><i class="ri-tv-2-line me-1"></i> Controle do Painel de Cirurgias</h5></div>
+    <div class="card-body">
+      {% if programacoes_painel %}
+      <div class="row g-3 align-items-end">
+        <div class="col-lg-4">
+          <form method="post" action="{% url 'centrocirurgico:programacao_retirar_painel' %}" onsubmit="return confirm('Retirar a cirurgia desta sala do painel?')">
+            {% csrf_token %}<input type="hidden" name="acao" value="sala">
+            <label class="form-label">Retirar por sala</label>
+            <div class="input-group"><select class="form-select" name="sala" required><option value="">Selecione...</option>{% for sala in salas_painel %}<option value="{{ sala }}">Sala {{ sala|stringformat:"02d" }}</option>{% endfor %}</select><button class="btn btn-outline-warning" type="submit"><i class="ri-logout-box-r-line me-1"></i>Retirar</button></div>
+          </form>
+        </div>
+        <div class="col-lg-5">
+          <form method="post" action="{% url 'centrocirurgico:programacao_retirar_painel' %}" onsubmit="return confirm('Retirar o paciente selecionado do painel?')">
+            {% csrf_token %}<input type="hidden" name="acao" value="paciente">
+            <label class="form-label">Retirar por paciente</label>
+            <div class="input-group"><select class="form-select" name="programacao" required><option value="">Selecione...</option>{% for item in programacoes_painel %}<option value="{{ item.pk }}">Sala {{ item.sala_painel|stringformat:"02d" }} — {{ item.cirurgia.paciente.nome }}</option>{% endfor %}</select><button class="btn btn-outline-warning" type="submit"><i class="ri-user-unfollow-line me-1"></i>Retirar</button></div>
+          </form>
+        </div>
+        <div class="col-lg-3">
+          <form method="post" action="{% url 'centrocirurgico:programacao_retirar_painel' %}" onsubmit="return confirm('ATENÇÃO: retirar todas as cirurgias do painel? As programações voltarão para rascunho.')">
+            {% csrf_token %}<input type="hidden" name="acao" value="todos">
+            <button class="btn btn-danger w-100" type="submit"><i class="ri-delete-bin-line me-1"></i>Limpar painel</button>
+          </form>
+        </div>
+      </div>
+      <div class="form-text mt-2">A retirada não exclui a programação. A cirurgia volta para rascunho e pode ser enviada novamente.</div>
+      {% else %}
+      <div class="text-muted"><i class="ri-information-line me-1"></i>Nenhuma cirurgia está atualmente no painel.</div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
   <div class="card"><div class="table-responsive"><table class="table align-middle mb-0"><thead class="table-light"><tr><th>Prontuário</th><th>Paciente</th><th>Especialidade</th><th>Cirurgia</th><th>Cirurgião</th><th>Hora</th><th>Sala</th><th>Ações</th></tr></thead><tbody>
   {% for mp in mapa %}<tr><td>{{ mp.prontuario }}</td><td>{{ mp.nome_paciente }}</td><td>{{ mp.especialidade }}</td><td>{{ mp.procedimento }}</td><td>{{ mp.medico }}</td><td>{{ mp.data_inicio_cirurgia|date:"H:i" }}</td><td>{{ mp.sala }}</td><td>
     {% if mp.ja_programada %}<a class="btn btn-sm btn-outline-primary" href="{% url 'centrocirurgico:programacao_editar' mp.ja_programada.id %}"><i class="ri-edit-line"></i> Abrir programação</a>{% elif perms.centrocirurgico.add_programacaocirurgia %}<form method="post" action="{% url 'centrocirurgico:programacao_abrir' %}" class="d-inline">{% csrf_token %}<input type="hidden" name="mapa_token" value="{{ mp.programacao_token }}"><button class="btn btn-sm btn-primary"><i class="ri-calendar-check-line"></i> Programar</button></form>{% endif %}
