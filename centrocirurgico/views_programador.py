@@ -89,8 +89,56 @@ def programador_mapa(request):
             programacao.leito_paciente = leito
             programacao.atualizado_por = request.user
             programacao.save(update_fields=("leito_paciente", "atualizado_por", "atualizado_em"))
-    return render(request, "centrocirurgico/programador/mapa.html", {"mapa": dados})
+    programacoes_painel = (
+        ProgramacaoCirurgia.objects.filter(status=ProgramacaoCirurgia.ENVIADA)
+        .select_related("cirurgia__paciente")
+        .order_by("sala_painel", "hora_painel", "cirurgia__paciente__nome")
+    )
+    return render(request, "centrocirurgico/programador/mapa.html", {
+        "mapa": dados,
+        "programacoes_painel": programacoes_painel,
+        "salas_painel": range(1, 10),
+    })
 
+
+@login_required
+@permission_required("centrocirurgico.change_programacaocirurgia", raise_exception=True)
+@require_POST
+@transaction.atomic
+def programacao_retirar_painel(request):
+    acao = request.POST.get("acao")
+    programacoes = ProgramacaoCirurgia.objects.select_for_update().filter(
+        status=ProgramacaoCirurgia.ENVIADA
+    )
+
+    if acao == "sala":
+        sala = request.POST.get("sala")
+        if sala not in {str(numero) for numero in range(1, 10)}:
+            messages.error(request, "Selecione uma sala válida.")
+            return redirect("centrocirurgico:programador_mapa")
+        programacoes = programacoes.filter(sala_painel=sala)
+        descricao = f"a sala {sala}"
+    elif acao == "paciente":
+        programacao_id = request.POST.get("programacao")
+        programacoes = programacoes.filter(pk=programacao_id)
+        descricao = "o paciente selecionado"
+    elif acao == "todos":
+        descricao = "todas as cirurgias"
+    else:
+        messages.error(request, "Opção de retirada inválida.")
+        return redirect("centrocirurgico:programador_mapa")
+
+    quantidade = programacoes.update(
+        status=ProgramacaoCirurgia.RASCUNHO,
+        enviado_em=None,
+        atualizado_por=request.user,
+        atualizado_em=timezone.now(),
+    )
+    if quantidade:
+        messages.success(request, f"Foram retiradas do painel: {descricao}.")
+    else:
+        messages.warning(request, "Nenhuma cirurgia enviada foi encontrada para a opção informada.")
+    return redirect("centrocirurgico:programador_mapa")
 
 @login_required
 @permission_required("centrocirurgico.add_programacaocirurgia", raise_exception=True)
