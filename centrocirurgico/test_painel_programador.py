@@ -57,6 +57,12 @@ class PainelProgramadorTests(TestCase):
             self.assertContains(response, f'<div class="sala-numero">{numero:02d}</div>', html=True)
         self.assertLess(conteudo.index("painel-legenda"), conteudo.index("painel-tabela"))
 
+    def test_atualizacao_nao_recarrega_a_pagina_inteira(self):
+        response = self.client.get(reverse("centrocirurgico:painel_programador"))
+        self.assertContains(response, "fetch(window.location.href")
+        self.assertContains(response, "replaceChildren")
+        self.assertNotContains(response, "window.location.reload()")
+
     def test_sala_liberada_retira_cirurgia_do_painel(self):
         giro = GiroSala.objects.get(cirurgia=self.programacao.cirurgia)
         giro.dataSalaLiberada = "2026-09-11T12:00:00Z"
