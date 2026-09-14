@@ -73,8 +73,8 @@ def _obter_cirurgia(dados):
 @login_required
 @permission_required("centrocirurgico.view_programacaocirurgia", raise_exception=True)
 def programador_mapa(request):
-    data_mapa = request.GET.get("data_mapa")
-    dados = buscar_mapa_cirurgico_aghu(data_mapa) if data_mapa else []
+    data_mapa = request.GET.get("data_mapa") or timezone.localdate().isoformat()
+    dados = buscar_mapa_cirurgico_aghu(data_mapa)
     for item in dados:
         item["programacao_token"] = _token(item)
         item["suspensao_token"] = _suspensao_token(item)
@@ -98,6 +98,7 @@ def programador_mapa(request):
         "mapa": dados,
         "programacoes_painel": programacoes_painel,
         "salas_painel": range(1, 10),
+        "data_mapa": data_mapa,
     })
 
 
@@ -223,12 +224,8 @@ def programacao_editar(request, pk):
 @transaction.atomic
 def programacao_enviar(request, pk):
     programacao = get_object_or_404(ProgramacaoCirurgia.objects.select_for_update().select_related("cirurgia"), pk=pk)
-    pendentes = list(
-        programacao.necessidades.filter(atendida=False)
-        .values_list("necessidade__nome", flat=True)
-    )
-    if pendentes:
-        messages.error(request, "Confirme todas as necessidades antes do envio: " + ", ".join(pendentes) + ".")
+    if programacao.tipo_cirurgia not in dict(ProgramacaoCirurgia.TIPOS_CIRURGIA):
+        messages.error(request, "Informe o tipo da cirurgia antes de enviar ao painel.")
         return redirect("centrocirurgico:programacao_editar", pk=pk)
     sala = programacao.sala_painel
     ocupantes = ProgramacaoCirurgia.objects.select_for_update().filter(
@@ -251,5 +248,5 @@ def programacao_enviar(request, pk):
     programacao.enviado_em = timezone.now()
     programacao.atualizado_por = request.user
     programacao.save(update_fields=("status", "enviado_em", "atualizado_por", "atualizado_em"))
-    messages.success(request, "Cirurgia enviada ao Painel Programador.")
+    messages.success(request, "Cirurgia enviada ao Painel de Cirurgias.")
     return redirect("centrocirurgico:programacao_editar", pk=pk)
