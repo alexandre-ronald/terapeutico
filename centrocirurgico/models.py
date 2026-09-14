@@ -221,7 +221,7 @@ class ProgramacaoCirurgia(models.Model):
     sala_painel = models.CharField(max_length=2, choices=SALAS)
     hora_painel = models.TimeField(null=True, blank=True)
     leito_paciente = models.CharField(max_length=50, blank=True)
-    tipo_cirurgia = models.CharField(max_length=20, choices=TIPOS_CIRURGIA, default="")
+    tipo_cirurgia = models.CharField(max_length=20, choices=TIPOS_CIRURGIA)
     anestesistas = models.TextField(blank=True)
     instrumentador = models.CharField(max_length=250, blank=True)
     circulante = models.CharField(max_length=250, blank=True)
