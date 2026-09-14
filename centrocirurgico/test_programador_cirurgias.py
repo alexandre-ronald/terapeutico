@@ -19,8 +19,8 @@ class ProgramadorCirurgiasTests(TestCase):
         self.p2 = Paciente.objects.create(nome="Paciente Dois", prontuario="2")
         self.c1 = Cirurgia.objects.create(paciente=self.p1, procedimento="Cirurgia 1", sala="SALA 1", data=date.today(), hora=time(8))
         self.c2 = Cirurgia.objects.create(paciente=self.p2, procedimento="Cirurgia 2", sala="SALA 1", data=date.today(), hora=time(10))
-        self.a = ProgramacaoCirurgia.objects.create(cirurgia=self.c1, criado_por=self.user, atualizado_por=self.user, status=ProgramacaoCirurgia.ENVIADA)
-        self.b = ProgramacaoCirurgia.objects.create(cirurgia=self.c2, criado_por=self.user, atualizado_por=self.user)
+        self.a = ProgramacaoCirurgia.objects.create(cirurgia=self.c1, tipo_cirurgia=ProgramacaoCirurgia.ELETIVA, criado_por=self.user, atualizado_por=self.user, status=ProgramacaoCirurgia.ENVIADA)
+        self.b = ProgramacaoCirurgia.objects.create(cirurgia=self.c2, tipo_cirurgia=ProgramacaoCirurgia.EXTRA_MAPA, criado_por=self.user, atualizado_por=self.user)
 
     def test_bloqueia_envio_quando_sala_esta_ocupada(self):
         response = self.client.post(reverse("centrocirurgico:programacao_enviar", args=[self.b.pk]), follow=True)
@@ -53,9 +53,19 @@ class ProgramadorCirurgiasTests(TestCase):
         self.assertEqual(self.b.residente, "Residente Teste")
         self.assertEqual(self.b.enfermeiro, "Enfermeiro Teste")
 
+    def test_formulario_exige_tipo_da_cirurgia(self):
+        response = self.client.post(reverse("centrocirurgico:programacao_editar", args=[self.b.pk]), {
+            "tipo_cirurgia": "", "sala_painel": "2", "hora_painel": "11:30",
+            "anestesistas": "", "instrumentador": "", "circulante": "",
+            "residente": "", "enfermeiro": "", "outros_profissionais": "",
+            "observacao": "",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Este campo é obrigatório")
+
     def test_formulario_exige_sala_entre_um_e_nove(self):
         response = self.client.post(reverse("centrocirurgico:programacao_editar", args=[self.b.pk]), {
-            "sala_painel": "10", "hora_painel": "11:30", "anestesistas": "",
+            "tipo_cirurgia": "eletiva", "sala_painel": "10", "hora_painel": "11:30", "anestesistas": "",
             "instrumentador": "", "circulante": "", "residente": "", "enfermeiro": "",
             "outros_profissionais": "", "observacao": "",
         })
@@ -116,7 +126,7 @@ class ProgramadorCirurgiasTests(TestCase):
         self.assertEqual(self.a.status, ProgramacaoCirurgia.RASCUNHO)
         self.assertEqual(self.b.status, ProgramacaoCirurgia.RASCUNHO)
 
-    def test_bloqueia_envio_com_necessidade_pendente(self):
+    def test_permite_envio_com_necessidade_pendente(self):
         catalogo = NecessidadeCirurgica.objects.create(nome="Leito de UTI")
         ProgramacaoNecessidade.objects.create(
             programacao=self.b, necessidade=catalogo, complemento="P1"
@@ -126,16 +136,15 @@ class ProgramadorCirurgiasTests(TestCase):
             follow=True,
         )
         self.b.refresh_from_db()
-        self.assertEqual(self.b.status, ProgramacaoCirurgia.RASCUNHO)
-        self.assertContains(response, "Confirme todas as necessidades")
-        self.assertContains(response, "Leito de UTI")
+        self.assertEqual(self.b.status, ProgramacaoCirurgia.ENVIADA)
+        self.assertNotContains(response, "Confirme todas as necessidades")
 
     def test_confirmacao_da_necessidade_e_auditada_no_programador(self):
         catalogo = NecessidadeCirurgica.objects.create(nome="Sangue")
         response = self.client.post(
             reverse("centrocirurgico:programacao_editar", args=[self.b.pk]),
             {
-                "sala_painel": "1", "hora_painel": "10:00",
+                "tipo_cirurgia": "eletiva", "sala_painel": "1", "hora_painel": "10:00",
                 "anestesistas": "", "instrumentador": "", "circulante": "",
                 "residente": "", "enfermeiro": "", "outros_profissionais": "",
                 "observacao": "", "necessidades": [str(catalogo.pk)],
