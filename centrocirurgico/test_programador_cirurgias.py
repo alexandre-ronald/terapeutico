@@ -77,6 +77,45 @@ class ProgramadorCirurgiasTests(TestCase):
         self.a.refresh_from_db()
         self.assertEqual(self.a.leito_paciente, "UTI-07")
 
+    def test_retira_do_painel_por_sala_sem_excluir_programacao(self):
+        self.a.sala_painel = "2"
+        self.a.save(update_fields=("sala_painel",))
+
+        response = self.client.post(
+            reverse("centrocirurgico:programacao_retirar_painel"),
+            {"acao": "sala", "sala": "2"},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.a.refresh_from_db()
+        self.assertEqual(self.a.status, ProgramacaoCirurgia.RASCUNHO)
+        self.assertIsNone(self.a.enviado_em)
+        self.assertTrue(ProgramacaoCirurgia.objects.filter(pk=self.a.pk).exists())
+
+    def test_retira_do_painel_por_paciente(self):
+        self.client.post(
+            reverse("centrocirurgico:programacao_retirar_painel"),
+            {"acao": "paciente", "programacao": str(self.a.pk)},
+        )
+
+        self.a.refresh_from_db()
+        self.assertEqual(self.a.status, ProgramacaoCirurgia.RASCUNHO)
+
+    def test_limpa_todas_as_cirurgias_do_painel(self):
+        self.b.status = ProgramacaoCirurgia.ENVIADA
+        self.b.sala_painel = "2"
+        self.b.save(update_fields=("status", "sala_painel"))
+
+        self.client.post(
+            reverse("centrocirurgico:programacao_retirar_painel"),
+            {"acao": "todos"},
+        )
+
+        self.a.refresh_from_db()
+        self.b.refresh_from_db()
+        self.assertEqual(self.a.status, ProgramacaoCirurgia.RASCUNHO)
+        self.assertEqual(self.b.status, ProgramacaoCirurgia.RASCUNHO)
+
     def test_bloqueia_envio_com_necessidade_pendente(self):
         catalogo = NecessidadeCirurgica.objects.create(nome="Leito de UTI")
         ProgramacaoNecessidade.objects.create(
