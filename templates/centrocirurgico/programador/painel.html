@@ -20,8 +20,9 @@
   .painel-tabela { width:100%; height:100%; table-layout:fixed; background:#fff; }
   .painel-tabela thead { height:52px; }
   .painel-tabela th { background:#dff3e4; color:#163522; text-align:center; vertical-align:middle; font-size:clamp(.56rem, .66vw, .76rem); line-height:1.15; text-transform:uppercase; letter-spacing:.015em; border-color:#b9d4c0; padding:.25rem; }
-  .painel-tabela td { vertical-align:top; border-color:#dce3eb; font-size:clamp(.56rem, .67vw, .78rem); line-height:1.18; padding:.25rem .35rem; overflow:hidden; overflow-wrap:anywhere; }
+  .painel-tabela td { height:inherit; vertical-align:top; border-color:#dce3eb; font-size:clamp(.56rem, .67vw, .78rem); line-height:1.18; padding:.25rem .35rem; overflow:hidden; overflow-wrap:anywhere; }
   .painel-tabela tbody .linha-sala { height:calc((100% - 52px) / 9); }
+  .celula-conteudo { max-height:calc((100vh - 155px) / 9 - .5rem); overflow:hidden; }
   .sala-numero { text-align:center; font-size:clamp(1rem, 1.35vw, 1.55rem); line-height:1; font-weight:700; color:#405189; }
   .paciente-nome { font-size:clamp(.68rem, .84vw, .95rem); line-height:1.12; font-weight:600; color:#212529; }
   .vazio { color:#94a3b8; text-align:center; vertical-align:middle!important; font-style:italic; }
@@ -39,6 +40,7 @@
     .painel-tabela thead { height:44px; }
     .painel-tabela tbody .linha-sala { height:calc((100% - 44px) / 9); }
     .painel-tabela td { padding:.15rem .25rem; }
+    .celula-conteudo { max-height:calc((100vh - 120px) / 9 - .3rem); }
   }
 </style>
 </head>
@@ -46,25 +48,45 @@
 <div class="painel-programador">
   <div class="painel-cabecalho d-flex flex-wrap justify-content-between align-items-center gap-2">
     <div><h1 class="painel-titulo">Painel de Cirurgias</h1></div>
-    <div class="d-flex align-items-center gap-3"><div class="text-end"><small class="text-muted d-block">Atualizado às {{ atualizado_em|date:'H:i:s' }}</small><span class="badge bg-primary-subtle text-primary">Nova atualização em <span id="contador">60</span>s</span></div><button type="button" class="btn btn-outline-primary" id="tela-cheia"><i class="ri-fullscreen-line"></i></button></div>
+    <div class="d-flex align-items-center gap-3"><div class="text-end"><small class="text-muted d-block">Atualizado às <span id="atualizado-em">{{ atualizado_em|date:'H:i:s' }}</span></small><span class="badge bg-primary-subtle text-primary">Nova atualização em <span id="contador">60</span>s</span></div><button type="button" class="btn btn-outline-primary" id="tela-cheia"><i class="ri-fullscreen-line"></i></button></div>
   </div>
   <div class="painel-legenda d-flex flex-wrap gap-3 justify-content-center align-items-center small"><span><i class="legenda-cor status-preparacao"></i>Sala sendo preparada</span><span><i class="legenda-cor status-iniciada"></i>Cirurgia iniciada</span><span><i class="legenda-cor status-finalizada"></i>Cirurgia finalizada</span><span><i class="legenda-cor necessidade-atendida"></i>Necessidade confirmada</span><span><i class="legenda-cor necessidade-pendente"></i>Necessidade não confirmada</span></div>
   <div class="card painel-card"><table class="table table-bordered painel-tabela mb-0">
     <colgroup><col style="width:7%"><col style="width:17%"><col style="width:7%"><col style="width:12%"><col style="width:10%"><col style="width:10%"><col style="width:9%"><col style="width:13%"><col style="width:15%"></colgroup>
     <thead><tr><th>Sala operatória</th><th>Paciente<br><small>Prontuário · Nascimento · Leito</small></th><th>Hora</th><th>Cirurgia</th><th>Cirurgião</th><th>Anestesistas</th><th>Enfermeiro<br>Residente</th><th>Circulante<br>Instrumentador</th><th>Observação especial</th></tr></thead>
-    <tbody>{% for sala in salas %}{% with item=sala.programacao %}<tr class="linha-sala {% if item %}{{ item.status_classe }}{% endif %}">
-      <td><div class="sala-numero">{{ sala.rotulo }}</div>{% if item and item.status_classe != 'status-preparacao' %}<small class="d-block text-center mt-1">{{ item.etapa_giro }}</small>{% endif %}</td>
-      {% if item %}<td><div class="paciente-nome">{{ item.cirurgia.paciente.nome }}</div><div class="text-muted mt-1">Prontuário: {{ item.cirurgia.paciente.prontuario|default:'—' }}</div><div class="text-muted">Nascimento: {{ item.cirurgia.paciente.nascimento|date:'d/m/Y'|default:'—' }}</div><div class="text-muted">Leito: {{ item.leito_paciente|default:'—' }}</div></td>
-      <td class="text-center"><strong class="fs-5">{{ item.hora_painel|time:'H:i'|default:'—' }}</strong></td><td><strong>{{ item.cirurgia.procedimento|default:'—' }}</strong></td><td>{{ item.cirurgia.medico|default:'—' }}</td><td>{{ item.anestesistas|default:'—'|linebreaksbr }}</td><td><strong>Enf.:</strong> {{ item.enfermeiro|default:'—' }}<br><strong>Res.:</strong> {{ item.residente|default:'—' }}{% if item.outros_profissionais %}<br><strong>Outros:</strong> {{ item.outros_profissionais|linebreaksbr }}{% endif %}</td><td><strong>Circ.:</strong> {{ item.circulante|default:'—' }}<br><strong>Instr.:</strong> {{ item.instrumentador|default:'—' }}</td>
-      <td>{% if item.observacao %}<div class="mb-2">{{ item.observacao|linebreaksbr }}</div>{% endif %}{% for necessidade in item.necessidades.all %}<div class="rounded p-1 mb-1 {% if necessidade.atendida %}necessidade-atendida{% else %}necessidade-pendente{% endif %}"><i class="{% if necessidade.atendida %}ri-checkbox-circle-fill{% else %}ri-close-circle-fill{% endif %} me-1"></i>{{ necessidade.necessidade.nome }}{% if necessidade.complemento %}: {{ necessidade.complemento }}{% endif %}</div>{% empty %}<span class="text-muted">Sem observações especiais</span>{% endfor %}</td>
+    <tbody id="salas-painel">{% for sala in salas %}{% with item=sala.programacao %}<tr class="linha-sala {% if item %}{{ item.status_classe }}{% endif %}">
+      <td><div class="celula-conteudo"><div class="sala-numero">{{ sala.rotulo }}</div>{% if item and item.status_classe != 'status-preparacao' %}<small class="d-block text-center mt-1">{{ item.etapa_giro }}</small>{% endif %}</div></td>
+      {% if item %}<td><div class="celula-conteudo"><div class="paciente-nome">{{ item.cirurgia.paciente.nome }}</div><div class="text-muted mt-1">Prontuário: {{ item.cirurgia.paciente.prontuario|default:'—' }}</div><div class="text-muted">Nascimento: {{ item.cirurgia.paciente.nascimento|date:'d/m/Y'|default:'—' }}</div><div class="text-muted">Leito: {{ item.leito_paciente|default:'—' }}</div></div></td>
+      <td class="text-center"><div class="celula-conteudo"><strong class="fs-5">{{ item.hora_painel|time:'H:i'|default:'—' }}</strong></div></td><td><div class="celula-conteudo"><strong>{{ item.cirurgia.procedimento|default:'—' }}</strong></div></td><td><div class="celula-conteudo">{{ item.cirurgia.medico|default:'—' }}</div></td><td><div class="celula-conteudo">{{ item.anestesistas|default:'—'|linebreaksbr }}</div></td><td><div class="celula-conteudo"><strong>Enf.:</strong> {{ item.enfermeiro|default:'—' }}<br><strong>Res.:</strong> {{ item.residente|default:'—' }}{% if item.outros_profissionais %}<br><strong>Outros:</strong> {{ item.outros_profissionais|linebreaksbr }}{% endif %}</div></td><td><div class="celula-conteudo"><strong>Circ.:</strong> {{ item.circulante|default:'—' }}<br><strong>Instr.:</strong> {{ item.instrumentador|default:'—' }}</div></td>
+      <td><div class="celula-conteudo">{% if item.observacao %}<div class="mb-2">{{ item.observacao|linebreaksbr }}</div>{% endif %}{% for necessidade in item.necessidades.all %}<div class="rounded p-1 mb-1 {% if necessidade.atendida %}necessidade-atendida{% else %}necessidade-pendente{% endif %}"><i class="{% if necessidade.atendida %}ri-checkbox-circle-fill{% else %}ri-close-circle-fill{% endif %} me-1"></i>{{ necessidade.necessidade.nome }}{% if necessidade.complemento %}: {{ necessidade.complemento }}{% endif %}</div>{% empty %}<span class="text-muted">Sem observações especiais</span>{% endfor %}</div></td>
       {% else %}<td colspan="8" class="vazio">Sala sem cirurgia enviada ao painel</td>{% endif %}
     </tr>{% endwith %}{% endfor %}</tbody>
   </table></div>
 </div>
 <script>
   let restante = {{ intervalo_atualizacao }};
+  let atualizando = false;
   const contador = document.getElementById('contador');
-  setInterval(() => { restante -= 1; if (contador) contador.textContent = restante; if (restante <= 0) window.location.reload(); }, 1000);
+  async function atualizarPainel() {
+    if (atualizando) return;
+    atualizando = true;
+    try {
+      const resposta = await fetch(window.location.href, { headers: { 'X-Painel-Atualizacao': '1' }, cache: 'no-store' });
+      if (!resposta.ok) throw new Error('Falha ao atualizar o painel');
+      const documento = new DOMParser().parseFromString(await resposta.text(), 'text/html');
+      const novasSalas = documento.getElementById('salas-painel');
+      const novaHora = documento.getElementById('atualizado-em');
+      if (novasSalas) document.getElementById('salas-painel').replaceChildren(...novasSalas.children);
+      if (novaHora) document.getElementById('atualizado-em').textContent = novaHora.textContent;
+    } catch (erro) {
+      console.error(erro);
+    } finally {
+      atualizando = false;
+      restante = {{ intervalo_atualizacao }};
+      if (contador) contador.textContent = restante;
+    }
+  }
+  setInterval(() => { restante -= 1; if (contador) contador.textContent = restante; if (restante <= 0) atualizarPainel(); }, 1000);
   document.getElementById('tela-cheia')?.addEventListener('click', () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen());
 </script>
 </body>
