@@ -73,8 +73,9 @@ def _obter_cirurgia(dados):
 @login_required
 @permission_required("centrocirurgico.view_programacaocirurgia", raise_exception=True)
 def programador_mapa(request):
-    data_mapa = request.GET.get("data_mapa") or timezone.localdate().isoformat()
-    dados = buscar_mapa_cirurgico_aghu(data_mapa)
+    data_mapa = request.GET.get("data_mapa")
+    data_campo = data_mapa or timezone.localdate().isoformat()
+    dados = buscar_mapa_cirurgico_aghu(data_mapa) if data_mapa else []
     for item in dados:
         item["programacao_token"] = _token(item)
         item["suspensao_token"] = _suspensao_token(item)
@@ -98,7 +99,7 @@ def programador_mapa(request):
         "mapa": dados,
         "programacoes_painel": programacoes_painel,
         "salas_painel": range(1, 10),
-        "data_mapa": data_mapa,
+        "data_mapa": data_campo,
     })
 
 
