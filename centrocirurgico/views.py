@@ -76,6 +76,7 @@ def registrar_etapa_manual(request, pk):
     # ==========================================================
 
     etapas = [
+        ("dataInicioAnestesia", "Início da anestesia"),
         ("dataInicioCirurgia", "Início da cirurgia"),
         ("dataFinalCirurgia", "Final da cirurgia"),
         ("dataSaidaSala", "Saída da sala"),
@@ -961,6 +962,21 @@ def mapa_cirurgico_list(request):
         "centrocirurgico/mapa_cirurgico_listar.html",
         {"mapa": dados},
     )
+
+def registrar_inicio_anestesia(request, pk):
+
+    giro = get_object_or_404(GiroSala, pk=pk)
+    giro.dataInicioAnestesia = timezone.now()
+    giro.save(update_fields=("dataInicioAnestesia",))
+
+    paciente = get_object_or_404(Paciente, pk=giro.paciente.id)
+    messages.success(request, "Início da anestesia registrado com sucesso.")
+
+    return render(request, 'centrocirurgico/giro_sala_novo.html', {
+        "paciente": paciente,
+        "giro": giro
+    })
+
 
 def registrar_inicio_cirurgia(request, pk):
 
