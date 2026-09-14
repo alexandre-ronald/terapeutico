@@ -11,6 +11,7 @@ from .models import (
     Cirurgia,
     MotivoSuspensao,
     Paciente,
+    ProgramacaoCirurgia,
     SuspensaoCirurgia,
     TipoSuspensao,
 )
@@ -73,6 +74,30 @@ class SuspensaoCirurgiaTests(TestCase):
         self.assertEqual(suspensao.motivo, self.motivo)
         self.assertEqual(suspensao.observacao, "")
         self.assertEqual(suspensao.registrado_por, self.user)
+
+    def test_suspensao_retira_cirurgia_do_painel(self):
+        programacao = ProgramacaoCirurgia.objects.create(
+            cirurgia=self.cirurgia,
+            tipo_cirurgia=ProgramacaoCirurgia.ELETIVA,
+            sala_painel="1",
+            status=ProgramacaoCirurgia.ENVIADA,
+            criado_por=self.user,
+            atualizado_por=self.user,
+        )
+
+        self.client.post(
+            self.url,
+            {
+                "cirurgia_token": self._token_cirurgia(),
+                "tipo": self.tipo.id,
+                "motivo": self.motivo.id,
+                "observacao": "",
+            },
+        )
+
+        programacao.refresh_from_db()
+        self.assertEqual(programacao.status, ProgramacaoCirurgia.RASCUNHO)
+        self.assertIsNone(programacao.enviado_em)
 
     def test_impede_suspensao_duplicada(self):
         SuspensaoCirurgia.objects.create(
