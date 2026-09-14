@@ -17,7 +17,8 @@ def etapa_giro(giro):
         ("dataInicioDesmontagemSala", "Desmontagem em andamento", "warning"),
         ("dataSaidaSala", "Paciente saiu da sala", "primary"),
         ("dataFinalCirurgia", "Cirurgia finalizada", "primary"),
-        ("dataInicioCirurgia", "Cirurgia em andamento", "danger"),
+        ("dataInicioCirurgia", "Cirurgia iniciada", "success"),
+        ("dataInicioAnestesia", "Anestesia iniciada", "primary"),
     )
     for campo, descricao, cor in etapas:
         if getattr(giro, campo):
@@ -56,6 +57,9 @@ def painel_programador(request):
         elif giro and giro.dataInicioCirurgia:
             programacao.status_painel = "Cirurgia iniciada"
             programacao.status_classe = "status-iniciada"
+        elif giro and giro.dataInicioAnestesia:
+            programacao.status_painel = "Anestesia iniciada"
+            programacao.status_classe = "status-anestesia"
         else:
             programacao.status_painel = "Sala sendo preparada"
             programacao.status_classe = "status-preparacao"
