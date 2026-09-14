@@ -1298,7 +1298,134 @@
     <div class="row g-3">
 
         <!-- =====================================================
-             1 - INÍCIO CIRURGIA
+             1 - INÍCIO ANESTESIA
+        ====================================================== -->
+
+        <div class="col-12 col-md-6 col-xl-4 etapa-col">
+
+            <div class="etapa-card
+                        {% if giro.dataInicioAnestesia %}
+                            concluida
+                        {% else %}
+                            atual
+                        {% endif %}">
+
+                <div class="etapa-header">
+
+                    <div class="etapa-identificacao">
+
+                        <div class="etapa-icone">
+
+                            {% if giro.dataInicioAnestesia %}
+                                <i class="bi bi-check-lg"></i>
+                            {% else %}
+                                <i class="bi bi-play-fill"></i>
+                            {% endif %}
+
+                        </div>
+
+                        <div>
+
+                            <div class="etapa-titulo">
+                                Início da anestesia
+                            </div>
+
+                            <div class="etapa-descricao">
+                                Início do procedimento anestésico
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {% if giro.dataInicioAnestesia %}
+
+                        <span class="etapa-status status-concluida">
+                            Concluída
+                        </span>
+
+                    {% else %}
+
+                        <span class="etapa-status status-atual">
+                            Atual
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="etapa-horario">
+
+                    <span class="horario-label">
+                        Horário registrado
+                    </span>
+
+                    <span class="horario-valor
+                                 {% if not giro.dataInicioAnestesia %}vazio{% endif %}">
+
+                        {% if giro.dataInicioAnestesia %}
+                            {{ giro.dataInicioAnestesia|date:'d/m/Y H\:i' }}
+                        {% else %}
+                            --:--
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+                {% if giro.dataInicioAnestesia %}
+
+                    <div class="etapa-footer">
+
+                        <span class="badge-status badge-ok">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Registrado
+                        </span>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="etapa-footer">
+
+                        <a href="{% url 'centrocirurgico:inicio_anestesia' giro.id %}"
+                        class="btn btn-primary btn-sm btn-giro">
+
+                            <i class="bi bi-play-fill me-1"></i>
+                            Registrar agora
+
+                        </a>
+
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-sm btn-giro btn-manual btn-informar-horario"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalHorario"
+                                data-etapa="dataInicioAnestesia"
+                                data-etapa-nome="Início da anestesia"
+                                data-action="{% url 'centrocirurgico:registrar_etapa_manual' giro.id %}">
+
+                            <i class="bi bi-calendar-clock me-1"></i>
+                            Informar horário
+
+                        </button>
+                        
+
+                    </div>
+
+                {% endif %}
+
+
+                
+
+            </div>
+
+        </div>
+
+      
+        <!-- =====================================================
+             2 - INÍCIO CIRURGIA
         ====================================================== -->
 
         <div class="col-12 col-md-6 col-xl-4 etapa-col">
@@ -1327,7 +1454,7 @@
                         <div>
 
                             <div class="etapa-titulo">
-                                Início dos anestésicos cirúrgicos
+                                Início da cirurgia
                             </div>
 
                             <div class="etapa-descricao">
@@ -1403,7 +1530,7 @@
                                 data-bs-toggle="modal"
                                 data-bs-target="#modalHorario"
                                 data-etapa="dataInicioCirurgia"
-                                data-etapa-nome="Início dos anestésicos cirúrgicos"
+                                data-etapa-nome="Início da cirurgia"
                                 data-action="{% url 'centrocirurgico:registrar_etapa_manual' giro.id %}">
 
                             <i class="bi bi-calendar-clock me-1"></i>
@@ -1425,7 +1552,7 @@
 
       
         <!-- =====================================================
-             2 - FINAL CIRURGIA
+             3 - FINAL CIRURGIA
         ====================================================== -->
 
         <div class="col-12 col-md-6 col-xl-4 etapa-col">
