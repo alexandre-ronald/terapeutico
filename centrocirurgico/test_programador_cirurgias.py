@@ -1,4 +1,5 @@
-from datetime import date, time
+from datetime import date, datetime, time
+from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.test import TestCase
@@ -60,6 +61,21 @@ class ProgramadorCirurgiasTests(TestCase):
         })
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Faça uma escolha válida")
+
+    @patch("centrocirurgico.views_programador.buscar_mapa_cirurgico_aghu")
+    def test_mapa_sincroniza_leito_de_programacao_existente(self, buscar_mapa):
+        buscar_mapa.return_value = [{
+            "prontuario": "1", "nome_paciente": "Paciente Um",
+            "data_nascimento": None, "data_inicio_cirurgia": datetime.combine(date.today(), time(8)),
+            "sala": "SALA 1", "procedimento": "Cirurgia 1",
+            "especialidade": "", "medico": "", "leito": "UTI-07",
+        }]
+
+        response = self.client.get(reverse("centrocirurgico:programador_mapa"), {"data_mapa": date.today().isoformat()})
+
+        self.assertEqual(response.status_code, 200)
+        self.a.refresh_from_db()
+        self.assertEqual(self.a.leito_paciente, "UTI-07")
 
     def test_bloqueia_envio_com_necessidade_pendente(self):
         catalogo = NecessidadeCirurgica.objects.create(nome="Leito de UTI")
