@@ -1433,8 +1433,10 @@
             <div class="etapa-card
                         {% if giro.dataInicioCirurgia %}
                             concluida
-                        {% else %}
+                        {% elif giro.dataInicioAnestesia %}
                             atual
+                        {% else %}
+                            bloqueada
                         {% endif %}">
 
                 <div class="etapa-header">
@@ -1472,10 +1474,16 @@
                             Concluída
                         </span>
 
-                    {% else %}
+                    {% elif giro.dataInicioAnestesia %}
 
                         <span class="etapa-status status-atual">
                             Atual
+                        </span>
+
+                    {% else %}
+
+                        <span class="etapa-status status-pendente">
+                            Aguardando anestesia
                         </span>
 
                     {% endif %}
@@ -1513,7 +1521,7 @@
 
                     </div>
 
-                {% else %}
+                {% elif giro.dataInicioAnestesia %}
 
                     <div class="etapa-footer">
 
@@ -1539,6 +1547,15 @@
                         </button>
                         
 
+                    </div>
+
+                {% else %}
+
+                    <div class="etapa-footer">
+                        <span class="badge-status badge-pendente">
+                            <i class="bi bi-lock me-1"></i>
+                            Registre primeiro o início da anestesia
+                        </span>
                     </div>
 
                 {% endif %}
