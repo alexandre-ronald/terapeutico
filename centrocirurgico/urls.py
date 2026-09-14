@@ -13,6 +13,7 @@ urlpatterns = [
     path("programador/abrir/", views_programador.programacao_abrir, name="programacao_abrir"),
     path("programador/<int:pk>/", views_programador.programacao_editar, name="programacao_editar"),
     path("programador/<int:pk>/enviar/", views_programador.programacao_enviar, name="programacao_enviar"),
+    path("programador/retirar-painel/", views_programador.programacao_retirar_painel, name="programacao_retirar_painel"),
     path("necessidades/", views_necessidade.necessidade_lista, name="necessidade_lista"),
     path("necessidades/salvar/", views_necessidade.necessidade_salvar, name="necessidade_salvar"),
     path("necessidades/<int:pk>/alternar/", views_necessidade.necessidade_alternar, name="necessidade_alternar"),
