@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container-fluid py-3">
   <div class="mb-3"><h4 class="mb-1">Programador de Cirurgias</h4><p class="text-muted mb-0">Consulte o mapa, programe ou suspenda uma cirurgia.</p></div>
-  <form method="get" class="card card-body mb-3"><div class="row align-items-end g-2"><div class="col-md-3"><label class="form-label">Data do mapa</label><input type="date" class="form-control" name="data_mapa" value="{{ request.GET.data_mapa }}"></div><div class="col-md-3"><button class="btn btn-primary"><i class="ri-search-line me-1"></i>Consultar</button></div></div></form>
+  <form method="get" class="card card-body mb-3"><div class="row align-items-end g-2"><div class="col-md-3"><label class="form-label">Data do mapa</label><input type="date" class="form-control" name="data_mapa" value="{{ data_mapa }}"></div><div class="col-md-3"><button class="btn btn-primary"><i class="ri-search-line me-1"></i>Consultar</button></div></div></form>
   {% if perms.centrocirurgico.change_programacaocirurgia %}
   <div class="card mb-3">
     <div class="card-header"><h5 class="mb-0"><i class="ri-tv-2-line me-1"></i> Controle do Painel de Cirurgias</h5></div>
