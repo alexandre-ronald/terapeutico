@@ -127,6 +127,8 @@ class ProgramadorCirurgiasTests(TestCase):
         self.assertEqual(self.b.status, ProgramacaoCirurgia.RASCUNHO)
 
     def test_permite_envio_com_necessidade_pendente(self):
+        self.b.sala_painel = "2"
+        self.b.save(update_fields=("sala_painel",))
         catalogo = NecessidadeCirurgica.objects.create(nome="Leito de UTI")
         ProgramacaoNecessidade.objects.create(
             programacao=self.b, necessidade=catalogo, complemento="P1"
