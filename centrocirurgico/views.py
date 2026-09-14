@@ -977,15 +977,19 @@ def registrar_giro2(request, pk):
 
 def registrar_etapa(request, pk, etapa):
     giro = get_object_or_404(GiroSala, pk=pk)
+    campos = dict(ETAPAS_GIRO)
+    if etapa not in campos:
+        messages.error(request, "Etapa inválida para registro.")
+        return redirect('centrocirurgico:registrar_giro', pk=pk)
 
-    # Confirma se a etapa realmente existe no modelo
-    if hasattr(giro, etapa):
-        setattr(giro, etapa, timezone.now())
-        giro.save()
+    momento = timezone.now()
+    erro = _validar_horario_etapa(giro, etapa, momento)
+    if erro:
+        messages.error(request, erro)
     else:
-        raise ValueError(f"Etapa inválida: {etapa}")
-
-    # Sempre volta para a mesma tela
+        setattr(giro, etapa, momento)
+        giro.save(update_fields=(etapa,))
+        messages.success(request, f"{campos[etapa]} registrado com sucesso.")
     return redirect('centrocirurgico:registrar_giro', pk=pk)
 
 @login_required
