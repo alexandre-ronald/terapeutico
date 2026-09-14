@@ -22,6 +22,12 @@ class ProgramadorCirurgiasTests(TestCase):
         self.a = ProgramacaoCirurgia.objects.create(cirurgia=self.c1, tipo_cirurgia=ProgramacaoCirurgia.ELETIVA, criado_por=self.user, atualizado_por=self.user, status=ProgramacaoCirurgia.ENVIADA)
         self.b = ProgramacaoCirurgia.objects.create(cirurgia=self.c2, tipo_cirurgia=ProgramacaoCirurgia.EXTRA_MAPA, criado_por=self.user, atualizado_por=self.user)
 
+    @patch("centrocirurgico.views_programador.buscar_mapa_cirurgico_aghu")
+    def test_data_atual_vem_preenchida_sem_consulta_automatica(self, buscar_mapa):
+        response = self.client.get(reverse("centrocirurgico:programador_mapa"))
+        buscar_mapa.assert_not_called()
+        self.assertContains(response, f'value="{date.today().isoformat()}"')
+
     def test_bloqueia_envio_quando_sala_esta_ocupada(self):
         response = self.client.post(reverse("centrocirurgico:programacao_enviar", args=[self.b.pk]), follow=True)
         self.b.refresh_from_db()
