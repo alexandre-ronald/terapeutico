@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             name="tipo_cirurgia",
             field=models.CharField(
                 choices=[("eletiva", "Eletiva"), ("extra_mapa", "Extra Mapa")],
-                default="",
+                default="eletiva",
                 max_length=20,
             ),
             preserve_default=False,
