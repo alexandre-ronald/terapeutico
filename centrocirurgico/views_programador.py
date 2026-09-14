@@ -119,8 +119,11 @@ def programacao_retirar_painel(request):
         programacoes = programacoes.filter(sala_painel=sala)
         descricao = f"a sala {sala}"
     elif acao == "paciente":
-        programacao_id = request.POST.get("programacao")
-        programacoes = programacoes.filter(pk=programacao_id)
+        programacao_id = request.POST.get("programacao", "")
+        if not programacao_id.isdigit():
+            messages.error(request, "Selecione um paciente válido.")
+            return redirect("centrocirurgico:programador_mapa")
+        programacoes = programacoes.filter(pk=int(programacao_id))
         descricao = "o paciente selecionado"
     elif acao == "todos":
         descricao = "todas as cirurgias"
