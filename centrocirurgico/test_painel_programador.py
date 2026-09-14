@@ -26,6 +26,7 @@ class PainelProgramadorTests(TestCase):
         self.assertContains(response, '<div class="sala-numero">02</div>', html=True)
         self.assertContains(response, "09:00")
         self.assertContains(response, "Cirurgia iniciada")
+        self.assertContains(response, "Eletiva")
         self.assertContains(response, "Leito de UTI")
         self.assertContains(response, "P1")
         self.assertContains(response, "Leito: UTI-12")
