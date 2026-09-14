@@ -61,6 +61,7 @@ urlpatterns = [
     path('giro/', views.registrar_giro, name='registrar_giro'),
     path('giro/<int:pk>/<str:etapa>/', views.registrar_etapa, name='registrar_etapa'),
 
+    path('<int:pk>/inicio-anestesia/', views.registrar_inicio_anestesia, name="inicio_anestesia"),
     path('<int:pk>/inicio-cirurgia/', views.registrar_inicio_cirurgia, name="inicio_cirurgia"),
     path('<int:pk>/fim-cirurgia/', views.registrar_final_cirurgia, name="fim_cirurgia"),
     path('<int:pk>/saida-sala/', views.registrar_saida_sala, name="saida_sala"),
