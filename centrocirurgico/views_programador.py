@@ -101,6 +101,7 @@ def programador_mapa(request):
         "programacoes_painel": programacoes_painel,
         "salas_painel": range(1, 10),
         "data_mapa": data_mapa,
+        "data_mapa_exibicao": datetime.strptime(data_mapa, "%Y-%m-%d").strftime("%d/%m/%Y"),
     })
 
 
