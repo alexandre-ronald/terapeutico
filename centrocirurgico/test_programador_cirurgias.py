@@ -23,10 +23,63 @@ class ProgramadorCirurgiasTests(TestCase):
         self.b = ProgramacaoCirurgia.objects.create(cirurgia=self.c2, tipo_cirurgia=ProgramacaoCirurgia.EXTRA_MAPA, criado_por=self.user, atualizado_por=self.user)
 
     @patch("centrocirurgico.views_programador.buscar_mapa_cirurgico_aghu")
-    def test_data_atual_vem_preenchida_sem_consulta_automatica(self, buscar_mapa):
+    def test_abertura_carrega_mapa_do_dia_atual(self, buscar_mapa):
+        buscar_mapa.return_value = []
         response = self.client.get(reverse("centrocirurgico:programador_mapa"))
-        buscar_mapa.assert_not_called()
+        buscar_mapa.assert_called_once_with(date.today().isoformat())
         self.assertContains(response, f'value="{date.today().isoformat()}"')
+
+    @patch("centrocirurgico.views_programador.buscar_mapa_cirurgico_aghu")
+    def test_lista_do_dia_e_exibida_em_cards_com_acoes_diretas(self, buscar_mapa):
+        buscar_mapa.return_value = [
+            {
+                "prontuario": "1", "nome_paciente": "Paciente Um",
+                "data_nascimento": None,
+                "data_inicio_cirurgia": datetime.combine(date.today(), time(8)),
+                "sala": "SALA 1", "procedimento": "Cirurgia 1",
+                "especialidade": "Geral", "medico": "Cirurgião Um", "leito": "",
+            },
+            {
+                "prontuario": "2", "nome_paciente": "Paciente Dois",
+                "data_nascimento": None,
+                "data_inicio_cirurgia": datetime.combine(date.today(), time(10)),
+                "sala": "SALA 1", "procedimento": "Cirurgia 2",
+                "especialidade": "Geral", "medico": "Cirurgião Dois", "leito": "",
+            },
+        ]
+
+        response = self.client.get(reverse("centrocirurgico:programador_mapa"))
+
+        self.assertContains(response, 'class="card programador-card"', count=2)
+        self.assertContains(response, "No painel")
+        self.assertContains(response, "Enviar para o painel")
+        self.assertContains(response, "Suspender")
+
+    @patch("centrocirurgico.views_programador.buscar_mapa_cirurgico_aghu")
+    def test_envio_direto_retorna_para_os_cards(self, buscar_mapa):
+        self.b.sala_painel = "2"
+        self.b.save(update_fields=("sala_painel",))
+        buscar_mapa.return_value = [{
+            "prontuario": "2", "nome_paciente": "Paciente Dois",
+            "data_nascimento": None,
+            "data_inicio_cirurgia": datetime.combine(date.today(), time(10)),
+            "sala": "SALA 1", "procedimento": "Cirurgia 2",
+            "especialidade": "Geral", "medico": "Cirurgião Dois", "leito": "",
+        }]
+
+        response = self.client.post(
+            reverse("centrocirurgico:programacao_enviar", args=[self.b.pk]),
+            {
+                "voltar_mapa": "1",
+                "data_mapa": date.today().isoformat(),
+            },
+            follow=True,
+        )
+
+        self.b.refresh_from_db()
+        self.assertEqual(self.b.status, ProgramacaoCirurgia.ENVIADA)
+        self.assertEqual(response.resolver_match.url_name, "programador_mapa")
+        self.assertContains(response, "No painel")
 
     def test_bloqueia_envio_quando_sala_esta_ocupada(self):
         response = self.client.post(reverse("centrocirurgico:programacao_enviar", args=[self.b.pk]), follow=True)
