@@ -1,5 +1,6 @@
 from datetime import datetime
 import re
+from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
@@ -7,6 +8,7 @@ from django.core import signing
 from django.core.signing import BadSignature, SignatureExpired
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_POST
 
@@ -73,9 +75,8 @@ def _obter_cirurgia(dados):
 @login_required
 @permission_required("centrocirurgico.view_programacaocirurgia", raise_exception=True)
 def programador_mapa(request):
-    data_mapa = request.GET.get("data_mapa")
-    data_campo = data_mapa or timezone.localdate().isoformat()
-    dados = buscar_mapa_cirurgico_aghu(data_mapa) if data_mapa else []
+    data_mapa = request.GET.get("data_mapa") or timezone.localdate().isoformat()
+    dados = buscar_mapa_cirurgico_aghu(data_mapa)
     for item in dados:
         item["programacao_token"] = _token(item)
         item["suspensao_token"] = _suspensao_token(item)
@@ -99,7 +100,7 @@ def programador_mapa(request):
         "mapa": dados,
         "programacoes_painel": programacoes_painel,
         "salas_painel": range(1, 10),
-        "data_mapa": data_campo,
+        "data_mapa": data_mapa,
     })
 
 
@@ -219,6 +220,14 @@ def programacao_editar(request, pk):
     return render(request, "centrocirurgico/programador/formulario.html", {"programacao": programacao, "form": form, "necessidades": necessidades})
 
 
+def _redirecionar_apos_envio(request, pk):
+    if request.POST.get("voltar_mapa") == "1":
+        data_mapa = request.POST.get("data_mapa") or timezone.localdate().isoformat()
+        url = reverse("centrocirurgico:programador_mapa")
+        return redirect(f"{url}?{urlencode({'data_mapa': data_mapa})}")
+    return redirect("centrocirurgico:programacao_editar", pk=pk)
+
+
 @login_required
 @permission_required("centrocirurgico.change_programacaocirurgia", raise_exception=True)
 @require_POST
@@ -227,7 +236,7 @@ def programacao_enviar(request, pk):
     programacao = get_object_or_404(ProgramacaoCirurgia.objects.select_for_update().select_related("cirurgia"), pk=pk)
     if programacao.tipo_cirurgia not in dict(ProgramacaoCirurgia.TIPOS_CIRURGIA):
         messages.error(request, "Informe o tipo da cirurgia antes de enviar ao painel.")
-        return redirect("centrocirurgico:programacao_editar", pk=pk)
+        return _redirecionar_apos_envio(request, pk)
     sala = programacao.sala_painel
     ocupantes = ProgramacaoCirurgia.objects.select_for_update().filter(
         status=ProgramacaoCirurgia.ENVIADA,
@@ -244,10 +253,10 @@ def programacao_enviar(request, pk):
             break
     if bloqueio:
         messages.error(request, f"A sala {sala} está ocupada pela cirurgia de {bloqueio.cirurgia.paciente.nome}. O envio foi bloqueado.")
-        return redirect("centrocirurgico:programacao_editar", pk=pk)
+        return _redirecionar_apos_envio(request, pk)
     programacao.status = ProgramacaoCirurgia.ENVIADA
     programacao.enviado_em = timezone.now()
     programacao.atualizado_por = request.user
     programacao.save(update_fields=("status", "enviado_em", "atualizado_por", "atualizado_em"))
     messages.success(request, "Cirurgia enviada ao Painel de Cirurgias.")
-    return redirect("centrocirurgico:programacao_editar", pk=pk)
+    return _redirecionar_apos_envio(request, pk)
