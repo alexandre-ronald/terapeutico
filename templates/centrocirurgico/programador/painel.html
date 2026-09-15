@@ -1,0 +1,99 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel de Cirurgias</title>
+<link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet">
+<link href="{% static 'assets/css/icons.min.css' %}" rel="stylesheet">
+<link href="{% static 'assets/css/app.min.css' %}" rel="stylesheet">
+<link href="{% static 'assets/css/custom.min.css' %}" rel="stylesheet">
+<style>
+  html, body { width:100%; height:100%; margin:0; overflow:hidden; }
+  body { background:#f3f6fa; color:#495057; }
+  .painel-programador { height:100vh; padding:clamp(.6rem, 1.2vw, 1.25rem); display:flex; flex-direction:column; gap:.55rem; overflow:hidden; }
+  .painel-cabecalho { min-height:42px; flex:0 0 auto; }
+  .painel-titulo { margin:0; color:#495057; font-size:clamp(1.2rem, 1.6vw, 1.75rem); font-weight:600; }
+  .painel-legenda { flex:0 0 auto; min-height:30px; padding:.35rem .75rem; background:#fff; border:1px solid #e9ebec; border-radius:.5rem; box-shadow:0 1px 2px rgba(56,65,74,.08); }
+  .painel-card { min-height:0; flex:1 1 auto; overflow:hidden; border-radius:.5rem; border:0; box-shadow:0 2px 4px rgba(56,65,74,.12); }
+  .painel-tabela { width:100%; height:100%; table-layout:fixed; background:#fff; }
+  .painel-tabela thead { height:52px; }
+  .painel-tabela th { background:#dff3e4; color:#163522; text-align:center; vertical-align:middle; font-size:clamp(.56rem, .66vw, .76rem); line-height:1.15; text-transform:uppercase; letter-spacing:.015em; border-color:#b9d4c0; padding:.25rem; }
+  .painel-tabela td { height:inherit; vertical-align:top; border-color:#dce3eb; font-size:clamp(.56rem, .67vw, .78rem); line-height:1.18; padding:.25rem .35rem; overflow:hidden; overflow-wrap:anywhere; }
+  .painel-tabela tbody .linha-sala { height:calc((100% - 52px) / 9); }
+  .celula-conteudo { max-height:calc((100vh - 155px) / 9 - .5rem); overflow:hidden; }
+  .sala-numero { text-align:center; font-size:clamp(1rem, 1.35vw, 1.55rem); line-height:1; font-weight:700; color:#405189; }
+  .paciente-nome { font-size:clamp(.68rem, .84vw, .95rem); line-height:1.12; font-weight:600; color:#212529; }
+  .vazio { color:#94a3b8; text-align:center; vertical-align:middle!important; font-style:italic; }
+  .status-preparacao { background:#fff200!important; color:#171717!important; }
+  .status-anestesia { background:#2563eb!important; color:#fff!important; }
+  .status-iniciada { background:#4faf31!important; color:#fff!important; }
+  .status-finalizada { background:#ef2020!important; color:#fff!important; }
+  .linha-sala.status-preparacao > td { background:#fff59d!important; color:#171717!important; }
+  .linha-sala.status-anestesia > td { background:#dbeafe!important; color:#0f172a!important; }
+  .necessidade-pendente { background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; }
+  .necessidade-atendida { background:#dcfce7; border:1px solid #86efac; color:#166534; }
+  .necessidades-lista { display:flex; flex-wrap:wrap; gap:2px; margin-top:2px; }
+  .necessidade-item { display:inline-block; padding:1px 3px; border-radius:3px; font-size:clamp(.48rem,.55vw,.65rem); line-height:1.05; font-weight:600; }
+  .tipo-cirurgia { display:inline-block; margin-top:2px; padding:1px 4px; border-radius:3px; background:#e9ecef; color:#495057; font-size:.58rem; font-weight:600; text-transform:uppercase; }
+  .observacao-livre { max-height:2.2em; overflow:hidden; }
+  .legenda-cor { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:-2px; margin-right:5px; }
+  @media (max-width:1366px), (max-height:800px) {
+    .painel-programador { padding:.45rem; gap:.35rem; }
+    .painel-cabecalho { min-height:34px; }
+    .painel-legenda { min-height:25px; padding:.2rem .5rem; font-size:.65rem; }
+    .painel-tabela thead { height:44px; }
+    .painel-tabela tbody .linha-sala { height:calc((100% - 44px) / 9); }
+    .painel-tabela td { padding:.15rem .25rem; }
+    .celula-conteudo { max-height:calc((100vh - 120px) / 9 - .3rem); }
+  }
+</style>
+</head>
+<body>
+<div class="painel-programador">
+  <div class="painel-cabecalho d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div><h1 class="painel-titulo">Painel de Cirurgias</h1></div>
+    <div class="d-flex align-items-center gap-3"><div class="text-end"><small class="text-muted d-block">Atualizado às <span id="atualizado-em">{{ atualizado_em|date:'H:i:s' }}</span></small><span class="badge bg-primary-subtle text-primary">Nova atualização em <span id="contador">60</span>s</span></div><button type="button" class="btn btn-outline-primary" id="tela-cheia"><i class="ri-fullscreen-line"></i></button></div>
+  </div>
+  <div class="painel-legenda d-flex flex-wrap gap-3 justify-content-center align-items-center small"><span><i class="legenda-cor status-preparacao"></i>Sala sendo preparada</span><span><i class="legenda-cor status-anestesia"></i>Anestesia iniciada</span><span><i class="legenda-cor status-iniciada"></i>Cirurgia iniciada</span><span><i class="legenda-cor status-finalizada"></i>Cirurgia finalizada</span><span><i class="legenda-cor necessidade-atendida"></i>Necessidade confirmada</span><span><i class="legenda-cor necessidade-pendente"></i>Necessidade não confirmada</span></div>
+  <div class="card painel-card"><table class="table table-bordered painel-tabela mb-0">
+    <colgroup><col style="width:6%"><col style="width:16%"><col style="width:6%"><col style="width:12%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:13%"><col style="width:20%"></colgroup>
+    <thead><tr><th>Sala operatória</th><th>Paciente<br><small>Prontuário · Nascimento · Leito</small></th><th>Hora</th><th>Cirurgia</th><th>Cirurgião</th><th>Anestesistas</th><th>Enfermeiro<br>Residente</th><th>Circulante<br>Instrumentador</th><th>Observação especial</th></tr></thead>
+    <tbody id="salas-painel">{% for sala in salas %}{% with item=sala.programacao %}<tr class="linha-sala {% if item %}{{ item.status_classe }}{% endif %}">
+      <td><div class="celula-conteudo"><div class="sala-numero">{{ sala.rotulo }}</div>{% if item and item.status_classe != 'status-preparacao' %}<small class="d-block text-center mt-1">{{ item.etapa_giro }}</small>{% endif %}</div></td>
+      {% if item %}<td><div class="celula-conteudo"><div class="paciente-nome">{{ item.cirurgia.paciente.nome }}</div><div class="text-muted mt-1">Prontuário: {{ item.cirurgia.paciente.prontuario|default:'—' }}</div><div class="text-muted">Nascimento: {{ item.cirurgia.paciente.nascimento|date:'d/m/Y'|default:'—' }}</div><div class="text-muted">Leito: {{ item.leito_paciente|default:'—' }}</div></div></td>
+      <td class="text-center"><div class="celula-conteudo"><strong class="fs-5">{{ item.hora_painel|time:'H:i'|default:'—' }}</strong></div></td><td><div class="celula-conteudo"><strong>{{ item.cirurgia.procedimento|default:'—' }}</strong><br><span class="tipo-cirurgia">{{ item.get_tipo_cirurgia_display }}</span></div></td><td><div class="celula-conteudo">{{ item.cirurgia.medico|default:'—' }}</div></td><td><div class="celula-conteudo">{{ item.anestesistas|default:'—'|linebreaksbr }}</div></td><td><div class="celula-conteudo"><strong>Enf.:</strong> {{ item.enfermeiro|default:'—' }}<br><strong>Res.:</strong> {{ item.residente|default:'—' }}{% if item.outros_profissionais %}<br><strong>Outros:</strong> {{ item.outros_profissionais|linebreaksbr }}{% endif %}</div></td><td><div class="celula-conteudo"><strong>Circ.:</strong> {{ item.circulante|default:'—' }}<br><strong>Instr.:</strong> {{ item.instrumentador|default:'—' }}</div></td>
+      <td><div class="celula-conteudo">{% if item.observacao %}<div class="observacao-livre">{{ item.observacao|linebreaksbr }}</div>{% endif %}<div class="necessidades-lista">{% for necessidade in item.necessidades.all %}<span class="necessidade-item {% if necessidade.atendida %}necessidade-atendida{% else %}necessidade-pendente{% endif %}"><i class="{% if necessidade.atendida %}ri-checkbox-circle-fill{% else %}ri-close-circle-fill{% endif %}"></i> {{ necessidade.necessidade.nome }}{% if necessidade.complemento %}: {{ necessidade.complemento }}{% endif %}</span>{% empty %}<span class="text-muted">Sem observações especiais</span>{% endfor %}</div></div></td>
+      {% else %}<td colspan="8" class="vazio">Sala sem cirurgia enviada ao painel</td>{% endif %}
+    </tr>{% endwith %}{% endfor %}</tbody>
+  </table></div>
+</div>
+<script>
+  let restante = {{ intervalo_atualizacao }};
+  let atualizando = false;
+  const contador = document.getElementById('contador');
+  async function atualizarPainel() {
+    if (atualizando) return;
+    atualizando = true;
+    try {
+      const resposta = await fetch(window.location.href, { headers: { 'X-Painel-Atualizacao': '1' }, cache: 'no-store' });
+      if (!resposta.ok) throw new Error('Falha ao atualizar o painel');
+      const documento = new DOMParser().parseFromString(await resposta.text(), 'text/html');
+      const novasSalas = documento.getElementById('salas-painel');
+      const novaHora = documento.getElementById('atualizado-em');
+      if (novasSalas) document.getElementById('salas-painel').replaceChildren(...novasSalas.children);
+      if (novaHora) document.getElementById('atualizado-em').textContent = novaHora.textContent;
+    } catch (erro) {
+      console.error(erro);
+    } finally {
+      atualizando = false;
+      restante = {{ intervalo_atualizacao }};
+      if (contador) contador.textContent = restante;
+    }
+  }
+  setInterval(() => { restante -= 1; if (contador) contador.textContent = restante; if (restante <= 0) atualizarPainel(); }, 1000);
+  document.getElementById('tela-cheia')?.addEventListener('click', () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen());
+</script>
+</body>
+</html>

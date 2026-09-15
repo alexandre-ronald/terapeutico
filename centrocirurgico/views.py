@@ -42,6 +42,67 @@ import calendar
 logger = logging.getLogger(__name__)
 
 
+ETAPAS_GIRO = (
+    ("dataInicioAnestesia", "Início da anestesia"),
+    ("dataInicioCirurgia", "Início da cirurgia"),
+    ("dataFinalCirurgia", "Final da cirurgia"),
+    ("dataSaidaSala", "Saída da sala"),
+    ("dataInicioDesmontagemSala", "Início da desmontagem"),
+    ("dataFinalDesmontagemSala", "Final da desmontagem"),
+    ("dataInicioLimpeza", "Início da limpeza"),
+    ("dataFinalLimpeza", "Final da limpeza"),
+    ("dataSalaLiberada", "Sala liberada"),
+)
+
+
+def _validar_horario_etapa(giro, campo, momento):
+    campos = [item[0] for item in ETAPAS_GIRO]
+    if campo not in campos:
+        return "Etapa inválida para registro."
+
+    indice = campos.index(campo)
+    for campo_anterior, descricao_anterior in ETAPAS_GIRO[:indice]:
+        valor_anterior = getattr(giro, campo_anterior)
+        if not valor_anterior:
+            return f"Registre '{descricao_anterior}' antes desta etapa."
+        if momento < valor_anterior:
+            return (
+                f"O horário não pode ser anterior a '{descricao_anterior}', "
+                f"registrada em {timezone.localtime(valor_anterior).strftime('%d/%m/%Y %H:%M')}."
+            )
+
+    for campo_posterior, descricao_posterior in ETAPAS_GIRO[indice + 1:]:
+        valor_posterior = getattr(giro, campo_posterior)
+        if valor_posterior and momento > valor_posterior:
+            return (
+                f"O horário não pode ser posterior a '{descricao_posterior}', "
+                f"registrada em {timezone.localtime(valor_posterior).strftime('%d/%m/%Y %H:%M')}."
+            )
+    return None
+
+
+def _registrar_etapa_agora(request, pk, campo, descricao, extras=None):
+    giro = get_object_or_404(GiroSala, pk=pk)
+    momento = timezone.now()
+    erro = _validar_horario_etapa(giro, campo, momento)
+    if erro:
+        messages.error(request, erro)
+    else:
+        setattr(giro, campo, momento)
+        campos = [campo]
+        for nome, valor in (extras or {}).items():
+            setattr(giro, nome, valor)
+            campos.append(nome)
+        giro.save(update_fields=campos)
+        messages.success(request, f"{descricao} registrado com sucesso.")
+
+    paciente = get_object_or_404(Paciente, pk=giro.paciente.id)
+    return render(request, 'centrocirurgico/giro_sala_novo.html', {
+        "paciente": paciente,
+        "giro": giro
+    })
+
+
 ### begin novo para teste
 
 @login_required
@@ -75,16 +136,7 @@ def registrar_etapa_manual(request, pk):
     # ORDEM CRONOLÓGICA DAS ETAPAS
     # ==========================================================
 
-    etapas = [
-        ("dataInicioCirurgia", "Início da cirurgia"),
-        ("dataFinalCirurgia", "Final da cirurgia"),
-        ("dataSaidaSala", "Saída da sala"),
-        ("dataInicioDesmontagemSala", "Início da desmontagem"),
-        ("dataFinalDesmontagemSala", "Final da desmontagem"),
-        ("dataInicioLimpeza", "Início da limpeza"),
-        ("dataFinalLimpeza", "Final da limpeza"),
-        ("dataSalaLiberada", "Sala liberada"),
-    ]
+    etapas = list(ETAPAS_GIRO)
 
 
     # ==========================================================
@@ -152,6 +204,16 @@ def registrar_etapa_manual(request, pk):
             "A data e o horário informados são inválidos."
         )
 
+        return render(
+            request,
+            "centrocirurgico/giro_sala_novo.html",
+            contexto
+        )
+
+
+    erro_cronologia = _validar_horario_etapa(giro, etapa, data_hora_obj)
+    if erro_cronologia:
+        messages.error(request, erro_cronologia)
         return render(
             request,
             "centrocirurgico/giro_sala_novo.html",
@@ -782,6 +844,7 @@ def buscar_mapa_cirurgico_aghu(data=None):
             proc_descr as procedimento, 
             nome_equipe as medico,
             aip.dt_nascimento as data_nascimento,
+            v_cir.lto_lto_id as leito,
             situacao,
             v_cir.dthr_inicio_ordem as data_inicio_cirurgia
         FROM agh.v_lista_mbc_cirurgias  v_cir
@@ -914,15 +977,19 @@ def registrar_giro2(request, pk):
 
 def registrar_etapa(request, pk, etapa):
     giro = get_object_or_404(GiroSala, pk=pk)
+    campos = dict(ETAPAS_GIRO)
+    if etapa not in campos:
+        messages.error(request, "Etapa inválida para registro.")
+        return redirect('centrocirurgico:registrar_giro', pk=pk)
 
-    # Confirma se a etapa realmente existe no modelo
-    if hasattr(giro, etapa):
-        setattr(giro, etapa, timezone.now())
-        giro.save()
+    momento = timezone.now()
+    erro = _validar_horario_etapa(giro, etapa, momento)
+    if erro:
+        messages.error(request, erro)
     else:
-        raise ValueError(f"Etapa inválida: {etapa}")
-
-    # Sempre volta para a mesma tela
+        setattr(giro, etapa, momento)
+        giro.save(update_fields=(etapa,))
+        messages.success(request, f"{campos[etapa]} registrado com sucesso.")
     return redirect('centrocirurgico:registrar_giro', pk=pk)
 
 @login_required
@@ -961,130 +1028,53 @@ def mapa_cirurgico_list(request):
         {"mapa": dados},
     )
 
+def registrar_inicio_anestesia(request, pk):
+    return _registrar_etapa_agora(
+        request, pk, "dataInicioAnestesia", "Início da anestesia"
+    )
 def registrar_inicio_cirurgia(request, pk):
-
-    giro = get_object_or_404(GiroSala, pk=pk)
-    giro.dataInicioCirurgia = timezone.now()
-    giro.save()
-
-    paciente = get_object_or_404(Paciente, pk=giro.paciente.id)
-    messages.success(request, "Início da cirurgia registrado com sucesso.")
-
-    return render(request, 'centrocirurgico/giro_sala_novo.html', {
-        "paciente": paciente,
-        "giro": giro
-    })
-    
-
-
+    return _registrar_etapa_agora(
+        request, pk, "dataInicioCirurgia", "Início da cirurgia"
+    )
 def registrar_final_cirurgia(request, pk):
-    giro = get_object_or_404(GiroSala, pk=pk)
-    giro.dataFinalCirurgia = timezone.now()
-    giro.save()
-    paciente = get_object_or_404(Paciente, pk=giro.paciente.id)
-    messages.success(request, "Final da cirurgia registrado com sucesso.")
-    return render(request, 'centrocirurgico/giro_sala_novo.html', {
-        "paciente": paciente,
-        "giro": giro
-    })
-    
-
-
+    return _registrar_etapa_agora(
+        request, pk, "dataFinalCirurgia", "Final da cirurgia"
+    )
 def registrar_saida_sala(request, pk):
-    giro = get_object_or_404(GiroSala, pk=pk)
-    giro.dataSaidaSala = timezone.now()
-    giro.save()
-    paciente = get_object_or_404(Paciente, pk=giro.paciente.id)
-    messages.success(request, "Saída da sala registrada com sucesso.")
-    return render(request, 'centrocirurgico/giro_sala_novo.html', {
-        "paciente": paciente,
-        "giro": giro
-    })
-    
-
-
+    return _registrar_etapa_agora(
+        request, pk, "dataSaidaSala", "Saída da sala"
+    )
 def registrar_inicio_desmontagem(request, pk):
-    giro = get_object_or_404(GiroSala, pk=pk)
-    giro.dataInicioDesmontagemSala = timezone.now()
-    giro.save()
-    paciente = get_object_or_404(Paciente, pk=giro.paciente.id)
-    messages.success(request, "Início da Desmontagem registrada com sucesso.")
-    return render(request, 'centrocirurgico/giro_sala_novo.html', {
-        "paciente": paciente,
-        "giro": giro
-    })
-
+    return _registrar_etapa_agora(
+        request, pk, "dataInicioDesmontagemSala", "Início da desmontagem"
+    )
 def registrar_final_desmontagem(request, pk):
-    giro = get_object_or_404(GiroSala, pk=pk)
-    giro.dataFinalDesmontagemSala = timezone.now()
-    giro.save()
-    paciente = get_object_or_404(Paciente, pk=giro.paciente.id)
-    messages.success(request, "Final da Desmontagem registrada com sucesso.")
-    return render(request, 'centrocirurgico/giro_sala_novo.html', {
-        "paciente": paciente,
-        "giro": giro
-    })
-
-
+    return _registrar_etapa_agora(
+        request, pk, "dataFinalDesmontagemSala", "Final da desmontagem"
+    )
 def registrar_inicio_limpeza_tipo(request, tipo, pk):
-    giro = get_object_or_404(GiroSala, pk=pk)
-    giro.dataInicioLimpeza = timezone.now()
-    giro.tipoLimpeza = tipo
-    giro.save()
-    paciente = get_object_or_404(Paciente, pk=giro.paciente.id)
-    messages.success(request, "Início da limpeza registrado com sucesso.")
-    return render(request, 'centrocirurgico/giro_sala_novo.html', {
-        "paciente": paciente,
-        "giro": giro
-    })
-
+    return _registrar_etapa_agora(
+        request, pk, "dataInicioLimpeza", "Início da limpeza",
+        extras={"tipoLimpeza": tipo},
+    )
 def registrar_inicio_limpeza(request, pk):
-    giro = get_object_or_404(GiroSala, pk=pk)
-    giro.dataInicioLimpeza = timezone.now()
-    giro.tipoLimpeza = 'C'
-    giro.save()
-    paciente = get_object_or_404(Paciente, pk=giro.paciente.id)
-    messages.success(request, "Início da limpeza registrado com sucesso.")
-    return render(request, 'centrocirurgico/giro_sala_novo.html', {
-        "paciente": paciente,
-        "giro": giro
-    })
-
+    return _registrar_etapa_agora(
+        request, pk, "dataInicioLimpeza", "Início da limpeza",
+        extras={"tipoLimpeza": "C"},
+    )
 def registrar_inicio_limpeza_terminal(request, pk):
-    giro = get_object_or_404(GiroSala, pk=pk)
-    giro.dataInicioLimpeza = timezone.now()
-    giro.tipoLimpeza = 'T'
-    giro.save()
-    paciente = get_object_or_404(Paciente, pk=giro.paciente.id)
-    messages.success(request, "Início da limpeza registrado com sucesso.")
-    return render(request, 'centrocirurgico/giro_sala_novo.html', {
-        "paciente": paciente,
-        "giro": giro
-    })
-    
+    return _registrar_etapa_agora(
+        request, pk, "dataInicioLimpeza", "Início da limpeza terminal",
+        extras={"tipoLimpeza": "T"},
+    )
 def registrar_final_limpeza(request, pk):
-    giro = get_object_or_404(GiroSala, pk=pk)
-    giro.dataFinalLimpeza = timezone.now()
-    giro.save()
-    paciente = get_object_or_404(Paciente, pk=giro.paciente.id)
-    messages.success(request, "Final da limpeza registrado com sucesso.")
-    return render(request, 'centrocirurgico/giro_sala_novo.html', {
-        "paciente": paciente,
-        "giro": giro
-    })
-
+    return _registrar_etapa_agora(
+        request, pk, "dataFinalLimpeza", "Final da limpeza"
+    )
 def registrar_sala_liberada(request, pk):
-    giro = get_object_or_404(GiroSala, pk=pk)
-    giro.dataSalaLiberada = timezone.now()
-    giro.save()
-    paciente = get_object_or_404(Paciente, pk=giro.paciente.id)
-    messages.success(request, "Sala Liberada registrada com sucesso.")
-    return render(request, 'centrocirurgico/giro_sala_novo.html', {
-        "paciente": paciente,
-        "giro": giro
-    })
-
-@login_required
+    return _registrar_etapa_agora(
+        request, pk, "dataSalaLiberada", "Sala liberada"
+    )
 def giro(request):
 
     data_mapa = timezone.now().date().strftime("%Y-%m-%d")

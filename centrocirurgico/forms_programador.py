@@ -6,7 +6,7 @@ class ProgramacaoCirurgiaForm(forms.ModelForm):
     class Meta:
         model = ProgramacaoCirurgia
         fields = (
-            "sala_painel", "hora_painel", "anestesistas", "instrumentador",
+            "tipo_cirurgia", "sala_painel", "hora_painel", "anestesistas", "instrumentador",
             "circulante", "residente", "enfermeiro", "outros_profissionais", "observacao",
         )
         widgets = {
@@ -20,6 +20,8 @@ class ProgramacaoCirurgiaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs.setdefault("class", "form-control")
+        self.fields["tipo_cirurgia"].widget.attrs["class"] = "form-select"
+        self.fields["tipo_cirurgia"].choices = (("", "Selecione o tipo"),) + ProgramacaoCirurgia.TIPOS_CIRURGIA
         self.fields["sala_painel"].widget.attrs["class"] = "form-select"
         self.fields["sala_painel"].choices = (("", "Selecione a sala"),) + ProgramacaoCirurgia.SALAS
 
