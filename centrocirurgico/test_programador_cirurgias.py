@@ -14,6 +14,7 @@ class ProgramadorCirurgiasTests(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(username="programador", password="teste")
         self.user.user_permissions.add(*Permission.objects.filter(content_type__app_label="centrocirurgico", content_type__model="programacaocirurgia"))
+        self.user.user_permissions.add(Permission.objects.get(codename="add_suspensaocirurgia"))
         self.client.force_login(self.user)
         self.p1 = Paciente.objects.create(nome="Paciente Um", prontuario="1")
         self.p2 = Paciente.objects.create(nome="Paciente Dois", prontuario="2")
