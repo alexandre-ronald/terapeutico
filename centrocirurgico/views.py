@@ -796,13 +796,13 @@ def giro_sala_novo(request):
 
     cirurgia, created = Cirurgia.objects.get_or_create(
         paciente=paciente,
+        data=data_cirurgia,
+        hora=hora_cirurgia or None,
+        procedimento=procedimento,
         defaults={
             'especialidade': especialidade,
-            'procedimento': procedimento,
             'medico': medico,
             'sala': sala,
-            'data': data_cirurgia,
-            'hora': hora_cirurgia
         }
     )
 
@@ -904,13 +904,13 @@ def registrar_giro_novo(request):
 
     cirurgia, created = Cirurgia.objects.get_or_create(
         paciente=paciente,
+        data=data_cirurgia,
+        hora=hora_cirurgia or None,
+        procedimento=procedimento,
         defaults={
             'especialidade': especialidade,
-            'procedimento': procedimento,
             'medico': medico,
             'sala': sala,
-            'data': data_cirurgia,
-            'hora': hora_cirurgia
         }
     )
 
@@ -947,13 +947,13 @@ def registrar_giro(request):
 
     cirurgia, created = Cirurgia.objects.get_or_create(
         paciente=paciente,
+        data=data_cirurgia,
+        hora=hora_cirurgia or None,
+        procedimento=procedimento,
         defaults={
             'especialidade': especialidade,
-            'procedimento': procedimento,
             'medico': medico,
             'sala': sala,
-            'data': data_cirurgia,
-            'hora': hora_cirurgia
         }
     )
 
@@ -1169,13 +1169,13 @@ def giro_sala(request):
 
     cirurgia, created = Cirurgia.objects.get_or_create(
         paciente=paciente,
+        data=data_cirurgia,
+        hora=hora_cirurgia or None,
+        procedimento=procedimento,
         defaults={
             'especialidade': especialidade,
-            'procedimento': procedimento,
             'medico': medico,
             'sala': sala,
-            'data': data_cirurgia,
-            'hora': hora_cirurgia
         }
     )
 
