@@ -1,158 +1,271 @@
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Terapêutico - Acesso</title>
-    <link href="{% static 'assets/css/style.css' %}" rel="stylesheet" type="text/css">
-    <script src="{% static 'assets/js/layout.js' %}"></script>
-    <!-- Bootstrap Css -->
-    <link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet">
-    <!-- Icons Css -->
-    <link href="{% static 'assets/css/icons.min.css' %}" rel="stylesheet" type="text/css" />
-    <!-- App Css-->
-    <link href="{% static 'assets/css/app.min.css' %}" rel="stylesheet" type="text/css" />
-    <!-- custom Css-->
-    <link href="{% static 'assets/css/custom.min.css' %}" rel="stylesheet" type="text/css" />
-    <link rel="shortcut icon" href="{% static 'assets/images/favicon.ico' %}">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Terapêutico — Acesso ao sistema</title>
+  <link rel="shortcut icon" href="{% static 'assets/images/favicon.ico' %}">
+  <link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/css/icons.min.css' %}" rel="stylesheet">
+  <style>
+    :root {
+      --auth-navy: #102a52;
+      --auth-blue: #18599a;
+      --auth-cyan: #079aac;
+      --auth-teal: #08ae9d;
+      --auth-muted: #657492;
+      --auth-line: #dbe4ef;
+      --auth-field: #f1f6fc;
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; margin: 0; }
+    body {
+      min-height: 100vh;
+      color: var(--auth-navy);
+      background: #fff;
+      font-family: Arial, "Helvetica Neue", sans-serif;
+    }
+    .auth-shell { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(500px, 1fr); }
+    .auth-presentation {
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+      color: #fff;
+      background: linear-gradient(135deg, rgba(0, 157, 168, .95), rgba(17, 67, 145, .94)),
+                  url("{% static 'assets/images/auth-one-bg.jpg' %}") center/cover no-repeat;
+    }
+    .auth-presentation::after {
+      content: "";
+      position: absolute;
+      width: 520px;
+      height: 520px;
+      right: -260px;
+      top: -270px;
+      border-radius: 50%;
+      background: rgba(15, 42, 92, .20);
+    }
+    .presentation-inner {
+      position: relative;
+      z-index: 1;
+      width: min(680px, calc(100% - 7rem));
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 3rem 0 2rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .system-brand { display: inline-flex; align-items: center; gap: .7rem; color: #fff; font-size: 1.9rem; font-weight: 500; }
+    .system-brand i { font-size: 2rem; }
+    .presentation-copy { margin: auto 0 2rem; }
+    .eyebrow {
+      margin-bottom: 1.6rem;
+      font-size: .75rem;
+      font-weight: 800;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+    }
+    .presentation-title {
+      max-width: 650px;
+      margin: 0 0 1.6rem;
+      color: #fff;
+      font-size: clamp(2.6rem, 4.2vw, 4.1rem);
+      line-height: 1.05;
+      font-weight: 750;
+      letter-spacing: -.035em;
+    }
+    .presentation-text { max-width: 650px; margin: 0; font-size: 1.25rem; line-height: 1.65; }
+    .benefits {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      margin-top: 2.7rem;
+      border-top: 1px solid rgba(255,255,255,.28);
+      border-bottom: 1px solid rgba(255,255,255,.28);
+    }
+    .benefit { min-height: 136px; padding: 1.7rem .9rem 1.3rem; text-align: center; }
+    .benefit + .benefit { border-left: 1px solid rgba(255,255,255,.28); }
+    .benefit i { display: block; margin-bottom: .75rem; font-size: 2rem; }
+    .benefit strong { display: block; font-size: .87rem; line-height: 1.25; }
+    .institutional { margin-top: auto; padding-top: 2rem; }
+    .institutional-logo {
+      display: inline-flex;
+      align-items: center;
+      min-height: 60px;
+      padding: .65rem 1rem;
+      border-radius: .65rem;
+      background: #fff;
+    }
+    .institutional-logo img { width: 270px; max-width: 100%; height: auto; }
+    .institutional small { display: block; margin-top: .75rem; color: rgba(255,255,255,.9); font-size: .76rem; }
+    .auth-access {
+      min-height: 100vh;
+      padding: 3rem;
+      display: grid;
+      place-items: center;
+      background: #fff;
+    }
+    .login-card {
+      width: min(480px, 100%);
+      padding: 3.2rem 2.7rem 2.5rem;
+      border: 1px solid var(--auth-line);
+      border-radius: 1rem;
+      background: #fff;
+      box-shadow: 0 20px 55px rgba(37, 57, 88, .11);
+    }
+    .login-kicker { color: #6686ba; font-size: .72rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; }
+    .login-card h1 { margin: 1.2rem 0 .55rem; color: var(--auth-navy); font-size: 2rem; font-weight: 750; }
+    .login-subtitle { max-width: 320px; margin-bottom: 2.2rem; color: var(--auth-muted); line-height: 1.5; }
+    .form-label { margin-bottom: .55rem; color: var(--auth-navy); font-size: .83rem; font-weight: 700; }
+    .field-wrap { position: relative; }
+    .field-wrap > i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      z-index: 2;
+      color: #6d8dbd;
+      font-size: 1.25rem;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+    .login-input {
+      min-height: 53px;
+      padding: .75rem 3rem;
+      border: 1px solid #cad9ec;
+      border-radius: .55rem;
+      color: var(--auth-navy);
+      background: var(--auth-field);
+      box-shadow: none;
+    }
+    .login-input:focus { border-color: #6a9bd1; background: #fff; box-shadow: 0 0 0 .2rem rgba(57, 119, 181, .12); }
+    .password-toggle {
+      position: absolute;
+      right: .65rem;
+      top: 50%;
+      padding: .35rem .5rem;
+      border: 0;
+      color: #6686ba;
+      background: transparent;
+      font-size: 1.25rem;
+      transform: translateY(-50%);
+    }
+    .remember-row { margin: 1rem 0 1.6rem; color: var(--auth-muted); font-size: .82rem; }
+    .form-check-input:checked { border-color: var(--auth-teal); background-color: var(--auth-teal); }
+    .login-button {
+      min-height: 53px;
+      border: 0;
+      border-radius: .55rem;
+      color: #fff;
+      background: var(--auth-teal);
+      font-weight: 750;
+      box-shadow: 0 8px 18px rgba(8, 174, 157, .2);
+    }
+    .login-button:hover, .login-button:focus { color: #fff; background: #079c8e; }
+    .security-note {
+      display: flex;
+      gap: .8rem;
+      margin-top: 1.8rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--auth-line);
+      color: #7182a1;
+      font-size: .76rem;
+      line-height: 1.45;
+    }
+    .security-note i { flex: 0 0 auto; color: #5c89c5; font-size: 1.15rem; }
+    .login-alert { margin-bottom: 1.4rem; border-color: #f5c2c7; color: #842029; background: #f8d7da; font-size: .86rem; }
+    @media (max-width: 1100px) {
+      .auth-shell { grid-template-columns: minmax(420px, .9fr) minmax(480px, 1.1fr); }
+      .presentation-inner { width: calc(100% - 4rem); }
+      .presentation-title { font-size: 2.65rem; }
+      .presentation-text { font-size: 1rem; }
+      .benefit { min-height: 118px; padding: 1.35rem .55rem 1rem; }
+    }
+    @media (max-width: 850px) {
+      .auth-shell { display: block; }
+      .auth-presentation { min-height: auto; }
+      .presentation-inner { width: calc(100% - 3rem); min-height: auto; padding: 1.5rem 0; }
+      .presentation-copy, .benefits { display: none; }
+      .institutional { margin-top: 1.5rem; padding-top: 0; }
+      .institutional-logo { min-height: 48px; }
+      .institutional-logo img { width: 225px; }
+      .institutional small { display: none; }
+      .auth-access { min-height: calc(100vh - 150px); padding: 2rem 1rem; }
+      .login-card { padding: 2.2rem 1.5rem; }
+    }
+  </style>
 </head>
 <body>
-    <div class="auth-page-wrapper auth-bg-cover py-5 d-flex justify-content-center align-items-center min-vh-100">
-        <div class="bg-overlay"></div>
-        <div class="auth-page-content overflow-hidden pt-lg-5">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="card overflow-hidden">
-                            <div class="row g-0">
-                                <div class="col-lg-6">
-                                    <div class="p-lg-5 p-4 auth-one-bg h-100">
-                                        <div class="bg-overlay"></div>
-                                        <div class="position-relative h-100 d-flex flex-column">
-                                            <div class="mb-4">
-                                                <a href="" class="d-block">
-                                                    <img src="{% static 'assets/images/logo-light.png' %}" alt="" height="50">
-                                                    
-                                                </a>
-                                            </div>
-                                            <div class="mt-auto">
-                                                <div class="mb-3">
-                                                    <i class="ri-double-quotes-l display-4 text-success"></i>
-                                                </div>
-                                                <div id="qoutescarouselIndicators" class="carousel slide" data-bs-ride="carousel">
-                                                    <div class="carousel-indicators">
-                                                        <button type="button" data-bs-target="#qoutescarouselIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-                                                        <button type="button" data-bs-target="#qoutescarouselIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
-                                                        <button type="button" data-bs-target="#qoutescarouselIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
-                                                        <button type="button" data-bs-target="#qoutescarouselIndicators" data-bs-slide-to="3" aria-label="Slide 4"></button>
-                                                        <button type="button" data-bs-target="#qoutescarouselIndicators" data-bs-slide-to="4" aria-label="Slide 5"></button>
-                                                    </div>
-                                                    <div class="carousel-inner text-center text-white-50 pb-5">
-                                                        <div class="carousel-item active">
-                                                            <p class="fs-15 fst-italic">"UTIs e Centros Cirúrgicos trabalham em sinergia para oferecer uma linha contínua de cuidados, desde intervenções cirúrgicas precisas até a recuperação intensiva de pacientes."</p>
-                                                        </div>
-                                                        <div class="carousel-item">
-                                                            <p class="fs-15 fst-italic">"Hospitais com UTIs e Centros Cirúrgicos bem estruturados são fundamentais para enfrentar emergências médicas, oferecendo desde cirurgias de urgência até cuidados intensivos pós-operatórios."</p>
-                                                        </div>
-                                                        <div class="carousel-item">
-                                                            <p class="fs-15 fst-italic">"As UTIs desempenham um papel vital na gestão de crises de saúde pública, como pandemias, ao fornecer suporte ventilatório e cuidados intensivos a pacientes gravemente enfermos."</p>
-                                                        </div>
-                                                        <div class="carousel-item">
-                                                            <p class="fs-15 fst-italic">"A humanização no atendimento das UTIs, aliada à alta tecnologia, promove não apenas a sobrevivência, mas também a dignidade e o conforto dos pacientes em situações críticas."</p>
-                                                        </div>
-                                                        <div class="carousel-item">
-                                                            <p class="fs-15 fst-italic">"Com infraestrutura moderna e equipes altamente qualificadas, os Centros Cirúrgicos possibilitam a realização de procedimentos complexos, como transplantes e cirurgias cardíacas."</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="text-center">
-                                                <img src="{% static 'assets/images/hu-ufma.png' %}"alt="" width="150">
-                                            </div>
-                                            
-                                            
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="p-lg-5 p-4">
-                                        <div>
-                                            <h5 class="text-primary">Bem-vindo</h5>
-                                            <p class="text-muted">Entre com seus dados para entrar.</p>
-                                            
-                                        </div>
-                                        {% if messages %}
-                                            <div class="mt-3">
-                                                {% for message in messages %}
-                                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                                        {{ message }}
-                                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                                    </div>
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                        <div class="mt-4">
-                                            <form method="post">
-                                                {% csrf_token %}
-                                                <div class="mb-3">
-                                                    <label for="username" class="form-label">Usuário</label>
-                                                    <input type="text" class="form-control" id="username" name="username" placeholder="Digite seu Usuário" required>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <div class="float-end">
-                                                        <a href="#" class="text-muted">Esqueceu a senha?</a>
-                                                    </div>
-                                                    <label class="form-label" for="password">Senha</label>
-                                                    <div class="position-relative auth-pass-inputgroup mb-3">
-                                                        <input type="password" class="form-control pe-5 password-input" name="password" placeholder="Digite sua Senha" id="password" required>
-                                                        <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon" type="button" id="password-addon"><i class="ri-eye-fill align-middle"></i></button>
-                                                    </div>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value="" id="auth-remember-check" name="remember">
-                                                    <label class="form-check-label" for="auth-remember-check">Relembrar</label>
-                                                </div>
-                                                <div class="mt-4">
-                                                    <button class="btn btn-success w-100"  id="login-btn" type="submit">Acessar</button>
-                                                    
-                                                </div>
-                                            </form>
-                                        </div>
-                                       
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <main class="auth-shell">
+    <section class="auth-presentation" aria-label="Apresentação do sistema">
+      <div class="presentation-inner">
+        <div class="system-brand"><i class="ri-heart-pulse-line"></i><span>Terapêutico</span></div>
+        <div class="presentation-copy">
+          <div class="eyebrow">Centro Cirúrgico</div>
+          <h2 class="presentation-title">Informação que organiza o cuidado cirúrgico.</h2>
+          <p class="presentation-text">O Terapêutico integra programação, giro de sala e monitoramento das cirurgias para apoiar uma assistência mais segura, coordenada e eficiente.</p>
+          <div class="benefits" aria-label="Benefícios do sistema">
+            <div class="benefit"><i class="ri-calendar-check-line"></i><strong>Programação<br>mais segura</strong></div>
+            <div class="benefit"><i class="ri-team-line"></i><strong>Integração<br>das equipes</strong></div>
+            <div class="benefit"><i class="ri-dashboard-3-line"></i><strong>Salas em<br>tempo real</strong></div>
+          </div>
         </div>
-        <footer class="footer">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="text-center">
-                            <p class="mb-0">© <script>document.write(new Date().getFullYear())</script> Terapêutico. Criado por <i class="mdi mdi-heart text-danger"></i> Unidade de Sistemas de Informação e Inteligência de Dados - USID </p>
-                        </div>
-                    </div>
-                </div>
+        <div class="institutional">
+          <div class="institutional-logo"><img src="{% static 'assets/images/hu-ufma-assinatura.png' %}" alt="HU-UFMA e EBSERH"></div>
+          <small>Hospital Universitário da Universidade Federal do Maranhão · HU-UFMA/EBSERH</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="auth-access">
+      <div class="login-card">
+        <div class="login-kicker">Acesso ao sistema</div>
+        <h1>Bem-vindo</h1>
+        <p class="login-subtitle">Entre com suas credenciais institucionais para acessar o Terapêutico.</p>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert login-alert" role="alert"><i class="ri-error-warning-line me-1"></i>{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="username" class="form-label">Usuário</label>
+            <div class="field-wrap">
+              <i class="ri-user-3-line"></i>
+              <input type="text" class="form-control login-input" id="username" name="username" value="{{ request.POST.username|default:'' }}" placeholder="Seu usuário institucional" autocomplete="username" autofocus required>
             </div>
-        </footer>
-    </div>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Senha</label>
+            <div class="field-wrap">
+              <i class="ri-lock-2-line"></i>
+              <input type="password" class="form-control login-input" id="password" name="password" placeholder="Sua senha" autocomplete="current-password" required>
+              <button class="password-toggle" type="button" id="password-toggle" aria-label="Mostrar senha" aria-pressed="false"><i class="ri-eye-line"></i></button>
+            </div>
+          </div>
+          <div class="form-check remember-row">
+            <input class="form-check-input" type="checkbox" id="auth-remember-check" name="remember">
+            <label class="form-check-label" for="auth-remember-check">Lembrar neste dispositivo</label>
+          </div>
+          <button class="btn login-button w-100" id="login-btn" type="submit"><i class="ri-login-box-line me-2"></i>Acessar</button>
+        </form>
 
-    <!-- JAVASCRIPT -->
-    <script src="{% static 'assets/libs/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-    <script src="{% static 'assets/libs/simplebar/simplebar.min.js' %}"></script>
-    <script src="{% static 'assets/libs/flatpickr/flatpickr.min.js' %}"></script>
-    <script src="{% static 'assets/libs/node-waves/waves.min.js' %}"></script>
-    <script src="{% static 'assets/libs/feather-icons/feather.min.js' %}"></script>
-    <script src="{% static 'assets/js/pages/plugins/lord-icon-2.1.0.js' %}"></script>
-    <script src="{% static 'assets/js/plugins.js' %}"></script>
-    <script src="{% static 'assets/js/pages/password-addon.init.js' %}"></script>
+        <div class="security-note"><i class="ri-shield-check-line"></i><span>Acesso destinado a usuários autorizados. Utilize suas credenciais institucionais e não compartilhe sua senha.</span></div>
+      </div>
+    </section>
+  </main>
 
-    {% block extra_js %}
-        
-    {% endblock %}
-    
+  <script>
+    const toggle = document.getElementById('password-toggle');
+    const password = document.getElementById('password');
+    toggle?.addEventListener('click', () => {
+      const mostrar = password.type === 'password';
+      password.type = mostrar ? 'text' : 'password';
+      toggle.setAttribute('aria-pressed', String(mostrar));
+      toggle.setAttribute('aria-label', mostrar ? 'Ocultar senha' : 'Mostrar senha');
+      toggle.querySelector('i').className = mostrar ? 'ri-eye-off-line' : 'ri-eye-line';
+    });
+  </script>
 </body>
 </html>
