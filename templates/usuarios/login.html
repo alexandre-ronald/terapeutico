@@ -55,8 +55,8 @@
       display: flex;
       flex-direction: column;
     }
-    .system-brand { display: inline-flex; align-items: center; gap: .7rem; color: #fff; font-size: 1.9rem; font-weight: 500; }
-    .system-brand i { font-size: 2rem; }
+    .system-brand { display: inline-flex; align-items: center; }
+    .system-brand img { display: block; width: min(310px, 80%); height: auto; }
     .presentation-copy { margin: auto 0 2rem; }
     .eyebrow {
       margin-bottom: 1.6rem;
@@ -88,14 +88,15 @@
     .benefit strong { display: block; font-size: .87rem; line-height: 1.25; }
     .institutional { margin-top: auto; padding-top: 2rem; }
     .institutional-logo {
-      display: inline-flex;
-      align-items: center;
-      min-height: 60px;
-      padding: .65rem 1rem;
+      display: block;
+      width: 150px;
+      height: 68px;
+      padding: .6rem;
+      overflow: hidden;
       border-radius: .65rem;
       background: #fff;
     }
-    .institutional-logo img { width: 270px; max-width: 100%; height: auto; }
+    .institutional-logo img { display: block; width: auto; max-width: none; height: 48px; }
     .institutional small { display: block; margin-top: .75rem; color: rgba(255,255,255,.9); font-size: .76rem; }
     .auth-access {
       min-height: 100vh;
@@ -185,8 +186,8 @@
       .presentation-inner { width: calc(100% - 3rem); min-height: auto; padding: 1.5rem 0; }
       .presentation-copy, .benefits { display: none; }
       .institutional { margin-top: 1.5rem; padding-top: 0; }
-      .institutional-logo { min-height: 48px; }
-      .institutional-logo img { width: 225px; }
+      .institutional-logo { width: 138px; height: 60px; padding: .5rem; }
+      .institutional-logo img { width: auto; height: 44px; }
       .institutional small { display: none; }
       .auth-access { min-height: calc(100vh - 150px); padding: 2rem 1rem; }
       .login-card { padding: 2.2rem 1.5rem; }
@@ -197,7 +198,7 @@
   <main class="auth-shell">
     <section class="auth-presentation" aria-label="Apresentação do sistema">
       <div class="presentation-inner">
-        <div class="system-brand"><i class="ri-heart-pulse-line"></i><span>Terapêutico</span></div>
+        <div class="system-brand"><img src="{% static 'assets/images/logo-dark.png' %}" alt="Terapêutico"></div>
         <div class="presentation-copy">
           <div class="eyebrow">Centro Cirúrgico</div>
           <h2 class="presentation-title">Informação que organiza o cuidado cirúrgico.</h2>
@@ -209,7 +210,7 @@
           </div>
         </div>
         <div class="institutional">
-          <div class="institutional-logo"><img src="{% static 'assets/images/hu-ufma-assinatura.png' %}" alt="HU-UFMA e EBSERH"></div>
+          <div class="institutional-logo"><img src="{% static 'assets/images/hu-ufma.png' %}" alt="HU-UFMA"></div>
           <small>Hospital Universitário da Universidade Federal do Maranhão · HU-UFMA/EBSERH</small>
         </div>
       </div>
