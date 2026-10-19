@@ -90,12 +90,13 @@
     .institutional-logo {
       display: inline-flex;
       align-items: center;
-      min-height: 68px;
-      padding: .6rem .85rem;
+      width: fit-content;
+      min-height: 0;
+      padding: .38rem .5rem;
       border-radius: .65rem;
       background: #fff;
     }
-    .institutional-logo img { display: block; width: min(370px, 100%); max-width: 100%; height: auto; }
+    .institutional-logo img { display: block; width: 370px; max-width: calc(100vw - 5rem); height: auto; }
     .institutional small { display: block; margin-top: .75rem; color: rgba(255,255,255,.9); font-size: .76rem; }
     .auth-access {
       min-height: 100vh;
@@ -185,8 +186,8 @@
       .presentation-inner { width: calc(100% - 3rem); min-height: auto; padding: 1.5rem 0; }
       .presentation-copy, .benefits { display: none; }
       .institutional { margin-top: 1.5rem; padding-top: 0; }
-      .institutional-logo { min-height: 58px; padding: .5rem .7rem; }
-      .institutional-logo img { width: min(310px, 100%); height: auto; }
+      .institutional-logo { min-height: 0; padding: .32rem .42rem; }
+      .institutional-logo img { width: 310px; max-width: calc(100vw - 4rem); height: auto; }
       .institutional small { display: none; }
       .auth-access { min-height: calc(100vh - 150px); padding: 2rem 1rem; }
       .login-card { padding: 2.2rem 1.5rem; }
