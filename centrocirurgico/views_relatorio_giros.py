@@ -154,6 +154,13 @@ def relatorio_controle_giros(request):
             continue
 
         situacao = _situacao_aghu(cirurgia_aghu)
+        if (
+            situacao in SITUACOES_CANCELADAS
+            and not cirurgia_aghu.get("atendimento_seq")
+        ):
+            # Cancelamentos técnicos sem atendimento vinculado não aparecem
+            # no mapa operacional do AGHU e não pertencem ao movimento do dia.
+            continue
         linha = por_dia.setdefault(dia, _linha_vazia(dia))
         linha["aghu_total"] += 1
         if situacao in SITUACOES_REALIZADAS:
