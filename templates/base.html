@@ -367,6 +367,24 @@
                 color: var(--sidebar-modern-active) !important;
             }
 
+            /* Recuo real do submenu: sobrescreve os paddings do tema Velzon. */
+            .app-menu #navbar-nav .menu-dropdown {
+                margin-left: 3px !important;
+                padding-left: 3px !important;
+            }
+            .app-menu #navbar-nav .menu-dropdown .nav.nav-sm {
+                padding-left: 0 !important;
+                margin-left: 0 !important;
+            }
+            .app-menu #navbar-nav .menu-dropdown .nav.nav-sm .nav-link {
+                padding: 9px 8px !important;
+                padding-left: 10px !important;
+                margin-left: 0 !important;
+                font-size: .91rem !important;
+                line-height: 1.4;
+                font-weight: 500;
+            }
+
             .sidebar-modern-footer {
                 background: #fff;
                 border-top: 1px solid var(--sidebar-modern-border);
