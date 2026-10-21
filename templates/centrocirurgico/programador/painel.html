@@ -52,6 +52,31 @@
     .painel-tabela td { padding:.15rem .25rem; }
     .celula-conteudo { max-height:calc((100vh - 120px) / 9 - .3rem); }
   }
+
+  /* Identidade visual compartilhada com o painel integrado. */
+  body { background:#f2f5fa; color:#233b5c; }
+  .painel-programador { padding:clamp(.55rem,1vw,1.1rem); gap:.65rem; }
+  .painel-cabecalho { background:linear-gradient(115deg,#172f59,#315e99); border-radius:14px; padding:12px 20px; min-height:60px; box-shadow:0 5px 18px rgba(23,47,89,.13); }
+  .painel-titulo { color:#fff; font-weight:750; font-size:clamp(1.2rem,1.6vw,1.75rem); }
+  .painel-cabecalho .text-muted { color:#dce8fa!important; }
+  .painel-cabecalho .badge { background:rgba(255,255,255,.17)!important; color:#fff!important; }
+  .painel-cabecalho .btn { border-color:rgba(255,255,255,.5); color:#fff; }
+  .painel-cabecalho .btn:hover { background:rgba(255,255,255,.15); }
+  .painel-legenda { border:1px solid #e5eaf1; border-radius:12px; padding:.5rem 1rem; box-shadow:0 4px 15px rgba(31,45,61,.04); }
+  .painel-card { border:1px solid #e5eaf1; border-radius:15px; box-shadow:0 5px 22px rgba(31,45,61,.06); }
+  .painel-tabela th { background:#eaf3f0; color:#29493f; border-color:#d7e7df; font-weight:750; }
+  .painel-tabela td { border-color:#e5eaf1; }
+  .sala-numero { color:#3158a2; font-weight:800; }
+  .paciente-nome { color:#233b5c; font-weight:750; }
+  .linha-sala.status-preparacao > td { background:#fff9d8!important; }
+  .linha-sala.status-anestesia > td { background:#e9f2ff!important; }
+  .linha-sala.status-iniciada > td { background:#ebfbee!important; }
+  .linha-sala.status-finalizada > td { background:#fff0ee!important; }
+  .necessidade-item { border-radius:5px; }
+  .tipo-cirurgia { border-radius:5px; background:#eef2f7; color:#52647a; }
+  @media(max-width:1366px), (max-height:800px) {
+    .painel-cabecalho { min-height:48px; padding:7px 14px; }
+  }
 </style>
 </head>
 <body>
