@@ -229,6 +229,7 @@ class ProgramacaoCirurgia(models.Model):
     enfermeiro = models.CharField(max_length=250, blank=True)
     outros_profissionais = models.TextField(blank=True)
     observacao = models.TextField(blank=True)
+    motivo_atraso = models.TextField(blank=True, verbose_name="Motivo do atraso")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=RASCUNHO)
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="programacoes_criadas")
     criado_em = models.DateTimeField(auto_now_add=True)
