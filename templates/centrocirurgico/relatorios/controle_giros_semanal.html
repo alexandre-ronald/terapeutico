@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Controle Semanal de Giros{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row mb-3"><div class="col-12">
+    <p class="text-uppercase text-primary fw-semibold small mb-1">Centro Cirúrgico · Relatórios</p>
+    <h4 class="mb-1">Controle de Cirurgias / Giro de Sala</h4>
+    <p class="text-muted mb-0">Comparativo semanal entre o movimento do AGHU e os registros do Giro de Sala.</p>
+  </div></div>
+
+  {% if messages %}{% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+  {% endfor %}{% endif %}
+
+  <div class="card mb-3"><div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-sm-6 col-lg-3">
+        <label for="mes" class="form-label">Mês de referência</label>
+        <input type="month" class="form-control" id="mes" name="mes" value="{{ mes_referencia|date:'Y-m' }}" required>
+      </div>
+      <div class="col-lg-4">
+        <button type="submit" class="btn btn-primary"><i class="ri-filter-3-line me-1"></i>Consultar</button>
+        <a href="{% url 'centrocirurgico:relatorio_controle_giros_semanal' %}" class="btn btn-light ms-1">Mês atual</a>
+      </div>
+      <div class="col-lg-5 text-lg-end">
+        <span class="badge bg-light text-body border px-3 py-2">{{ data_inicio|date:'d/m/Y' }} a {{ data_fim|date:'d/m/Y' }}</span>
+      </div>
+    </form>
+  </div></div>
+
+  <div class="alert alert-light border small">
+    <strong>Turnos:</strong> manhã, 00h–12h59 · tarde, 13h–18h59 · noite, 19h–23h59.
+    As semanas correspondem aos dias 1–7, 8–14, 15–21 e 22 até o fim do mês.
+  </div>
+
+  {% include "centrocirurgico/relatorios/_controle_giros_semanal_tabela.html" with etapa="inicio" titulo="Controle de Cirurgias / Giro de Sala — Início" rotulo_aghu="Programadas no AGHU" rotulo_giro="Início da anestesia no Giro" %}
+  {% include "centrocirurgico/relatorios/_controle_giros_semanal_tabela.html" with etapa="fim" titulo="Controle de Cirurgias / Giro de Sala — Fim" rotulo_aghu="Finalizadas no AGHU" rotulo_giro="Finalizadas no Giro" %}
+</div>
+{% endblock %}
