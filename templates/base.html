@@ -319,6 +319,27 @@
                 color: var(--sidebar-modern-active) !important;
             }
 
+            /* Setas dos submenus: dentro do link, alinhadas à direita. */
+            .app-menu .navbar-nav .nav-link.menu-link[data-bs-toggle="collapse"] {
+                position: relative;
+                padding-right: 34px !important;
+            }
+            .app-menu .navbar-nav .nav-link.menu-link[data-bs-toggle="collapse"] > span {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+            .app-menu .navbar-nav .nav-link.menu-link[data-bs-toggle="collapse"]::after {
+                position: absolute !important;
+                right: 13px !important;
+                top: 50% !important;
+                margin: 0 !important;
+                transform: translateY(-50%);
+                float: none !important;
+            }
+            .app-menu .navbar-nav .nav-link.menu-link[data-bs-toggle="collapse"][aria-expanded="true"]::after {
+                transform: translateY(-50%) rotate(90deg);
+            }
+
             .app-menu .menu-dropdown {
                 margin: 3px 0 8px 19px;
                 padding-left: 12px;
