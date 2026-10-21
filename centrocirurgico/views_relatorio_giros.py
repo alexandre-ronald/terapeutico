@@ -171,7 +171,10 @@ def relatorio_controle_giros(request):
         detalhes_por_dia[dia].append(
             {
                 "sala": cirurgia_aghu.get("sala"),
-                "paciente": cirurgia_aghu.get("paciente"),
+                "paciente": (
+                    cirurgia_aghu.get("nome_paciente")
+                    or cirurgia_aghu.get("paciente")
+                ),
                 "prontuario": cirurgia_aghu.get("prontuario"),
                 "procedimento": cirurgia_aghu.get("procedimento"),
                 "situacao": rotulo_situacao,
