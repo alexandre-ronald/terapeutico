@@ -1,5 +1,6 @@
 import calendar
 from datetime import datetime, time, timedelta
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -17,6 +18,12 @@ class RelatorioControleGirosTests(TestCase):
         )
         self.client.force_login(self.user)
         self.hoje = timezone.localdate()
+        patcher = patch(
+            "centrocirurgico.views_relatorio_giros.buscar_mapa_cirurgico_aghu",
+            return_value=[],
+        )
+        self.buscar_aghu = patcher.start()
+        self.addCleanup(patcher.stop)
 
     def _momento(self, hora, minuto=0):
         valor = datetime.combine(self.hoje, time(hora, minuto))
@@ -41,21 +48,20 @@ class RelatorioControleGirosTests(TestCase):
             dataFinalCirurgia=final,
         )
 
-    def test_periodo_padrao_e_mes_corrente_ate_hoje(self):
-        response = self.client.get(
-            reverse("centrocirurgico:relatorio_controle_giros")
-        )
+    def test_periodo_padrao_e_mes_corrente_completo(self):
+        response = self.client.get(reverse("centrocirurgico:relatorio_controle_giros"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.context["data_inicio"],
-            self.hoje.replace(day=1),
-        )
+        self.assertEqual(response.context["data_inicio"], self.hoje.replace(day=1))
         self.assertEqual(
             response.context["data_fim"],
             self.hoje.replace(
                 day=calendar.monthrange(self.hoje.year, self.hoje.month)[1]
             ),
+        )
+        self.buscar_aghu.assert_called_once_with(
+            data_inicio=response.context["data_inicio"],
+            data_fim=response.context["data_fim"],
         )
 
     def test_distribui_inicio_e_finalizacao_por_turno(self):
@@ -64,9 +70,7 @@ class RelatorioControleGirosTests(TestCase):
         self._giro(3, self._momento(18), self._momento(22))
         self._giro(4, None, None)
 
-        response = self.client.get(
-            reverse("centrocirurgico:relatorio_controle_giros")
-        )
+        response = self.client.get(reverse("centrocirurgico:relatorio_controle_giros"))
 
         linha = response.context["linhas"][0]
         self.assertEqual(linha["total"], 4)
@@ -78,6 +82,60 @@ class RelatorioControleGirosTests(TestCase):
         self.assertEqual(linha["final_noite"], 1)
         self.assertEqual(response.context["totais"]["iniciadas"], 3)
         self.assertEqual(response.context["totais"]["finalizadas"], 3)
+
+    def test_resume_aghu_e_detalha_horarios_do_aghu_e_do_giro(self):
+        giro = self._giro(1, self._momento(8), self._momento(10))
+        inicio_aghu = self._momento(8, 5)
+        fim_aghu = self._momento(9, 55)
+        self.buscar_aghu.return_value = [
+            {
+                "data": self.hoje,
+                "sala": "SALA 1",
+                "prontuario": "1001",
+                "paciente": "Paciente 1",
+                "procedimento": "Cirurgia 1",
+                "situacao": "RZDA",
+                "data_inicio_cirurgia": self._momento(8),
+                "data_inicio_real_aghu": inicio_aghu,
+                "data_fim_real_aghu": fim_aghu,
+            },
+            {
+                "data": self.hoje,
+                "sala": "SALA 2",
+                "prontuario": "2002",
+                "paciente": "Paciente cancelado",
+                "procedimento": "Cirurgia cancelada",
+                "situacao": "CANC",
+                "data_inicio_cirurgia": self._momento(11),
+                "data_inicio_real_aghu": None,
+                "data_fim_real_aghu": None,
+            },
+        ]
+
+        response = self.client.get(reverse("centrocirurgico:relatorio_controle_giros"))
+
+        linha = response.context["linhas"][0]
+        self.assertEqual(linha["aghu_total"], 2)
+        self.assertEqual(linha["aghu_realizadas"], 1)
+        self.assertEqual(linha["aghu_canceladas"], 1)
+        self.assertEqual(response.context["totais"]["aghu_realizadas"], 1)
+        self.assertEqual(response.context["totais"]["aghu_canceladas"], 1)
+
+        detalhe = response.context["detalhes"][0]["cirurgias"][0]
+        self.assertEqual(detalhe["aghu_inicio"], inicio_aghu)
+        self.assertEqual(detalhe["aghu_fim"], fim_aghu)
+        self.assertEqual(detalhe["giro_inicio"], giro.dataInicioCirurgia)
+        self.assertEqual(detalhe["giro_fim"], giro.dataFinalCirurgia)
+
+    def test_falha_do_aghu_nao_impede_relatorio_local(self):
+        self._giro(1, self._momento(8), self._momento(10))
+        self.buscar_aghu.side_effect = RuntimeError("AGHU indisponível")
+
+        response = self.client.get(reverse("centrocirurgico:relatorio_controle_giros"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["totais"]["total"], 1)
+        self.assertContains(response, "Não foi possível consultar o AGHU agora")
 
     def test_filtro_de_datas_restringe_as_cirurgias(self):
         self._giro(1, self._momento(8), self._momento(10))
