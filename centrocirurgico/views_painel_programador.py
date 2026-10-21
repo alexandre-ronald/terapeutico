@@ -69,7 +69,7 @@ def painel_programador(request):
         {"numero": str(numero), "rotulo": f"{numero:02d}", "programacao": por_sala.get(str(numero))}
         for numero in range(1, 10)
     ]
-    return render(request, "centrocirurgico/programador/painel.html", {
+    return render(request, "centrocirurgico/programador/painel_sistema.html" if request.resolver_match.url_name == "painel_programador_sistema" else "centrocirurgico/programador/painel.html", {
         "programacoes": exibidas,
         "salas": salas,
         "atualizado_em": timezone.localtime(),
