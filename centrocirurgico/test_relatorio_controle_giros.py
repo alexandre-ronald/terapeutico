@@ -65,9 +65,9 @@ class RelatorioControleGirosTests(TestCase):
         )
 
     def test_distribui_inicio_e_finalizacao_por_turno(self):
-        self._giro(1, self._momento(8), self._momento(10))
-        self._giro(2, self._momento(13), self._momento(17, 59))
-        self._giro(3, self._momento(18), self._momento(22))
+        self._giro(1, self._momento(12, 59), self._momento(12, 59))
+        self._giro(2, self._momento(13), self._momento(18, 59))
+        self._giro(3, self._momento(19), self._momento(22))
         self._giro(4, None, None)
 
         response = self.client.get(reverse("centrocirurgico:relatorio_controle_giros"))
