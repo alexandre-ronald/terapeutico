@@ -1,71 +1,108 @@
 {% extends "base.html" %}
-
 {% load static %}
-
-{% block title %}
-Editar Perfil
-{% endblock %}
-
+{% block title %}Editar Perfil{% endblock %}
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Editar Perfil</h5>
-                </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="data_nascimento" class="form-label">Nome</label>
-                                <input type="text" class="form-control" name="first_name" value="{{ user.first_name }}">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="altura" class="form-label">Sobrenome</label>
-                                <input type="text"  class="form-control" name="last_name" value="{{ user.last_name }}" >
-                            </div>
-                            
-                            <div class="col-md-4 mb-3">
-                                <label for="peso" class="form-label">Email</label>
-                                <input type="text" class="form-control" name="email" value="{{ user.email }}">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="matricula" class="form-label">Matricula</label>
-                                <input type="text" class="form-control" name="matricula" value="{{ user.matricula }}">
-                            </div>
-                            <div class="col-md-8 mb-3">
-                                <label for="foto_perfil" class="form-label">Foto de Perfil:</label>
-                                <input type="file" id="foto_perfil" name="foto_perfil" class="form-control">
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-success">Salvar Alterações</button>
-                        <a href="{% url 'usuarios:perfil' %}" class="btn btn-secondary">Cancelar</a>
-                    </form>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card mb-4" >
-                <div class="card-header">
-                    <h5 class="mb-0">Foto do Perfil</h5>
-                </div>
-                <div class="card-body text-center">
-                    <div id="perfil-foto-container">
-                        <!-- Preenchido via JavaScript -->
-                        <img class="rounded-circle img-fluid mb-3" style="height: 170px;"src="{% if user.foto_perfil %}{{ user.foto_perfil.url }}{% else %}{% static 'assets/images/users/user-dummy-img.jpg' %}{% endif %}" alt="Header Avatar">
-                        
-                    </div>
-                    <span class="text-center ms-xl-2">
-                        <span class="d-none d-xl-inline-block ms-1 fw-medium user-name-text">{{user}}</span>
-                        <span class="d-none d-xl-block ms-1 fs-12 user-name-sub-text">{{user.username}}</span>
-                    </span>
-                </div>
-            </div>
-        </div>
+<style>
+.tp-edit {max-width:1440px;margin:0 auto}
+.tp-edit .heading {display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;margin-bottom:24px}
+.tp-edit .eyebrow {font-size:.75rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#64748b;margin-bottom:5px}
+.tp-edit h1 {font-size:1.65rem;font-weight:750;color:#172b4d;margin:0 0 4px}
+.tp-edit .subtitle {color:#64748b;margin:0}
+.tp-edit .panel {background:#fff;border:1px solid #e5eaf1;border-radius:16px;box-shadow:0 5px 22px rgba(31,45,61,.05);height:100%;overflow:hidden}
+.tp-edit .panel-head {padding:19px 24px;border-bottom:1px solid #edf1f5;display:flex;align-items:center;gap:10px}
+.tp-edit .panel-head h2 {font-size:1rem;font-weight:700;color:#253858;margin:0}
+.tp-edit .panel-body {padding:24px}
+.tp-edit .form-label {font-weight:650;font-size:.86rem;color:#334155;margin-bottom:7px}
+.tp-edit .form-control {min-height:44px;border-radius:9px;border-color:#dce3eb}
+.tp-edit .form-control:focus {border-color:#4e82d5;box-shadow:0 0 0 .2rem rgba(60,115,200,.12)}
+.tp-edit .hint {color:#64748b;font-size:.8rem;margin-top:8px}
+.tp-edit .avatar {width:148px;height:148px;object-fit:cover;border-radius:20px;border:5px solid #f1f5f9}
+.tp-edit .user-name {font-weight:750;color:#172b4d;margin:15px 0 3px;overflow-wrap:anywhere}
+.tp-edit .user-handle {color:#64748b;overflow-wrap:anywhere}
+.tp-edit .actions {display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.tp-edit .actions .btn,.tp-edit .heading .btn {border-radius:9px;padding:10px 18px;font-weight:600}
+@media(max-width:575px){.tp-edit .panel-body{padding:18px}}
+</style>
+<div class="container-fluid tp-edit">
+  <div class="heading">
+    <div>
+      <div class="eyebrow">Minha conta</div>
+      <h1><i class="ri-edit-box-line me-2" aria-hidden="true"></i>Editar Perfil</h1>
+      <p class="subtitle">Atualize suas informações pessoais e sua foto de perfil.</p>
     </div>
+    <a href="{% url 'usuarios:perfil' %}" class="btn btn-outline-secondary"><i class="ri-arrow-left-line me-1" aria-hidden="true"></i> Voltar</a>
+  </div>
+  <div class="row g-4">
+    <div class="col-12 col-xl-8">
+      <section class="panel">
+        <div class="panel-head"><i class="ri-user-settings-line text-primary" aria-hidden="true"></i><h2>Informações pessoais</h2></div>
+        <div class="panel-body">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label for="first_name" class="form-label">Nome</label>
+                <input id="first_name" name="first_name" type="text" class="form-control" value="{{ user.first_name }}" autocomplete="given-name">
+              </div>
+              <div class="col-12 col-md-6">
+                <label for="last_name" class="form-label">Sobrenome</label>
+                <input id="last_name" name="last_name" type="text" class="form-control" value="{{ user.last_name }}" autocomplete="family-name">
+              </div>
+              <div class="col-12 col-md-6">
+                <label for="email" class="form-label">E-mail</label>
+                <input id="email" name="email" type="email" class="form-control" value="{{ user.email }}" autocomplete="email">
+              </div>
+              <div class="col-12 col-md-6">
+                <label for="matricula" class="form-label">Matrícula</label>
+                <input id="matricula" name="matricula" type="text" class="form-control" value="{{ user.matricula|default_if_none:'' }}">
+              </div>
+              <div class="col-12">
+                <label for="foto_perfil" class="form-label">Alterar foto de perfil</label>
+                <input id="foto_perfil" name="foto_perfil" type="file" accept="image/*" class="form-control" aria-describedby="foto-ajuda">
+                <p id="foto-ajuda" class="hint">Selecione uma imagem para substituir a foto atual. Se não selecionar, a foto será mantida.</p>
+              </div>
+            </div>
+            <div class="actions">
+              <button type="submit" class="btn btn-primary"><i class="ri-save-line me-1" aria-hidden="true"></i>Salvar alterações</button>
+              <a href="{% url 'usuarios:perfil' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+    <div class="col-12 col-xl-4">
+      <aside class="panel">
+        <div class="panel-head"><i class="ri-image-line text-primary" aria-hidden="true"></i><h2>Foto do perfil</h2></div>
+        <div class="panel-body text-center">
+          {% if user.foto_perfil %}
+            <img id="foto-preview" class="avatar" src="{{ user.foto_perfil.url }}" alt="Foto atual do perfil">
+          {% else %}
+            <img id="foto-preview" class="avatar" src="{% static 'assets/images/users/user-dummy-img.jpg' %}" alt="Imagem padrão do perfil">
+          {% endif %}
+          <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+          <div class="user-handle">@{{ user.username }}</div>
+          <div class="hint">Matrícula: {{ user.matricula|default:"Não informada" }}</div>
+        </div>
+      </aside>
+    </div>
+  </div>
 </div>
+<script>
+(function () {
+  const input = document.getElementById('foto_perfil');
+  const preview = document.getElementById('foto-preview');
+  let previousUrl = null;
+  input.addEventListener('change', function () {
+    if (previousUrl) { URL.revokeObjectURL(previousUrl); previousUrl = null; }
+    const file = input.files && input.files[0];
+    if (file && file.type.startsWith('image/')) {
+      previousUrl = URL.createObjectURL(file);
+      preview.src = previousUrl;
+    }
+  });
+  window.addEventListener('pagehide', function () {
+    if (previousUrl) URL.revokeObjectURL(previousUrl);
+  });
+})();
+</script>
 {% endblock %}
