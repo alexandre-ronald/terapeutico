@@ -164,7 +164,7 @@ class RelatorioControleGirosTests(TestCase):
         )
         self.buscar_aghu.return_value = [
             {
-                "data": data_reincluida,
+                "data": data_original,
                 "prontuario": "3001",
                 "nome_paciente": "Paciente reagendado",
                 "procedimento": "Colecistectomia",
@@ -203,6 +203,10 @@ class RelatorioControleGirosTests(TestCase):
         self.assertEqual(linha_reincluida["aghu_canceladas"], 0)
         self.assertEqual(reinclusao["giro"].cirurgia, cirurgia_nova)
         self.assertEqual(reinclusao["giro_inicio"], reinclusao["giro"].dataInicioAnestesia)
+        self.assertFalse(any(
+            linha["data"] == data_original
+            for linha in response.context["linhas"]
+        ))
 
     def test_filtro_de_datas_restringe_as_cirurgias(self):
         self._giro(1, self._momento(8), self._momento(10))
