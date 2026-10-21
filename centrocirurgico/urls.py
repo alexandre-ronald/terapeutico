@@ -4,10 +4,12 @@ from . import views_suspensao
 from . import views_necessidade
 from . import views_programador
 from . import views_painel_programador
+from . import views_relatorio_giros
 
 app_name = 'centrocirurgico'
 
 urlpatterns = [
+    path("relatorios/controle-giros/", views_relatorio_giros.relatorio_controle_giros, name="relatorio_controle_giros"),
     path("painel-programador/", views_painel_programador.painel_programador, name="painel_programador"),
     path("programador/", views_programador.programador_mapa, name="programador_mapa"),
     path("programador/abrir/", views_programador.programacao_abrir, name="programacao_abrir"),
