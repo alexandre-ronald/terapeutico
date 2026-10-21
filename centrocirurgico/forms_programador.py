@@ -7,13 +7,14 @@ class ProgramacaoCirurgiaForm(forms.ModelForm):
         model = ProgramacaoCirurgia
         fields = (
             "tipo_cirurgia", "sala_painel", "hora_painel", "anestesistas", "instrumentador",
-            "circulante", "residente", "enfermeiro", "outros_profissionais", "observacao",
+            "circulante", "residente", "enfermeiro", "outros_profissionais", "observacao", "motivo_atraso",
         )
         widgets = {
             "hora_painel": forms.TimeInput(format="%H:%M", attrs={"type": "time"}),
             "anestesistas": forms.Textarea(attrs={"rows": 2, "placeholder": "Um nome por linha"}),
             "outros_profissionais": forms.Textarea(attrs={"rows": 2, "placeholder": "Um nome por linha"}),
             "observacao": forms.Textarea(attrs={"rows": 3}),
+            "motivo_atraso": forms.Textarea(attrs={"rows": 3, "placeholder": "Descreva o motivo do atraso, quando houver"}),
         }
 
     def __init__(self, *args, **kwargs):
