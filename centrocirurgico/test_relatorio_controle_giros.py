@@ -168,6 +168,19 @@ class RelatorioControleGirosTests(TestCase):
                 "prontuario": "3001",
                 "nome_paciente": "Paciente reagendado",
                 "procedimento": "Colecistectomia",
+                "situacao": "CANC",
+                "data_inicio_cirurgia": datetime.combine(
+                    data_original,
+                    time(13, 30),
+                ),
+                "data_inicio_real_aghu": None,
+                "data_fim_real_aghu": None,
+            },
+            {
+                "data": data_reincluida,
+                "prontuario": "3001",
+                "nome_paciente": "Paciente reagendado",
+                "procedimento": "Colecistectomia",
                 "situacao": "RZDA",
                 "data_inicio_cirurgia": datetime.combine(
                     data_original,
@@ -185,7 +198,9 @@ class RelatorioControleGirosTests(TestCase):
             if linha["data"] == data_reincluida
         )
         reinclusao = linha_reincluida["cirurgias"][0]
+        self.assertEqual(linha_reincluida["aghu_total"], 1)
         self.assertEqual(linha_reincluida["aghu_realizadas"], 1)
+        self.assertEqual(linha_reincluida["aghu_canceladas"], 0)
         self.assertEqual(reinclusao["giro"].cirurgia, cirurgia_nova)
         self.assertEqual(reinclusao["giro_inicio"], reinclusao["giro"].dataInicioAnestesia)
 
