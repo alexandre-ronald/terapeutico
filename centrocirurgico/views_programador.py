@@ -246,14 +246,14 @@ def programacao_enviar(request, pk):
     bloqueio = None
     for atual in ocupantes.select_related("cirurgia__paciente"):
         giro = GiroSala.objects.filter(cirurgia=atual.cirurgia).first()
-        if giro and giro.dataFinalCirurgia:
+        if giro and giro.dataSaidaSala:
             atual.status = ProgramacaoCirurgia.FINALIZADA
             atual.save(update_fields=("status", "atualizado_em"))
         else:
             bloqueio = atual
             break
     if bloqueio:
-        messages.error(request, f"A sala {sala} está ocupada pela cirurgia de {bloqueio.cirurgia.paciente.nome}. O envio foi bloqueado.")
+        messages.error(request, f"Saída do Paciente da Sala Cirúrgica ainda não foi registrada no Giro de Sala. Sala {sala}: {bloqueio.cirurgia.paciente.nome}.")
         return _redirecionar_apos_envio(request, pk)
     programacao.status = ProgramacaoCirurgia.ENVIADA
     programacao.enviado_em = timezone.now()
