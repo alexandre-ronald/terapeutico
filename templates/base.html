@@ -203,7 +203,29 @@
                 flex: none;
                 height: calc(100vh - 166px) !important;
                 min-height: 0;
-                overflow: hidden;
+                overflow-x: hidden !important;
+                overflow-y: scroll !important;
+                scrollbar-color: #93a4b8 #edf2f7;
+                scrollbar-gutter: stable;
+                scrollbar-width: thin;
+            }
+
+            .app-menu #scrollbar::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .app-menu #scrollbar::-webkit-scrollbar-track {
+                background: #edf2f7;
+            }
+
+            .app-menu #scrollbar::-webkit-scrollbar-thumb {
+                background: #93a4b8;
+                border: 2px solid #edf2f7;
+                border-radius: 999px;
+            }
+
+            .app-menu #scrollbar::-webkit-scrollbar-thumb:hover {
+                background: #70839a;
             }
 
             .app-menu #scrollbar .simplebar-track.simplebar-vertical {
