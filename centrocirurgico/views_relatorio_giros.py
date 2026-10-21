@@ -1,5 +1,6 @@
+import calendar
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date
 
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -51,8 +52,9 @@ def _linha_vazia(data_cirurgia):
 def relatorio_controle_giros(request):
     hoje = timezone.localdate()
     inicio_padrao = hoje.replace(day=1)
+    fim_padrao = hoje.replace(day=calendar.monthrange(hoje.year, hoje.month)[1])
     data_inicio = _data_filtro(request.GET.get("data_inicio"), inicio_padrao)
-    data_fim = _data_filtro(request.GET.get("data_fim"), hoje)
+    data_fim = _data_filtro(request.GET.get("data_fim"), fim_padrao)
 
     if data_inicio > data_fim:
         messages.error(request, "A data inicial não pode ser posterior à data final.")
