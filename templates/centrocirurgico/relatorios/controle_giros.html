@@ -45,8 +45,13 @@
 
   <div class="row g-3 mb-3">
     <div class="col-sm-6 col-xl-3">
-      <div class="card h-100 border-start border-primary border-3"><div class="card-body">
-        <span class="text-muted">Giros no período</span><h3 class="mb-0 mt-2">{{ totais.total }}</h3>
+      <div class="card h-100 border-start border-success border-3"><div class="card-body">
+        <span class="text-muted">Realizadas no AGHU</span><h3 class="mb-0 mt-2">{{ totais.aghu_realizadas }}</h3>
+      </div></div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <div class="card h-100 border-start border-danger border-3"><div class="card-body">
+        <span class="text-muted">Canceladas no AGHU</span><h3 class="mb-0 mt-2">{{ totais.aghu_canceladas }}</h3>
       </div></div>
     </div>
     <div class="col-sm-6 col-xl-3">
@@ -55,13 +60,8 @@
       </div></div>
     </div>
     <div class="col-sm-6 col-xl-3">
-      <div class="card h-100 border-start border-success border-3"><div class="card-body">
-        <span class="text-muted">Realizadas no AGHU</span><h3 class="mb-0 mt-2">{{ totais.aghu_realizadas }}</h3>
-      </div></div>
-    </div>
-    <div class="col-sm-6 col-xl-3">
-      <div class="card h-100 border-start border-danger border-3"><div class="card-body">
-        <span class="text-muted">Canceladas no AGHU</span><h3 class="mb-0 mt-2">{{ totais.aghu_canceladas }}</h3>
+      <div class="card h-100 border-start border-primary border-3"><div class="card-body">
+        <span class="text-muted">Giros finalizados</span><h3 class="mb-0 mt-2">{{ totais.finalizadas }}</h3>
       </div></div>
     </div>
   </div>
@@ -76,88 +76,86 @@
         <thead class="table-light">
           <tr>
             <th rowspan="2" class="align-middle text-start ps-3">Data</th>
-            <th rowspan="2" class="align-middle">Giros<br>do dia</th>
+            <th colspan="3">AGHU</th>
             <th colspan="3" class="text-info">Inícios do Giro</th>
             <th colspan="3" class="text-success">Finais do Giro</th>
-            <th colspan="3">AGHU</th>
+            <th rowspan="2" class="align-middle">Ações</th>
           </tr>
           <tr>
-            <th>Manhã</th><th>Tarde</th><th>Noite</th>
-            <th>Manhã</th><th>Tarde</th><th>Noite</th>
             <th>Mapa</th><th class="text-success">Realizadas</th><th class="text-danger">Canceladas</th>
+            <th>Manhã</th><th>Tarde</th><th>Noite</th>
+            <th>Manhã</th><th>Tarde</th><th>Noite</th>
           </tr>
         </thead>
         <tbody>
           {% for linha in linhas %}
             <tr>
               <td class="text-start ps-3 fw-semibold">{{ linha.data|date:"d/m/Y" }}</td>
-              <td><span class="badge bg-primary-subtle text-primary fs-6">{{ linha.total }}</span></td>
+              <td>{{ linha.aghu_total }}</td><td class="text-success fw-semibold">{{ linha.aghu_realizadas }}</td><td class="text-danger fw-semibold">{{ linha.aghu_canceladas }}</td>
               <td>{{ linha.inicio_manha }}</td><td>{{ linha.inicio_tarde }}</td><td>{{ linha.inicio_noite }}</td>
               <td>{{ linha.final_manha }}</td><td>{{ linha.final_tarde }}</td><td>{{ linha.final_noite }}</td>
-              <td>{{ linha.aghu_total }}</td><td class="text-success fw-semibold">{{ linha.aghu_realizadas }}</td><td class="text-danger fw-semibold">{{ linha.aghu_canceladas }}</td>
+              <td>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#detalhe-dia-{{ forloop.counter }}" aria-expanded="false" aria-controls="detalhe-dia-{{ forloop.counter }}" {% if not linha.cirurgias %}disabled{% endif %}>
+                  <i class="ri-eye-line me-1"></i>Detalhar
+                </button>
+              </td>
             </tr>
+            {% if linha.cirurgias %}
+              <tr>
+                <td colspan="11" class="p-0 border-0">
+                  <div class="collapse bg-light" id="detalhe-dia-{{ forloop.counter }}">
+                    <div class="p-3 text-start border-bottom">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                      <div>
+                        <h6 class="mb-0">Cirurgias de {{ linha.data|date:"d/m/Y" }}</h6>
+                        <small class="text-muted">Horários do Giro associados por prontuário, data e procedimento.</small>
+                      </div>
+                      <span class="badge bg-white text-body border">{{ linha.cirurgias|length }} cirurgia{{ linha.cirurgias|length|pluralize }}</span>
+                    </div>
+                    <div class="table-responsive border rounded bg-white">
+                      <table class="table table-sm table-hover align-middle mb-0">
+                        <thead class="table-light"><tr>
+                          <th>Sala</th><th>Paciente / prontuário</th><th>Cirurgia</th><th>Situação</th>
+                          <th>Prevista AGHU</th><th>Início AGHU</th><th>Fim AGHU</th><th>Início Giro</th><th>Fim Giro</th>
+                        </tr></thead>
+                        <tbody>
+                          {% for cirurgia in linha.cirurgias %}
+                            <tr>
+                              <td>{{ cirurgia.sala|default:"—" }}</td>
+                              <td><strong>{{ cirurgia.paciente|default:"—" }}</strong><br><small class="text-muted">{{ cirurgia.prontuario|default:"Sem prontuário" }}</small></td>
+                              <td>{{ cirurgia.procedimento|default:"—" }}</td>
+                              <td><span class="badge bg-{{ cirurgia.situacao_classe }}">{{ cirurgia.situacao }}</span></td>
+                              <td class="text-nowrap">{{ cirurgia.aghu_prevista|date:"d/m/Y H:i"|default:"—" }}</td>
+                              <td class="text-nowrap">{{ cirurgia.aghu_inicio|date:"d/m/Y H:i"|default:"—" }}</td>
+                              <td class="text-nowrap">{{ cirurgia.aghu_fim|date:"d/m/Y H:i"|default:"—" }}</td>
+                              <td class="text-nowrap">{{ cirurgia.giro_inicio|date:"d/m/Y H:i"|default:"—" }}</td>
+                              <td class="text-nowrap">{{ cirurgia.giro_fim|date:"d/m/Y H:i"|default:"—" }}</td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  </div>
+                </td>
+              </tr>
+            {% endif %}
           {% empty %}
             <tr><td colspan="11" class="py-5"><strong>Nenhum registro encontrado no período.</strong></td></tr>
           {% endfor %}
         </tbody>
         {% if linhas %}
           <tfoot class="table-light fw-semibold"><tr>
-            <td class="text-start ps-3">Total do período</td><td>{{ totais.total }}</td>
+            <td class="text-start ps-3">Total do período</td>
+            <td>{{ totais.aghu_total }}</td><td class="text-success">{{ totais.aghu_realizadas }}</td><td class="text-danger">{{ totais.aghu_canceladas }}</td>
             <td>{{ totais.inicio_manha }}</td><td>{{ totais.inicio_tarde }}</td><td>{{ totais.inicio_noite }}</td>
             <td>{{ totais.final_manha }}</td><td>{{ totais.final_tarde }}</td><td>{{ totais.final_noite }}</td>
-            <td>{{ totais.aghu_total }}</td><td class="text-success">{{ totais.aghu_realizadas }}</td><td class="text-danger">{{ totais.aghu_canceladas }}</td>
+            <td></td>
           </tr></tfoot>
         {% endif %}
       </table>
     </div></div>
   </div>
 
-  <div class="card">
-    <div class="card-header">
-      <h5 class="card-title mb-1">Detalhamento das cirurgias no AGHU</h5>
-      <small class="text-muted">Horários do Giro são associados por prontuário, data e procedimento.</small>
-    </div>
-    <div class="card-body">
-      <div class="accordion" id="detalhesGiros">
-        {% for detalhe in detalhes %}
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="cabecalho-{{ forloop.counter }}">
-              <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#dia-{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}">
-                <span class="fw-semibold">{{ detalhe.data|date:"d/m/Y" }}</span>
-                <span class="badge bg-light text-body border ms-2">{{ detalhe.cirurgias|length }} cirurgia{{ detalhe.cirurgias|length|pluralize }}</span>
-              </button>
-            </h2>
-            <div id="dia-{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#detalhesGiros">
-              <div class="accordion-body p-0"><div class="table-responsive">
-                <table class="table table-sm table-hover align-middle mb-0">
-                  <thead class="table-light"><tr>
-                    <th>Sala</th><th>Paciente / prontuário</th><th>Cirurgia</th><th>Situação</th>
-                    <th>Prevista AGHU</th><th>Início AGHU</th><th>Fim AGHU</th><th>Início Giro</th><th>Fim Giro</th>
-                  </tr></thead>
-                  <tbody>
-                    {% for cirurgia in detalhe.cirurgias %}
-                      <tr>
-                        <td>{{ cirurgia.sala|default:"—" }}</td>
-                        <td><strong>{{ cirurgia.paciente|default:"—" }}</strong><br><small class="text-muted">{{ cirurgia.prontuario|default:"Sem prontuário" }}</small></td>
-                        <td>{{ cirurgia.procedimento|default:"—" }}</td>
-                        <td><span class="badge bg-{{ cirurgia.situacao_classe }}">{{ cirurgia.situacao }}</span></td>
-                        <td class="text-nowrap">{{ cirurgia.aghu_prevista|date:"d/m/Y H:i"|default:"—" }}</td>
-                        <td class="text-nowrap">{{ cirurgia.aghu_inicio|date:"d/m/Y H:i"|default:"—" }}</td>
-                        <td class="text-nowrap">{{ cirurgia.aghu_fim|date:"d/m/Y H:i"|default:"—" }}</td>
-                        <td class="text-nowrap">{{ cirurgia.giro_inicio|date:"d/m/Y H:i"|default:"—" }}</td>
-                        <td class="text-nowrap">{{ cirurgia.giro_fim|date:"d/m/Y H:i"|default:"—" }}</td>
-                      </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div></div>
-            </div>
-          </div>
-        {% empty %}
-          <div class="text-center text-muted py-4">Nenhuma cirurgia retornada pelo AGHU no período.</div>
-        {% endfor %}
-      </div>
-    </div>
-  </div>
 </div>
 {% endblock %}
