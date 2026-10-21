@@ -53,18 +53,18 @@
     .celula-conteudo { max-height:calc((100vh - 120px) / 9 - .3rem); }
   }
 
-  /* Identidade visual compartilhada com o painel integrado. */
-  body { background:#f2f5fa; color:#233b5c; }
-  .painel-programador { padding:clamp(.55rem,1vw,1.1rem); gap:.65rem; }
-  .painel-cabecalho { background:linear-gradient(115deg,#172f59,#315e99); border-radius:14px; padding:12px 20px; min-height:60px; box-shadow:0 5px 18px rgba(23,47,89,.13); }
-  .painel-titulo { color:#fff; font-weight:750; font-size:clamp(1.2rem,1.6vw,1.75rem); }
-  .painel-cabecalho .text-muted { color:#dce8fa!important; }
-  .painel-cabecalho .badge { background:rgba(255,255,255,.17)!important; color:#fff!important; }
-  .painel-cabecalho .btn { border-color:rgba(255,255,255,.5); color:#fff; }
-  .painel-cabecalho .btn:hover { background:rgba(255,255,255,.15); }
-  .painel-legenda { border:1px solid #e5eaf1; border-radius:12px; padding:.5rem 1rem; box-shadow:0 4px 15px rgba(31,45,61,.04); }
-  .painel-card { border:1px solid #e5eaf1; border-radius:15px; box-shadow:0 5px 22px rgba(31,45,61,.06); }
-  .painel-tabela th { background:#eaf3f0; color:#29493f; border-color:#d7e7df; font-weight:750; }
+  /* Aparência clara da referência, preservando a ocupação da tela de TV. */
+  body { background:#f2f4fa; color:#233b5c; }
+  .painel-programador { padding:10px; gap:12px; }
+  .painel-cabecalho { background:transparent; border-radius:0; padding:0; min-height:52px; box-shadow:none; }
+  .painel-titulo { color:#172b4d; font-size:clamp(1.3rem,1.75vw,1.9rem); font-weight:750; }
+  .painel-cabecalho .text-muted { color:#8190aa!important; }
+  .painel-cabecalho .badge { background:#e8eefb!important; color:#3158a2!important; }
+  .painel-cabecalho .btn { border:1px solid #3158a2; color:#3158a2; border-radius:9px; }
+  .painel-cabecalho .btn:hover { background:#e8eefb; color:#234b96; }
+  .painel-legenda { background:#fff; border:1px solid #e5eaf1; border-radius:14px; padding:.65rem 1rem; box-shadow:0 4px 15px rgba(31,45,61,.04); }
+  .painel-card { background:#fff; border:1px solid #e5eaf1; border-radius:15px; box-shadow:0 5px 22px rgba(31,45,61,.06); }
+  .painel-tabela th { background:#eaf3f0; color:#29493f; border-color:#dcebe5; font-weight:750; }
   .painel-tabela td { border-color:#e5eaf1; }
   .sala-numero { color:#3158a2; font-weight:800; }
   .paciente-nome { color:#233b5c; font-weight:750; }
@@ -75,7 +75,9 @@
   .necessidade-item { border-radius:5px; }
   .tipo-cirurgia { border-radius:5px; background:#eef2f7; color:#52647a; }
   @media(max-width:1366px), (max-height:800px) {
-    .painel-cabecalho { min-height:48px; padding:7px 14px; }
+    .painel-programador { padding:8px; gap:7px; }
+    .painel-cabecalho { min-height:40px; }
+    .painel-legenda { padding:.3rem .65rem; }
   }
 </style>
 </head>
