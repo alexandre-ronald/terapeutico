@@ -145,6 +145,19 @@ def relatorio_controle_giros(request):
             "Não foi possível consultar o AGHU agora. Os dados locais do Giro continuam disponíveis.",
         )
 
+    realizacoes_posteriores = defaultdict(list)
+    for cirurgia_aghu in cirurgias_aghu:
+        if _situacao_aghu(cirurgia_aghu) not in SITUACOES_REALIZADAS:
+            continue
+        dia_realizacao = _data_aghu(cirurgia_aghu.get("data"))
+        if not dia_realizacao:
+            continue
+        chave = (
+            _texto_normalizado(cirurgia_aghu.get("prontuario")),
+            _texto_normalizado(cirurgia_aghu.get("procedimento")),
+        )
+        realizacoes_posteriores[chave].append(dia_realizacao)
+
     detalhes_por_dia = defaultdict(list)
     for cirurgia_aghu in cirurgias_aghu:
         # A data do mapa é a referência operacional. A data/hora programada
@@ -154,16 +167,17 @@ def relatorio_controle_giros(request):
             continue
 
         situacao = _situacao_aghu(cirurgia_aghu)
-        data_programada = _data_aghu(cirurgia_aghu.get("data_inicio_cirurgia"))
-        if (
-            situacao in SITUACOES_CANCELADAS
-            and data_programada
-            and data_programada != dia
+        chave_aghu = (
+            _texto_normalizado(cirurgia_aghu.get("prontuario")),
+            _texto_normalizado(cirurgia_aghu.get("procedimento")),
+        )
+        if situacao in SITUACOES_CANCELADAS and any(
+            data_realizada > dia
+            for data_realizada in realizacoes_posteriores.get(chave_aghu, [])
         ):
-            # O AGHU pode manter um cancelamento técnico do agendamento
-            # anterior ligado à data da reinclusão. Como ele não aparece
-            # como cancelado no mapa operacional dessa data, não entra no
-            # movimento nem no detalhamento do relatório.
+            # A visão mantém o cancelamento do agendamento original mesmo
+            # quando a mesma cirurgia é reincluída e realizada depois. O
+            # mapa operacional não o considera cancelamento efetivo.
             continue
 
         linha = por_dia.setdefault(dia, _linha_vazia(dia))
