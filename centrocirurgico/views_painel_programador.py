@@ -51,7 +51,10 @@ def painel_programador(request):
             programacao.save(update_fields=("status", "atualizado_em"))
             continue
         programacao.etapa_giro, programacao.etapa_cor = etapa_giro(giro)
-        if giro and giro.dataFinalCirurgia:
+        if giro and giro.dataSaidaSala:
+            programacao.status_painel = "Paciente saiu da sala"
+            programacao.status_classe = "status-saida"
+        elif giro and giro.dataFinalCirurgia:
             programacao.status_painel = "Cirurgia finalizada"
             programacao.status_classe = "status-finalizada"
         elif giro and giro.dataInicioCirurgia:
