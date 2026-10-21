@@ -126,6 +126,9 @@ class RelatorioControleGirosTests(TestCase):
         self.assertEqual(detalhe["aghu_fim"], fim_aghu)
         self.assertEqual(detalhe["giro_inicio"], giro.dataInicioCirurgia)
         self.assertEqual(detalhe["giro_fim"], giro.dataFinalCirurgia)
+        self.assertEqual(len(linha["cirurgias"]), 2)
+        self.assertContains(response, "Detalhar")
+        self.assertContains(response, "Cirurgias de")
 
     def test_falha_do_aghu_nao_impede_relatorio_local(self):
         self._giro(1, self._momento(8), self._momento(10))
