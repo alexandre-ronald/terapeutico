@@ -48,9 +48,9 @@ def _faixa_horaria(valor):
     if timezone.is_aware(valor):
         valor = timezone.localtime(valor)
     hora = valor.hour
-    if hora < 12:
+    if hora < 13:
         return "manha"
-    if hora < 18:
+    if hora < 19:
         return "tarde"
     return "noite"
 
