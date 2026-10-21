@@ -44,6 +44,7 @@ class RelatorioControleGirosTests(TestCase):
         return GiroSala.objects.create(
             paciente=paciente,
             cirurgia=cirurgia,
+            dataInicioAnestesia=inicio,
             dataInicioCirurgia=inicio,
             dataFinalCirurgia=final,
         )
@@ -124,7 +125,7 @@ class RelatorioControleGirosTests(TestCase):
         detalhe = response.context["detalhes"][0]["cirurgias"][0]
         self.assertEqual(detalhe["aghu_inicio"], inicio_aghu)
         self.assertEqual(detalhe["aghu_fim"], fim_aghu)
-        self.assertEqual(detalhe["giro_inicio"], giro.dataInicioCirurgia)
+        self.assertEqual(detalhe["giro_inicio"], giro.dataInicioAnestesia)
         self.assertEqual(detalhe["giro_fim"], giro.dataFinalCirurgia)
         self.assertEqual(detalhe["giro"], giro)
         self.assertEqual(len(linha["cirurgias"]), 2)
