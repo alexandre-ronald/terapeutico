@@ -189,6 +189,8 @@
                 box-shadow: 5px 0 20px rgba(15, 23, 42, .035);
                 display: flex;
                 flex-direction: column;
+                overflow: hidden;
+                position: fixed;
             }
 
             .app-menu .navbar-brand-box {
@@ -198,8 +200,24 @@
             }
 
             .app-menu #scrollbar {
-                flex: 1 1 auto;
+                flex: none;
+                height: calc(100vh - 166px) !important;
                 min-height: 0;
+                overflow: hidden;
+            }
+
+            .app-menu .logo-light {
+                display: none !important;
+            }
+
+            .app-menu .logo-dark {
+                display: inline-block !important;
+            }
+
+            .app-menu .logo-dark .logo-lg img {
+                max-height: 32px;
+                max-width: 190px;
+                object-fit: contain;
             }
 
             .app-menu .navbar-nav {
@@ -282,8 +300,13 @@
             .sidebar-modern-footer {
                 background: #fff;
                 border-top: 1px solid var(--sidebar-modern-border);
-                flex: 0 0 auto;
+                bottom: 0;
+                height: 96px;
+                left: 0;
                 padding: 10px 12px 12px;
+                position: absolute;
+                right: 0;
+                z-index: 12;
             }
 
             .sidebar-modern-user {
@@ -396,7 +419,7 @@
                         </span>
                         <span class="logo-lg">
                             
-                            <img src="{% static 'assets/images/logo-light.png' %}" alt="" height="30">
+                            <img src="{% static 'assets/images/logo-dark.png' %}" alt="Terapêutico" height="30">
                         </span>
                     </a>
                 </div>
@@ -524,7 +547,7 @@
                             <img src="{% static 'assets/images/logo-sm.png' %}" alt="" height="22">
                         </span>
                         <span class="logo-lg">
-                            <img src="{% static 'assets/images/logo-light.png' %}" alt="" height="30">
+                            <img src="{% static 'assets/images/logo-dark.png' %}" alt="Terapêutico" height="30">
                         </span>
                     </a>
                     <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover" id="vertical-hover">
