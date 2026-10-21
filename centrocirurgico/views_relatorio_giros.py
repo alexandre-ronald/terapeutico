@@ -4,6 +4,7 @@ from datetime import date, datetime
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.shortcuts import render
 from django.utils import timezone
 
@@ -55,6 +56,15 @@ def _faixa_horaria(valor):
     return "noite"
 
 
+def _data_operacional_giro(giro):
+    momento = giro.dataInicioAnestesia or giro.dataInicioCirurgia
+    if momento:
+        if timezone.is_aware(momento):
+            momento = timezone.localtime(momento)
+        return momento.date()
+    return giro.cirurgia.data
+
+
 def _linha_vazia(data_cirurgia):
     return {
         "data": data_cirurgia,
@@ -98,7 +108,11 @@ def relatorio_controle_giros(request):
     registros = (
         GiroSala.objects
         .select_related("cirurgia", "paciente", "cirurgia__paciente")
-        .filter(cirurgia__data__range=(data_inicio, data_fim))
+        .filter(
+            Q(cirurgia__data__range=(data_inicio, data_fim))
+            | Q(dataInicioAnestesia__date__range=(data_inicio, data_fim))
+            | Q(dataInicioCirurgia__date__range=(data_inicio, data_fim))
+        )
         .order_by("cirurgia__data", "cirurgia_id", "pk")
     )
 
@@ -112,7 +126,7 @@ def relatorio_controle_giros(request):
     giros_por_chave = {}
     giros_por_prontuario_data = defaultdict(list)
     for giro in giros_por_cirurgia.values():
-        dia = giro.cirurgia.data
+        dia = _data_operacional_giro(giro)
         linha = por_dia.setdefault(dia, _linha_vazia(dia))
         linha["total"] += 1
 
