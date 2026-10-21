@@ -206,6 +206,26 @@
                 overflow: hidden;
             }
 
+            .app-menu #scrollbar .simplebar-track.simplebar-vertical {
+                opacity: 1 !important;
+                right: 2px;
+                visibility: visible !important;
+                width: 8px;
+            }
+
+            .app-menu #scrollbar .simplebar-scrollbar::before {
+                background: #93a4b8 !important;
+                border-radius: 999px;
+                left: 2px;
+                opacity: .58 !important;
+                right: 2px;
+            }
+
+            .app-menu #scrollbar .simplebar-scrollbar.simplebar-visible::before,
+            .app-menu #scrollbar:hover .simplebar-scrollbar::before {
+                opacity: .78 !important;
+            }
+
             .app-menu .logo-light {
                 display: none !important;
             }
