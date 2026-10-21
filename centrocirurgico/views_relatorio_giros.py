@@ -188,6 +188,14 @@ def relatorio_controle_giros(request):
         )
 
     linhas = [por_dia[dia] for dia in sorted(por_dia)]
+    for linha in linhas:
+        linha["cirurgias"] = sorted(
+            detalhes_por_dia.get(linha["data"], []),
+            key=lambda item: (
+                str(item["aghu_prevista"] or ""),
+                str(item["sala"] or ""),
+            ),
+        )
     detalhes = [
         {
             "data": dia,
