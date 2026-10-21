@@ -38,13 +38,6 @@ def _data_aghu(valor):
     return None
 
 
-def _data_referencia_aghu(registro):
-    return (
-        _data_aghu(registro.get("data_inicio_cirurgia"))
-        or _data_aghu(registro.get("data"))
-    )
-
-
 def _texto_normalizado(valor):
     return " ".join(str(valor or "").split()).casefold()
 
@@ -144,7 +137,6 @@ def relatorio_controle_giros(request):
         cirurgias_aghu = buscar_mapa_cirurgico_aghu(
             data_inicio=data_inicio,
             data_fim=data_fim,
-            usar_data_programada=True,
         )
     except Exception:
         cirurgias_aghu = []
@@ -155,10 +147,9 @@ def relatorio_controle_giros(request):
 
     detalhes_por_dia = defaultdict(list)
     for cirurgia_aghu in cirurgias_aghu:
-        # Uma cirurgia cancelada e posteriormente reincluída pode manter no
-        # mapa a data mais recente. Para o histórico, prevalece a data/hora
-        # programada original, evitando ligar o cancelamento ao novo Giro.
-        dia = _data_referencia_aghu(cirurgia_aghu)
+        # A data do mapa é a referência operacional. A data/hora programada
+        # pode pertencer a um agendamento anterior e permanece informativa.
+        dia = _data_aghu(cirurgia_aghu.get("data"))
         if not dia:
             continue
 
