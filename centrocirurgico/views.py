@@ -819,9 +819,9 @@ def giro_sala_novo(request):
 
 ### end novo
 
-def buscar_mapa_cirurgico_aghu(data=None):
-    if not data:
-        # Nenhum filtro informado, não executa consulta
+def buscar_mapa_cirurgico_aghu(data=None, data_inicio=None, data_fim=None):
+    if not any((data, data_inicio, data_fim)):
+        # Nenhum filtro informado, não executa consulta.
         return []
 
     conexao = psycopg2.connect(
@@ -830,43 +830,78 @@ def buscar_mapa_cirurgico_aghu(data=None):
         password='UFwHP9@a',
         host='10.16.1.4',
         port='6544',
-        sslmode='disable'  # se necessário para evitar erro de TLS antigo
+        sslmode='disable',
+        connect_timeout=5,
     )
 
-    with conexao.cursor() as cursor:
-        sql = """
-        SELECT 
-            data, 
-            sala_nome as sala, 
-            v_cir.prontuario, 
-            nome_paciente, 
-            esp_nome as especialidade, 
-            proc_descr as procedimento, 
-            nome_equipe as medico,
-            aip.dt_nascimento as data_nascimento,
-            v_cir.lto_lto_id as leito,
-            situacao,
-            v_cir.dthr_inicio_ordem as data_inicio_cirurgia
-        FROM agh.v_lista_mbc_cirurgias  v_cir
-          LEFT JOIN agh.aip_pacientes aip ON aip.prontuario = v_cir.prontuario
-        WHERE v_cir.unf_seq = 118
-        """
+    try:
+        with conexao.cursor() as cursor:
+            # A visão pode variar entre versões do AGHU. Descobre os campos
+            # de início/fim efetivos sem comprometer a consulta do mapa.
+            cursor.execute("SELECT * FROM agh.v_lista_mbc_cirurgias LIMIT 0")
+            colunas_visao = {desc[0].lower(): desc[0] for desc in cursor.description}
 
-        parametros = []
+            def coluna_disponivel(*candidatas):
+                for candidata in candidatas:
+                    encontrada = colunas_visao.get(candidata.lower())
+                    if encontrada:
+                        return f'v_cir."{encontrada}"'
+                return "NULL::timestamp"
 
-        if data:
-            sql += " AND v_cir.data = %s"
-            parametros.append(data)
+            inicio_real = coluna_disponivel(
+                "dthr_inicio_cirurgia",
+                "dthr_inicio_cirg",
+                "dthr_inicio_realizacao",
+                "dthr_inicio_realiz",
+                "dthr_inicio",
+            )
+            fim_real = coluna_disponivel(
+                "dthr_fim_cirurgia",
+                "dthr_fim_cirg",
+                "dthr_fim_realizacao",
+                "dthr_fim_realiz",
+                "dthr_fim",
+            )
 
-        sql += " ORDER BY data_inicio_cirurgia asc"
+            sql = f"""
+            SELECT
+                v_cir.data,
+                v_cir.sala_nome as sala,
+                v_cir.prontuario,
+                v_cir.nome_paciente,
+                v_cir.esp_nome as especialidade,
+                v_cir.proc_descr as procedimento,
+                v_cir.nome_equipe as medico,
+                aip.dt_nascimento as data_nascimento,
+                v_cir.lto_lto_id as leito,
+                v_cir.situacao,
+                v_cir.dthr_inicio_ordem as data_inicio_cirurgia,
+                {inicio_real} as data_inicio_real_aghu,
+                {fim_real} as data_fim_real_aghu
+            FROM agh.v_lista_mbc_cirurgias v_cir
+            LEFT JOIN agh.aip_pacientes aip ON aip.prontuario = v_cir.prontuario
+            WHERE v_cir.unf_seq = 118
+            """
 
-        cursor.execute(sql, parametros)
+            parametros = []
+            if data:
+                sql += " AND v_cir.data = %s"
+                parametros.append(data)
+            else:
+                if data_inicio:
+                    sql += " AND v_cir.data >= %s"
+                    parametros.append(data_inicio)
+                if data_fim:
+                    sql += " AND v_cir.data <= %s"
+                    parametros.append(data_fim)
 
-        colunas = [desc[0] for desc in cursor.description]
-        resultados = [dict(zip(colunas, linha)) for linha in cursor.fetchall()]
+            sql += " ORDER BY v_cir.data, v_cir.dthr_inicio_ordem"
+            cursor.execute(sql, parametros)
 
-        return resultados
-    
+            colunas = [desc[0] for desc in cursor.description]
+            return [dict(zip(colunas, linha)) for linha in cursor.fetchall()]
+    finally:
+        conexao.close()
 
 def giro_sala_view(request, paciente_id):
 
