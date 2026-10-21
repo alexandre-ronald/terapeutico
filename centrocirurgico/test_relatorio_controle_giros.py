@@ -1,3 +1,4 @@
+import calendar
 from datetime import datetime, time, timedelta
 
 from django.contrib.auth import get_user_model
@@ -50,7 +51,12 @@ class RelatorioControleGirosTests(TestCase):
             response.context["data_inicio"],
             self.hoje.replace(day=1),
         )
-        self.assertEqual(response.context["data_fim"], self.hoje)
+        self.assertEqual(
+            response.context["data_fim"],
+            self.hoje.replace(
+                day=calendar.monthrange(self.hoje.year, self.hoje.month)[1]
+            ),
+        )
 
     def test_distribui_inicio_e_finalizacao_por_turno(self):
         self._giro(1, self._momento(8), self._momento(10))
