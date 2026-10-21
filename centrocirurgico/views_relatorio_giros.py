@@ -116,7 +116,7 @@ def relatorio_controle_giros(request):
         linha = por_dia.setdefault(dia, _linha_vazia(dia))
         linha["total"] += 1
 
-        faixa_inicio = _faixa_horaria(giro.dataInicioCirurgia)
+        faixa_inicio = _faixa_horaria(giro.dataInicioAnestesia)
         if faixa_inicio:
             linha[f"inicio_{faixa_inicio}"] += 1
 
@@ -182,7 +182,7 @@ def relatorio_controle_giros(request):
                 "aghu_prevista": cirurgia_aghu.get("data_inicio_cirurgia"),
                 "aghu_inicio": cirurgia_aghu.get("data_inicio_real_aghu"),
                 "aghu_fim": cirurgia_aghu.get("data_fim_real_aghu"),
-                "giro_inicio": giro.dataInicioCirurgia if giro else None,
+                "giro_inicio": giro.dataInicioAnestesia if giro else None,
                 "giro_fim": giro.dataFinalCirurgia if giro else None,
                 "giro": giro,
             }
