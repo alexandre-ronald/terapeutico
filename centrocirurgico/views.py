@@ -819,7 +819,12 @@ def giro_sala_novo(request):
 
 ### end novo
 
-def buscar_mapa_cirurgico_aghu(data=None, data_inicio=None, data_fim=None):
+def buscar_mapa_cirurgico_aghu(
+    data=None,
+    data_inicio=None,
+    data_fim=None,
+    incluir_diagnostico=False,
+):
     if not any((data, data_inicio, data_fim)):
         # Nenhum filtro informado, não executa consulta.
         return []
@@ -863,6 +868,22 @@ def buscar_mapa_cirurgico_aghu(data=None, data_inicio=None, data_fim=None):
                 "dthr_fim",
             )
 
+            diagnostico_sql = ""
+            if incluir_diagnostico:
+                termos_diagnostico = (
+                    "seq", "id", "agenda", "grade", "situ", "cancel",
+                    "excl", "ind_", "tipo", "orig", "mov", "alter",
+                )
+                colunas_diagnostico = [
+                    coluna_original
+                    for coluna_minuscula, coluna_original in colunas_visao.items()
+                    if any(termo in coluna_minuscula for termo in termos_diagnostico)
+                ]
+                diagnostico_sql = "".join(
+                    f', v_cir."{coluna}" AS "_aghu_{coluna}"'
+                    for coluna in colunas_diagnostico
+                )
+
             sql = f"""
             SELECT
                 v_cir.data,
@@ -878,6 +899,7 @@ def buscar_mapa_cirurgico_aghu(data=None, data_inicio=None, data_fim=None):
                 v_cir.dthr_inicio_ordem as data_inicio_cirurgia,
                 {inicio_real} as data_inicio_real_aghu,
                 {fim_real} as data_fim_real_aghu
+                {diagnostico_sql}
             FROM agh.v_lista_mbc_cirurgias v_cir
             LEFT JOIN agh.aip_pacientes aip ON aip.prontuario = v_cir.prontuario
             WHERE v_cir.unf_seq = 118
