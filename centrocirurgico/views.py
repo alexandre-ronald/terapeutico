@@ -1114,9 +1114,9 @@ def registrar_sala_liberada(request, pk):
     )
 def giro(request):
 
-    data_mapa = timezone.now().date().strftime("%Y-%m-%d")
+    data_mapa = timezone.localdate().strftime("%Y-%m-%d")
 
-    data = timezone.now().date().strftime("%d/%m/%Y")
+    data = timezone.localdate().strftime("%d/%m/%Y")
 
     dados = []
     mapa = []
