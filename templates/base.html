@@ -457,44 +457,31 @@
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link menu-link" href="{% url 'centrocirurgico:relatorio_lavagens' %}">
-                                            <i class="ri-repeat-2-line"></i> <span data-key="t-giro-sala">Relatorio de Limpezas</span>
+                                        <a class="nav-link menu-link collapsed" href="#sidebarRelatoriosCentroCirurgico" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarRelatoriosCentroCirurgico">
+                                            <i class="ri-file-chart-line"></i><span>Relatórios</span>
                                         </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link menu-link" href="{% url 'centrocirurgico:relatorio_controle_giros' %}">
-                                            <i class="ri-bar-chart-grouped-line"></i>
-                                            <span>Relatório de Controle de Giros</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link menu-link" href="{% url 'centrocirurgico:relatorio_controle_giros_semanal' %}">
-                                            <i class="ri-percent-line"></i>
-                                            <span>Controle Semanal de Giros</span>
-                                        </a>
+                                        <div class="menu-dropdown collapse" id="sidebarRelatoriosCentroCirurgico">
+                                            <ul class="nav nav-sm flex-column">
+                                                <li class="nav-item"><a href="{% url 'centrocirurgico:relatorio_lavagens' %}" class="nav-link">Limpezas</a></li>
+                                                <li class="nav-item"><a href="{% url 'centrocirurgico:relatorio_controle_giros' %}" class="nav-link">Controle diário de giros</a></li>
+                                                <li class="nav-item"><a href="{% url 'centrocirurgico:relatorio_controle_giros_semanal' %}" class="nav-link">Controle semanal de giros</a></li>
+                                            </ul>
+                                        </div>
                                     </li>
 
-                                    
                                     <li class="nav-item">
-                                        <a class="nav-link menu-link" href="{% url 'centrocirurgico:indicador_giro_sala' %}">
-                                            <i class="bi bi-app-indicator"></i> <span data-key="t-giro-sala">Indicador Giro de Sala</span>
+                                        <a class="nav-link menu-link collapsed" href="#sidebarIndicadoresCentroCirurgico" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarIndicadoresCentroCirurgico">
+                                            <i class="ri-line-chart-line"></i><span>Indicadores</span>
                                         </a>
+                                        <div class="menu-dropdown collapse" id="sidebarIndicadoresCentroCirurgico">
+                                            <ul class="nav nav-sm flex-column">
+                                                <li class="nav-item"><a href="{% url 'centrocirurgico:indicador_giro_sala' %}" class="nav-link">Giro de sala</a></li>
+                                                <li class="nav-item"><a href="{% url 'centrocirurgico:indicador_tempo_sala' %}" class="nav-link">Tempo de sala</a></li>
+                                                <li class="nav-item"><a href="{% url 'centrocirurgico:indicador_tempo_cirurgia' %}" class="nav-link">Tempo médio de cirurgia</a></li>
+                                                <li class="nav-item"><a href="{% url 'centrocirurgico:indicador_atraso_primeira_cirurgia' %}" class="nav-link">Atraso da primeira cirurgia</a></li>
+                                            </ul>
+                                        </div>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link menu-link" href="{% url 'centrocirurgico:indicador_tempo_sala' %}">
-                                            <i class="bi bi-app-indicator"></i> <span data-key="t-giro-sala">Indicador Tempo de Sala</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link menu-link" href="{% url 'centrocirurgico:indicador_tempo_cirurgia' %}">
-                                            <i class="bi bi-app-indicator"></i> <span data-key="t-giro-sala">Indicador Tempo Médio de Cirurgia</span>
-                                        </a>
-                                    </li>        
-                                    <li class="nav-item">
-                                        <a class="nav-link menu-link" href="{% url 'centrocirurgico:indicador_atraso_primeira_cirurgia' %}">
-                                            <i class="bi bi-app-indicator"></i> <span data-key="t-giro-sala">Indicador de Atraso de Cirurgia</span>
-                                        </a>
-                                    </li>                              
                                        
                                     
                                     <li class="nav-item">
