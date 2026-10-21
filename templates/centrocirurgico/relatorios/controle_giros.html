@@ -43,26 +43,57 @@
     </div>
   </div>
 
+  <style>
+    .cg-kpi{--cg-accent:#3655a5;--cg-soft:#e9edf8;position:relative;min-height:156px;background:#fff;border:1px solid #edf0f5;border-left:4px solid var(--cg-accent);border-radius:17px;padding:22px 20px;box-shadow:0 3px 7px rgba(27,39,66,.07);height:100%}
+    .cg-kpi--success{--cg-accent:#08b6a5;--cg-soft:#def7f1}
+    .cg-kpi--warning{--cg-accent:#d79a37;--cg-soft:#fff2df}
+    .cg-kpi--danger{--cg-accent:#f05d4d;--cg-soft:#ffe8e4}
+    .cg-kpi--info{--cg-accent:#2794b8;--cg-soft:#e1f5fb}
+    .cg-kpi .cg-kpi-tag{display:inline-block;background:var(--cg-soft);color:var(--cg-accent);font-size:.73rem;font-weight:700;padding:4px 11px;border-radius:30px;margin-bottom:10px}
+    .cg-kpi .cg-kpi-number{font-size:2.7rem;line-height:1.05;font-weight:800;color:var(--cg-accent);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+    .cg-kpi .cg-kpi-desc{font-size:.81rem;color:#8390a5;margin-top:10px;padding-right:35px}
+    .cg-kpi .cg-kpi-icon{position:absolute;right:19px;top:20px;color:var(--cg-accent);opacity:.34;font-size:1.9rem}
+  </style>
   <div class="row g-3 mb-3">
-    <div class="col-sm-6 col-xl-3">
-      <div class="card h-100 border-start border-success border-3"><div class="card-body">
-        <span class="text-muted">Realizadas no AGHU</span><h3 class="mb-0 mt-2">{{ totais.aghu_realizadas }}</h3>
-      </div></div>
+    <div class="col-sm-6 col-xl-4 col-xxl-2">
+      <div class="cg-kpi cg-kpi--primary">
+        <span class="cg-kpi-tag">Total no AGHU</span>
+        <i class="ri-file-list-3-line cg-kpi-icon" aria-hidden="true"></i>
+        <div class="cg-kpi-number">{{ totais.aghu_total }}</div>
+        <div class="cg-kpi-desc">Cirurgias no mapa do período</div>
+      </div>
     </div>
-    <div class="col-sm-6 col-xl-3">
-      <div class="card h-100 border-start border-danger border-3"><div class="card-body">
-        <span class="text-muted">Canceladas no AGHU</span><h3 class="mb-0 mt-2">{{ totais.aghu_canceladas }}</h3>
-      </div></div>
+    <div class="col-sm-6 col-xl-4 col-xxl-2">
+      <div class="cg-kpi cg-kpi--success">
+        <span class="cg-kpi-tag">Realizadas no AGHU</span>
+        <i class="ri-checkbox-circle-line cg-kpi-icon" aria-hidden="true"></i>
+        <div class="cg-kpi-number">{{ totais.aghu_realizadas }}</div>
+        <div class="cg-kpi-desc">Cirurgias realizadas</div>
+      </div>
     </div>
-    <div class="col-sm-6 col-xl-3">
-      <div class="card h-100 border-start border-info border-3"><div class="card-body">
-        <span class="text-muted">Giros iniciados</span><h3 class="mb-0 mt-2">{{ totais.iniciadas }}</h3>
-      </div></div>
+    <div class="col-sm-6 col-xl-4 col-xxl-2">
+      <div class="cg-kpi cg-kpi--danger">
+        <span class="cg-kpi-tag">Canceladas no AGHU</span>
+        <i class="ri-close-circle-line cg-kpi-icon" aria-hidden="true"></i>
+        <div class="cg-kpi-number">{{ totais.aghu_canceladas }}</div>
+        <div class="cg-kpi-desc">Cirurgias canceladas</div>
+      </div>
     </div>
-    <div class="col-sm-6 col-xl-3">
-      <div class="card h-100 border-start border-primary border-3"><div class="card-body">
-        <span class="text-muted">Giros finalizados</span><h3 class="mb-0 mt-2">{{ totais.finalizadas }}</h3>
-      </div></div>
+    <div class="col-sm-6 col-xl-4 col-xxl-3">
+      <div class="cg-kpi cg-kpi--info">
+        <span class="cg-kpi-tag">Giros iniciados</span>
+        <i class="ri-time-line cg-kpi-icon" aria-hidden="true"></i>
+        <div class="cg-kpi-number">{{ totais.iniciadas }}</div>
+        <div class="cg-kpi-desc">Inícios da anestesia registrados</div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-4 col-xxl-3">
+      <div class="cg-kpi cg-kpi--primary">
+        <span class="cg-kpi-tag">Giros finalizados</span>
+        <i class="ri-check-double-line cg-kpi-icon" aria-hidden="true"></i>
+        <div class="cg-kpi-number">{{ totais.finalizadas }}</div>
+        <div class="cg-kpi-desc">Giros concluídos</div>
+      </div>
     </div>
   </div>
 
