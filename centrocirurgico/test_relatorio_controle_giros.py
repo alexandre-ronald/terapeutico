@@ -63,7 +63,6 @@ class RelatorioControleGirosTests(TestCase):
         self.buscar_aghu.assert_called_once_with(
             data_inicio=response.context["data_inicio"],
             data_fim=response.context["data_fim"],
-            usar_data_programada=True,
         )
 
     def test_distribui_inicio_e_finalizacao_por_turno(self):
@@ -146,7 +145,7 @@ class RelatorioControleGirosTests(TestCase):
         self.assertEqual(response.context["totais"]["total"], 1)
         self.assertContains(response, "Não foi possível consultar o AGHU agora")
 
-    def test_cancelamento_reincluido_fica_na_data_original_sem_giro_novo(self):
+    def test_reinclusao_fica_na_data_exibida_no_mapa_aghu(self):
         data_original = self.hoje
         data_reincluida = self.hoje + timedelta(days=1)
         paciente = Paciente.objects.create(nome="Paciente reagendado", prontuario="3001")
@@ -169,7 +168,7 @@ class RelatorioControleGirosTests(TestCase):
                 "prontuario": "3001",
                 "nome_paciente": "Paciente reagendado",
                 "procedimento": "Colecistectomia",
-                "situacao": "CANC",
+                "situacao": "RZDA",
                 "data_inicio_cirurgia": datetime.combine(
                     data_original,
                     time(13, 30),
@@ -181,15 +180,14 @@ class RelatorioControleGirosTests(TestCase):
 
         response = self.client.get(reverse("centrocirurgico:relatorio_controle_giros"))
 
-        linha_original = next(
+        linha_reincluida = next(
             linha for linha in response.context["linhas"]
-            if linha["data"] == data_original
+            if linha["data"] == data_reincluida
         )
-        cancelamento = linha_original["cirurgias"][0]
-        self.assertEqual(linha_original["aghu_canceladas"], 1)
-        self.assertIsNone(cancelamento["giro"])
-        self.assertIsNone(cancelamento["giro_inicio"])
-        self.assertContains(response, "Sem giro")
+        reinclusao = linha_reincluida["cirurgias"][0]
+        self.assertEqual(linha_reincluida["aghu_realizadas"], 1)
+        self.assertEqual(reinclusao["giro"].cirurgia, cirurgia_nova)
+        self.assertEqual(reinclusao["giro_inicio"], reinclusao["giro"].dataInicioAnestesia)
 
     def test_filtro_de_datas_restringe_as_cirurgias(self):
         self._giro(1, self._momento(8), self._momento(10))
