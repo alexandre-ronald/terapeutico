@@ -86,7 +86,7 @@ class ProgramadorCirurgiasTests(TestCase):
         response = self.client.post(reverse("centrocirurgico:programacao_enviar", args=[self.b.pk]), follow=True)
         self.b.refresh_from_db()
         self.assertEqual(self.b.status, ProgramacaoCirurgia.RASCUNHO)
-        self.assertContains(response, "está ocupada")
+        self.assertContains(response, "Saída do Paciente da Sala Cirúrgica ainda não foi registrada no Giro de Sala")
 
     def test_bloqueia_envio_apos_final_da_cirurgia_sem_saida(self):
         GiroSala.objects.create(paciente=self.p1, cirurgia=self.c1, dataFinalCirurgia="2026-09-11T10:00:00Z")
