@@ -163,9 +163,9 @@ class RelatorioControleGirosTests(TestCase):
         GiroSala.objects.create(
             paciente=paciente,
             cirurgia=cirurgia_nova,
-            dataInicioAnestesia=self._momento(10),
-            dataInicioCirurgia=self._momento(10, 30),
-            dataFinalCirurgia=self._momento(12),
+            dataInicioAnestesia=self._momento_em(data_reincluida, 10),
+            dataInicioCirurgia=self._momento_em(data_reincluida, 10, 30),
+            dataFinalCirurgia=self._momento_em(data_reincluida, 12),
         )
         self.buscar_aghu.return_value = [
             {
