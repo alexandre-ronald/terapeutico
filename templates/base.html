@@ -346,6 +346,13 @@
                 border-left: 1px solid #dbe4ee;
             }
 
+            /* Remove os marcadores em forma de traço dos submenus. */
+            .app-menu .menu-dropdown .nav-sm .nav-link::before,
+            .app-menu .menu-dropdown .nav-link::before {
+                content: none !important;
+                display: none !important;
+            }
+
             .app-menu .menu-dropdown .nav-link {
                 border-radius: 7px;
                 color: #64748b !important;
