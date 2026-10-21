@@ -145,7 +145,7 @@ class RelatorioControleGirosTests(TestCase):
         self.assertEqual(response.context["totais"]["total"], 1)
         self.assertContains(response, "Não foi possível consultar o AGHU agora")
 
-    def test_reinclusao_fica_na_data_exibida_no_mapa_aghu(self):
+    def test_realizacao_posterior_nao_apaga_cancelamento_anterior(self):
         data_original = self.hoje
         data_reincluida = self.hoje + timedelta(days=1)
         paciente = Paciente.objects.create(nome="Paciente reagendado", prontuario="3001")
@@ -203,10 +203,12 @@ class RelatorioControleGirosTests(TestCase):
         self.assertEqual(linha_reincluida["aghu_canceladas"], 0)
         self.assertEqual(reinclusao["giro"].cirurgia, cirurgia_nova)
         self.assertEqual(reinclusao["giro_inicio"], reinclusao["giro"].dataInicioAnestesia)
-        self.assertFalse(any(
-            linha["data"] == data_original
-            for linha in response.context["linhas"]
-        ))
+        linha_original = next(
+            linha for linha in response.context["linhas"]
+            if linha["data"] == data_original
+        )
+        self.assertEqual(linha_original["aghu_total"], 1)
+        self.assertEqual(linha_original["aghu_canceladas"], 1)
 
     def test_filtro_de_datas_restringe_as_cirurgias(self):
         self._giro(1, self._momento(8), self._momento(10))
