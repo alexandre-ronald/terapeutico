@@ -93,6 +93,51 @@ def _rotulo_situacao(codigo):
     return codigo or "Não informada", "secondary"
 
 
+def _mes_filtro(valor, padrao):
+    if valor:
+        try:
+            ano, mes = (int(parte) for parte in valor.split("-", 1))
+            return date(ano, mes, 1)
+        except (TypeError, ValueError):
+            pass
+    return padrao.replace(day=1)
+
+
+def _indice_semana(dia):
+    """Agrupa o mês em 1–7, 8–14, 15–21 e 22–fim."""
+    return min(((dia.day - 1) // 7), 3)
+
+
+def _percentual(numerador, denominador):
+    if not denominador:
+        return None
+    return round((numerador / denominador) * 100, 1)
+
+
+def _resumo_semanal_vazio(mes_referencia):
+    ultimo_dia = calendar.monthrange(mes_referencia.year, mes_referencia.month)[1]
+    semanas = []
+    for indice, dia_inicial in enumerate((1, 8, 15, 22), start=1):
+        dia_final = min(dia_inicial + 6, ultimo_dia)
+        semanas.append({
+            "numero": indice,
+            "periodo": f"{dia_inicial:02d} a {dia_final:02d}",
+            "inicio": {faixa: {"aghu": 0, "giro": 0, "percentual": None} for faixa in FAIXAS},
+            "fim": {faixa: {"aghu": 0, "giro": 0, "percentual": None} for faixa in FAIXAS},
+        })
+    return semanas
+
+
+def _total_semanal_vazio():
+    return {
+        etapa: {
+            faixa: {"aghu": 0, "giro": 0, "percentual": None}
+            for faixa in FAIXAS
+        }
+        for etapa in ("inicio", "fim")
+    }
+
+
 @login_required
 def relatorio_controle_giros(request):
     hoje = timezone.localdate()
@@ -256,6 +301,100 @@ def relatorio_controle_giros(request):
             "linhas": linhas,
             "detalhes": detalhes,
             "totais": totais,
+            "data_inicio": data_inicio,
+            "data_fim": data_fim,
+        },
+    )
+
+
+@login_required
+def relatorio_controle_giros_semanal(request):
+    mes_referencia = _mes_filtro(request.GET.get("mes"), timezone.localdate())
+    data_inicio = mes_referencia
+    data_fim = mes_referencia.replace(
+        day=calendar.monthrange(mes_referencia.year, mes_referencia.month)[1]
+    )
+    semanas = _resumo_semanal_vazio(mes_referencia)
+    totais = _total_semanal_vazio()
+
+    registros = (
+        GiroSala.objects.select_related("cirurgia")
+        .filter(
+            Q(dataInicioAnestesia__date__range=(data_inicio, data_fim))
+            | Q(dataFinalCirurgia__date__range=(data_inicio, data_fim))
+        )
+        .order_by("cirurgia_id", "pk")
+    )
+    giros_por_cirurgia = {}
+    for giro in registros:
+        giros_por_cirurgia.setdefault(giro.cirurgia_id, giro)
+
+    for giro in giros_por_cirurgia.values():
+        for etapa, momento in (
+            ("inicio", giro.dataInicioAnestesia),
+            ("fim", giro.dataFinalCirurgia),
+        ):
+            if not momento:
+                continue
+            momento_local = timezone.localtime(momento) if timezone.is_aware(momento) else momento
+            dia = momento_local.date()
+            if not data_inicio <= dia <= data_fim:
+                continue
+            faixa = _faixa_horaria(momento)
+            semanas[_indice_semana(dia)][etapa][faixa]["giro"] += 1
+
+    try:
+        cirurgias_aghu = buscar_mapa_cirurgico_aghu(
+            data_inicio=data_inicio,
+            data_fim=data_fim,
+        )
+    except Exception:
+        cirurgias_aghu = []
+        messages.warning(
+            request,
+            "Não foi possível consultar o AGHU agora. Os dados locais do Giro continuam disponíveis.",
+        )
+
+    for registro in cirurgias_aghu:
+        situacao = _situacao_aghu(registro)
+        if situacao in SITUACOES_CANCELADAS and not registro.get("atendimento_seq"):
+            continue
+
+        dia_mapa = _data_aghu(registro.get("data"))
+        inicio_aghu = registro.get("data_inicio_cirurgia")
+        faixa_inicio = _faixa_horaria(inicio_aghu)
+        if dia_mapa and data_inicio <= dia_mapa <= data_fim and faixa_inicio:
+            semanas[_indice_semana(dia_mapa)]["inicio"][faixa_inicio]["aghu"] += 1
+
+        fim_aghu = registro.get("data_fim_real_aghu")
+        if situacao not in SITUACOES_REALIZADAS or not fim_aghu:
+            continue
+        fim_local = timezone.localtime(fim_aghu) if timezone.is_aware(fim_aghu) else fim_aghu
+        dia_fim = fim_local.date()
+        faixa_fim = _faixa_horaria(fim_aghu)
+        if data_inicio <= dia_fim <= data_fim and faixa_fim:
+            semanas[_indice_semana(dia_fim)]["fim"][faixa_fim]["aghu"] += 1
+
+    for semana in semanas:
+        for etapa in ("inicio", "fim"):
+            for faixa in FAIXAS:
+                celula = semana[etapa][faixa]
+                celula["percentual"] = _percentual(celula["giro"], celula["aghu"])
+                totais[etapa][faixa]["aghu"] += celula["aghu"]
+                totais[etapa][faixa]["giro"] += celula["giro"]
+
+    for etapa in ("inicio", "fim"):
+        for faixa in FAIXAS:
+            celula = totais[etapa][faixa]
+            celula["percentual"] = _percentual(celula["giro"], celula["aghu"])
+
+    return render(
+        request,
+        "centrocirurgico/relatorios/controle_giros_semanal.html",
+        {
+            "semanas": semanas,
+            "totais": totais,
+            "mes_referencia": mes_referencia,
             "data_inicio": data_inicio,
             "data_fim": data_fim,
         },
