@@ -116,7 +116,7 @@
                       <table class="table table-sm table-hover align-middle mb-0">
                         <thead class="table-light"><tr>
                           <th>Sala</th><th>Paciente / prontuário</th><th>Cirurgia</th><th>Situação</th>
-                          <th>Prevista AGHU</th><th>Início AGHU</th><th>Fim AGHU</th><th>Início Giro</th><th>Fim Giro</th>
+                          <th>Prevista AGHU</th><th>Início AGHU</th><th>Fim AGHU</th><th>Início Giro</th><th>Fim Giro</th><th>Ação</th>
                         </tr></thead>
                         <tbody>
                           {% for cirurgia in linha.cirurgias %}
@@ -130,7 +130,46 @@
                               <td class="text-nowrap">{{ cirurgia.aghu_fim|date:"d/m/Y H:i"|default:"—" }}</td>
                               <td class="text-nowrap">{{ cirurgia.giro_inicio|date:"d/m/Y H:i"|default:"—" }}</td>
                               <td class="text-nowrap">{{ cirurgia.giro_fim|date:"d/m/Y H:i"|default:"—" }}</td>
+                              <td class="text-nowrap">
+                                {% if cirurgia.giro %}
+                                  <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="collapse" data-bs-target="#giro-{{ cirurgia.giro.pk }}" aria-expanded="false" aria-controls="giro-{{ cirurgia.giro.pk }}">
+                                    <i class="ri-time-line me-1"></i>Ver giro
+                                  </button>
+                                {% else %}
+                                  <span class="badge bg-light text-muted border">Sem giro</span>
+                                {% endif %}
+                              </td>
                             </tr>
+                            {% if cirurgia.giro %}
+                              <tr>
+                                <td colspan="10" class="p-0 border-0">
+                                  <div class="collapse bg-info-subtle" id="giro-{{ cirurgia.giro.pk }}">
+                                    <div class="p-3 border-bottom">
+                                      <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <div>
+                                          <strong>Giro registrado no sistema</strong>
+                                          <div class="small text-muted">{{ cirurgia.paciente|default:"Paciente não informado" }} · {{ linha.data|date:"d/m/Y" }}</div>
+                                        </div>
+                                        <span class="badge bg-info text-dark">{{ cirurgia.sala|default:"Sala não informada" }}</span>
+                                      </div>
+                                      <div class="row g-2">
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Início da anestesia</small><strong>{{ cirurgia.giro.dataInicioAnestesia|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Início da cirurgia</small><strong>{{ cirurgia.giro.dataInicioCirurgia|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Final da cirurgia</small><strong>{{ cirurgia.giro.dataFinalCirurgia|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Saída da sala</small><strong>{{ cirurgia.giro.dataSaidaSala|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Início da desmontagem</small><strong>{{ cirurgia.giro.dataInicioDesmontagemSala|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Final da desmontagem</small><strong>{{ cirurgia.giro.dataFinalDesmontagemSala|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Início da limpeza</small><strong>{{ cirurgia.giro.dataInicioLimpeza|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Final da limpeza</small><strong>{{ cirurgia.giro.dataFinalLimpeza|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Sala liberada</small><strong>{{ cirurgia.giro.dataSalaLiberada|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Tipo de limpeza</small><strong>{{ cirurgia.giro.tipoLimpeza|default:"—" }}</strong></div>
+                                        <div class="col-12"><small class="text-muted d-block">Observação</small><span>{{ cirurgia.giro.observacao|default:"Sem observações." }}</span></div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            {% endif %}
                           {% endfor %}
                         </tbody>
                       </table>
