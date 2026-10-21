@@ -1,6 +1,6 @@
 {% load static %}
 <!doctype html>
-<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none" data-preloader="disable">
+<html lang="pt-br" data-layout="vertical" data-topbar="light" data-sidebar="light" data-sidebar-size="lg" data-sidebar-image="none" data-preloader="disable">
 
     <head>
 
@@ -171,6 +171,198 @@
 
             .sidebar-user-action-item a:hover {
                 color: #0d6efd; /* Destaque azul do ODIN ao passar o rato */
+            }
+
+            /* Menu lateral moderno: claro, leve e orientado à tarefa. */
+            :root {
+                --sidebar-modern-bg: #f8fafc;
+                --sidebar-modern-text: #334155;
+                --sidebar-modern-muted: #8190a5;
+                --sidebar-modern-active: #0f5fa8;
+                --sidebar-modern-active-bg: #e8f2fb;
+                --sidebar-modern-border: #e5ebf2;
+            }
+
+            .app-menu.navbar-menu {
+                background: var(--sidebar-modern-bg) !important;
+                border-right: 1px solid var(--sidebar-modern-border) !important;
+                box-shadow: 5px 0 20px rgba(15, 23, 42, .035);
+                display: flex;
+                flex-direction: column;
+            }
+
+            .app-menu .navbar-brand-box {
+                background: #fff !important;
+                border-bottom: 1px solid var(--sidebar-modern-border);
+                flex: 0 0 auto;
+            }
+
+            .app-menu #scrollbar {
+                flex: 1 1 auto;
+                min-height: 0;
+            }
+
+            .app-menu .navbar-nav {
+                padding: 16px 12px 22px;
+            }
+
+            .app-menu .menu-title {
+                color: var(--sidebar-modern-muted) !important;
+                font-size: .67rem;
+                font-weight: 700;
+                letter-spacing: .09em;
+                padding: 20px 14px 8px !important;
+                text-transform: uppercase;
+            }
+
+            .app-menu .menu-title:first-child {
+                padding-top: 8px !important;
+            }
+
+            .app-menu .navbar-nav .nav-link.menu-link {
+                align-items: center;
+                border-radius: 9px;
+                color: var(--sidebar-modern-text) !important;
+                display: flex;
+                font-size: .88rem;
+                font-weight: 500;
+                gap: 12px;
+                margin: 2px 0;
+                min-height: 42px;
+                padding: 9px 12px !important;
+                transition: background-color .18s ease, color .18s ease, transform .18s ease;
+            }
+
+            .app-menu .navbar-nav .nav-link.menu-link i {
+                color: #53657d !important;
+                font-size: 1.08rem !important;
+                margin: 0 !important;
+                min-width: 20px;
+                text-align: center;
+            }
+
+            .app-menu .navbar-nav .nav-link.menu-link:hover {
+                background: #eef4f9;
+                color: var(--sidebar-modern-active) !important;
+                transform: translateX(2px);
+            }
+
+            .app-menu .navbar-nav .nav-link.menu-link.active,
+            .app-menu .navbar-nav .nav-link.menu-link[aria-expanded="true"] {
+                background: var(--sidebar-modern-active-bg) !important;
+                color: var(--sidebar-modern-active) !important;
+                font-weight: 600;
+            }
+
+            .app-menu .navbar-nav .nav-link.menu-link.active i,
+            .app-menu .navbar-nav .nav-link.menu-link[aria-expanded="true"] i {
+                color: var(--sidebar-modern-active) !important;
+            }
+
+            .app-menu .menu-dropdown {
+                margin: 3px 0 8px 19px;
+                padding-left: 12px;
+                border-left: 1px solid #dbe4ee;
+            }
+
+            .app-menu .menu-dropdown .nav-link {
+                border-radius: 7px;
+                color: #64748b !important;
+                font-size: .82rem;
+                margin: 2px 0;
+                padding: 8px 10px !important;
+            }
+
+            .app-menu .menu-dropdown .nav-link:hover,
+            .app-menu .menu-dropdown .nav-link.active {
+                background: #eef4f9;
+                color: var(--sidebar-modern-active) !important;
+            }
+
+            .sidebar-modern-footer {
+                background: #fff;
+                border-top: 1px solid var(--sidebar-modern-border);
+                flex: 0 0 auto;
+                padding: 10px 12px 12px;
+            }
+
+            .sidebar-modern-user {
+                align-items: center;
+                display: flex;
+                gap: 9px;
+                min-width: 0;
+                padding: 3px 2px 9px;
+            }
+
+            .sidebar-modern-user img {
+                border: 2px solid #fff;
+                border-radius: 50%;
+                box-shadow: 0 0 0 1px #dce4ed;
+                height: 32px;
+                object-fit: cover;
+                width: 32px;
+            }
+
+            .sidebar-modern-user-info {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .sidebar-modern-user-name,
+            .sidebar-modern-user-role {
+                display: block;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .sidebar-modern-user-name {
+                color: #1e293b;
+                font-size: .78rem;
+                font-weight: 600;
+            }
+
+            .sidebar-modern-user-role {
+                color: #94a3b8;
+                font-size: .69rem;
+            }
+
+            .sidebar-modern-settings,
+            .sidebar-modern-logout {
+                align-items: center;
+                border-radius: 8px;
+                color: #52647a;
+                display: flex;
+                text-decoration: none;
+            }
+
+            .sidebar-modern-settings {
+                height: 30px;
+                justify-content: center;
+                width: 30px;
+            }
+
+            .sidebar-modern-logout {
+                gap: 10px;
+                font-size: .82rem;
+                padding: 8px 7px;
+            }
+
+            .sidebar-modern-settings:hover,
+            .sidebar-modern-logout:hover {
+                background: #eef4f9;
+                color: var(--sidebar-modern-active);
+            }
+
+            [data-sidebar-size="sm"] .sidebar-modern-user-info,
+            [data-sidebar-size="sm"] .sidebar-modern-settings,
+            [data-sidebar-size="sm"] .sidebar-modern-logout span {
+                display: none;
+            }
+
+            [data-sidebar-size="sm"] .sidebar-modern-user,
+            [data-sidebar-size="sm"] .sidebar-modern-logout {
+                justify-content: center;
             }
         </style>
 
@@ -575,25 +767,23 @@
                                 </div>
                             </li>
                                                         
-                            <li class="nav-item">
-                                <a class="nav-link menu-link" href="{% url 'usuarios:perfil' %}">
-                                    <i class="ri-file-user-line"></i> <span data-key="t-widgets">Perfil</span>
-                                </a>
-                            </li>
-                            
-                            
-                            <li class="menu-title"><span data-key="t-menu">Acesso</span></li>
-                            <li class="nav-item">
-                                <a class="nav-link menu-link" href="{% url 'usuarios:sair' %}">
-                                    <i class="bx bxs-door-open"></i> <span data-key="t-widgets">Sair</span>
-                                </a>
-                            </li>
-                            
                         </ul>
                     </div>
 
                     
                     <!-- Sidebar -->
+                </div>
+
+                <div class="sidebar-modern-footer">
+                    <div class="sidebar-modern-user">
+                        <img src="{% if user.foto_perfil %}{{ user.foto_perfil.url }}{% else %}{% static 'assets/images/users/user-dummy-img.jpg' %}{% endif %}" alt="Foto de {{ user.get_full_name|default:user.username }}">
+                        <div class="sidebar-modern-user-info">
+                            <span class="sidebar-modern-user-name">{{ user.get_full_name|default:user.username }}</span>
+                            <span class="sidebar-modern-user-role">{% for grupo in request.user.groups.all|dictsort:"name" %}{% if forloop.first %}{{ grupo.name }}{% endif %}{% empty %}Usuário{% endfor %}</span>
+                        </div>
+                        <a class="sidebar-modern-settings" href="{% url 'usuarios:perfil' %}" title="Perfil" aria-label="Abrir perfil"><i class="ri-settings-3-line"></i></a>
+                    </div>
+                    <a class="sidebar-modern-logout" href="{% url 'usuarios:sair' %}"><i class="ri-logout-circle-r-line"></i><span>Sair</span></a>
                 </div>
 
                 <div class="sidebar-background"></div>
