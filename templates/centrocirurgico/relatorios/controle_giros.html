@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Controle de Giros de Sala{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+          <p class="text-uppercase text-primary fw-semibold small mb-1">Centro Cirúrgico · Relatórios</p>
+          <h4 class="mb-1">Controle de Giros de Sala</h4>
+          <p class="text-muted mb-0">Distribuição diária dos inícios e das finalizações das cirurgias por turno.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-sm-6 col-lg-3">
+          <label for="data_inicio" class="form-label">Data inicial</label>
+          <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ data_inicio|date:'Y-m-d' }}">
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <label for="data_fim" class="form-label">Data final</label>
+          <input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ data_fim|date:'Y-m-d' }}">
+        </div>
+        <div class="col-lg-3">
+          <button type="submit" class="btn btn-primary">
+            <i class="ri-filter-3-line me-1"></i>Aplicar período
+          </button>
+          <a href="{% url 'centrocirurgico:relatorio_controle_giros' %}" class="btn btn-light ms-1">Mês atual</a>
+        </div>
+        <div class="col-lg-3 text-lg-end">
+          <span class="badge bg-light text-body border px-3 py-2">
+            {{ data_inicio|date:'d/m/Y' }} a {{ data_fim|date:'d/m/Y' }}
+          </span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-sm-6 col-xl-3">
+      <div class="card h-100 border-start border-primary border-3">
+        <div class="card-body">
+          <span class="text-muted">Cirurgias no período</span>
+          <div class="d-flex align-items-end justify-content-between mt-2">
+            <h3 class="mb-0">{{ totais.total }}</h3>
+            <i class="ri-surgical-mask-line fs-2 text-primary"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <div class="card h-100 border-start border-info border-3">
+        <div class="card-body">
+          <span class="text-muted">Cirurgias iniciadas</span>
+          <div class="d-flex align-items-end justify-content-between mt-2">
+            <h3 class="mb-0">{{ totais.iniciadas }}</h3>
+            <i class="ri-play-circle-line fs-2 text-info"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <div class="card h-100 border-start border-success border-3">
+        <div class="card-body">
+          <span class="text-muted">Cirurgias finalizadas</span>
+          <div class="d-flex align-items-end justify-content-between mt-2">
+            <h3 class="mb-0">{{ totais.finalizadas }}</h3>
+            <i class="ri-checkbox-circle-line fs-2 text-success"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <div class="card h-100 border-start border-secondary border-3">
+        <div class="card-body">
+          <span class="text-muted">Dias com giro</span>
+          <div class="d-flex align-items-end justify-content-between mt-2">
+            <h3 class="mb-0">{{ totais.dias }}</h3>
+            <i class="ri-calendar-event-line fs-2 text-secondary"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+      <div>
+        <h5 class="card-title mb-1">Movimento diário</h5>
+        <small class="text-muted">Manhã: 00h–11h59 · Tarde: 12h–17h59 · Noite: 18h–23h59</small>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered align-middle text-center mb-0">
+          <thead class="table-light">
+            <tr>
+              <th rowspan="2" class="align-middle text-start ps-3">Data</th>
+              <th rowspan="2" class="align-middle">Cirurgias<br>do dia</th>
+              <th colspan="3" class="text-info">Cirurgias iniciadas</th>
+              <th colspan="3" class="text-success">Cirurgias finalizadas</th>
+            </tr>
+            <tr>
+              <th>Manhã</th>
+              <th>Tarde</th>
+              <th>Noite</th>
+              <th>Manhã</th>
+              <th>Tarde</th>
+              <th>Noite</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for linha in linhas %}
+              <tr>
+                <td class="text-start ps-3 fw-semibold">{{ linha.data|date:"d/m/Y" }}</td>
+                <td><span class="badge bg-primary-subtle text-primary fs-6">{{ linha.total }}</span></td>
+                <td>{{ linha.inicio_manha }}</td>
+                <td>{{ linha.inicio_tarde }}</td>
+                <td>{{ linha.inicio_noite }}</td>
+                <td>{{ linha.final_manha }}</td>
+                <td>{{ linha.final_tarde }}</td>
+                <td>{{ linha.final_noite }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="8" class="py-5">
+                  <i class="ri-calendar-close-line d-block fs-1 text-muted mb-2"></i>
+                  <strong>Nenhum giro encontrado no período.</strong>
+                  <div class="text-muted">Altere as datas do filtro para consultar outro intervalo.</div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          {% if linhas %}
+            <tfoot class="table-light fw-semibold">
+              <tr>
+                <td class="text-start ps-3">Total do período</td>
+                <td>{{ totais.total }}</td>
+                <td>{{ totais.inicio_manha }}</td>
+                <td>{{ totais.inicio_tarde }}</td>
+                <td>{{ totais.inicio_noite }}</td>
+                <td>{{ totais.final_manha }}</td>
+                <td>{{ totais.final_tarde }}</td>
+                <td>{{ totais.final_noite }}</td>
+              </tr>
+            </tfoot>
+          {% endif %}
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
