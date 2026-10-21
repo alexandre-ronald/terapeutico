@@ -184,6 +184,7 @@ def relatorio_controle_giros(request):
                 "aghu_fim": cirurgia_aghu.get("data_fim_real_aghu"),
                 "giro_inicio": giro.dataInicioCirurgia if giro else None,
                 "giro_fim": giro.dataFinalCirurgia if giro else None,
+                "giro": giro,
             }
         )
 
