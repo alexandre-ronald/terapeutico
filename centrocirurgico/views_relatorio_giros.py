@@ -153,9 +153,21 @@ def relatorio_controle_giros(request):
         if not dia:
             continue
 
+        situacao = _situacao_aghu(cirurgia_aghu)
+        data_programada = _data_aghu(cirurgia_aghu.get("data_inicio_cirurgia"))
+        if (
+            situacao in SITUACOES_CANCELADAS
+            and data_programada
+            and data_programada != dia
+        ):
+            # O AGHU pode manter um cancelamento técnico do agendamento
+            # anterior ligado à data da reinclusão. Como ele não aparece
+            # como cancelado no mapa operacional dessa data, não entra no
+            # movimento nem no detalhamento do relatório.
+            continue
+
         linha = por_dia.setdefault(dia, _linha_vazia(dia))
         linha["aghu_total"] += 1
-        situacao = _situacao_aghu(cirurgia_aghu)
         if situacao in SITUACOES_REALIZADAS:
             linha["aghu_realizadas"] += 1
         elif situacao in SITUACOES_CANCELADAS:
