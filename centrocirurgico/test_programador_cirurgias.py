@@ -88,12 +88,27 @@ class ProgramadorCirurgiasTests(TestCase):
         self.assertEqual(self.b.status, ProgramacaoCirurgia.RASCUNHO)
         self.assertContains(response, "está ocupada")
 
-    def test_libera_envio_apos_final_da_cirurgia_anterior(self):
+    def test_bloqueia_envio_apos_final_da_cirurgia_sem_saida(self):
         GiroSala.objects.create(paciente=self.p1, cirurgia=self.c1, dataFinalCirurgia="2026-09-11T10:00:00Z")
         self.client.post(reverse("centrocirurgico:programacao_enviar", args=[self.b.pk]))
         self.a.refresh_from_db(); self.b.refresh_from_db()
+        self.assertEqual(self.a.status, ProgramacaoCirurgia.ENVIADA)
+        self.assertEqual(self.b.status, ProgramacaoCirurgia.RASCUNHO)
+
+    def test_libera_envio_apos_saida_do_paciente(self):
+        GiroSala.objects.create(paciente=self.p1, cirurgia=self.c1, dataSaidaSala="2026-09-11T10:30:00Z")
+        self.client.post(reverse("centrocirurgico:programacao_enviar", args=[self.b.pk]))
+        self.a.refresh_from_db()
+        self.b.refresh_from_db()
         self.assertEqual(self.a.status, ProgramacaoCirurgia.FINALIZADA)
         self.assertEqual(self.b.status, ProgramacaoCirurgia.ENVIADA)
+
+    def test_nao_retira_paciente_sem_saida_da_sala(self):
+        response = self.client.post(reverse("centrocirurgico:programacao_retirar_painel"),
+                                    {"acao": "paciente", "programacao": str(self.a.pk)}, follow=True)
+        self.a.refresh_from_db()
+        self.assertEqual(self.a.status, ProgramacaoCirurgia.ENVIADA)
+        self.assertContains(response, "Saída do Paciente da Sala Cirúrgica")
 
     def test_sala_alterada_e_usada_no_bloqueio(self):
         self.b.sala_painel = "2"
@@ -148,6 +163,7 @@ class ProgramadorCirurgiasTests(TestCase):
         self.assertEqual(self.a.leito_paciente, "UTI-07")
 
     def test_retira_do_painel_por_sala_sem_excluir_programacao(self):
+        GiroSala.objects.create(paciente=self.p1, cirurgia=self.c1, dataSaidaSala="2026-09-11T10:30:00Z")
         self.a.sala_painel = "2"
         self.a.save(update_fields=("sala_painel",))
 
@@ -163,6 +179,7 @@ class ProgramadorCirurgiasTests(TestCase):
         self.assertTrue(ProgramacaoCirurgia.objects.filter(pk=self.a.pk).exists())
 
     def test_retira_do_painel_por_paciente(self):
+        GiroSala.objects.create(paciente=self.p1, cirurgia=self.c1, dataSaidaSala="2026-09-11T10:30:00Z")
         self.client.post(
             reverse("centrocirurgico:programacao_retirar_painel"),
             {"acao": "paciente", "programacao": str(self.a.pk)},
@@ -172,6 +189,8 @@ class ProgramadorCirurgiasTests(TestCase):
         self.assertEqual(self.a.status, ProgramacaoCirurgia.RASCUNHO)
 
     def test_limpa_todas_as_cirurgias_do_painel(self):
+        GiroSala.objects.create(paciente=self.p1, cirurgia=self.c1, dataSaidaSala="2026-09-11T10:30:00Z")
+        GiroSala.objects.create(paciente=self.p2, cirurgia=self.c2, dataSaidaSala="2026-09-11T12:30:00Z")
         self.b.status = ProgramacaoCirurgia.ENVIADA
         self.b.sala_painel = "2"
         self.b.save(update_fields=("status", "sala_painel"))
