@@ -819,7 +819,12 @@ def giro_sala_novo(request):
 
 ### end novo
 
-def buscar_mapa_cirurgico_aghu(data=None, data_inicio=None, data_fim=None):
+def buscar_mapa_cirurgico_aghu(
+    data=None,
+    data_inicio=None,
+    data_fim=None,
+    usar_data_programada=False,
+):
     if not any((data, data_inicio, data_fim)):
         # Nenhum filtro informado, não executa consulta.
         return []
@@ -883,16 +888,21 @@ def buscar_mapa_cirurgico_aghu(data=None, data_inicio=None, data_fim=None):
             WHERE v_cir.unf_seq = 118
             """
 
+            campo_data_filtro = (
+                "COALESCE(v_cir.dthr_inicio_ordem::date, v_cir.data)"
+                if usar_data_programada
+                else "v_cir.data"
+            )
             parametros = []
             if data:
-                sql += " AND v_cir.data = %s"
+                sql += f" AND {campo_data_filtro} = %s"
                 parametros.append(data)
             else:
                 if data_inicio:
-                    sql += " AND v_cir.data >= %s"
+                    sql += f" AND {campo_data_filtro} >= %s"
                     parametros.append(data_inicio)
                 if data_fim:
-                    sql += " AND v_cir.data <= %s"
+                    sql += f" AND {campo_data_filtro} <= %s"
                     parametros.append(data_fim)
 
             sql += " ORDER BY v_cir.data, v_cir.dthr_inicio_ordem"
