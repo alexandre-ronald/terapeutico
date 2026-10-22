@@ -124,7 +124,10 @@ def programador_mapa(request):
             programacao.atualizado_por = request.user
             programacao.save(update_fields=("leito_paciente", "atualizado_por", "atualizado_em"))
     programacoes_painel = (
-        ProgramacaoCirurgia.objects.filter(status=ProgramacaoCirurgia.ENVIADA)
+        ProgramacaoCirurgia.objects.filter(
+            status=ProgramacaoCirurgia.ENVIADA,
+            cirurgia__data=timezone.localdate(),
+        )
         .select_related("cirurgia__paciente")
         .order_by("sala_painel", "hora_painel", "cirurgia__paciente__nome")
     )
