@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_POST
 
 from .forms_programador import ProgramacaoCirurgiaForm
-from .models import Cirurgia, GiroSala, NecessidadeCirurgica, Paciente, ProgramacaoCirurgia, ProgramacaoNecessidade
+from .models import Cirurgia, GiroSala, NecessidadeCirurgica, Paciente, ProgramacaoCirurgia, ProgramacaoNecessidade, SuspensaoCirurgia
 from .views import buscar_mapa_cirurgico_aghu
 
 SALT = "centrocirurgico.programador.mapa"
@@ -77,7 +77,32 @@ def _obter_cirurgia(dados):
 def programador_mapa(request):
     data_mapa = request.GET.get("data_mapa") or timezone.localdate().isoformat()
     dados = buscar_mapa_cirurgico_aghu(data_mapa)
+    # Relaciona suspensões locais pela identidade operacional da cirurgia,
+    # mesmo quando a cirurgia foi criada pela tela de Suspensão.
+    suspensoes = SuspensaoCirurgia.objects.filter(
+        cirurgia__data=data_mapa
+    ).select_related("cirurgia__paciente")
+    chaves_suspensas = {
+        (
+            _texto(susp.cirurgia.paciente.prontuario),
+            susp.cirurgia.data,
+            susp.cirurgia.hora,
+            _texto(susp.cirurgia.sala),
+            _texto(susp.cirurgia.procedimento),
+        )
+        for susp in suspensoes
+    }
     for item in dados:
+        inicio = item.get("data_inicio_cirurgia")
+        chave = (
+            _texto(item.get("prontuario")),
+            inicio.date() if inicio else None,
+            inicio.time() if inicio else None,
+            _texto(item.get("sala")),
+            _texto(item.get("procedimento")),
+        )
+        item["suspensa_aghu"] = _texto(item.get("situacao")).upper() in {"CANC", "CANCELADA", "CANCELADO", "SUSP", "SUSPENSA", "SUSPENSAO"}
+        item["suspensa_local"] = chave in chaves_suspensas
         item["programacao_token"] = _token(item)
         item["suspensao_token"] = _suspensao_token(item)
         inicio = item.get("data_inicio_cirurgia")
