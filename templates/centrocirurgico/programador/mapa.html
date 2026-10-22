@@ -99,8 +99,6 @@
             {% endif %}
             {% if mp.suspensa_local %}
               <button type="button" class="btn btn-sm btn-danger" disabled title="Suspensão já registrada no TERAPÊUTICO"><i class="ri-check-line me-1"></i>Suspensa</button>
-            {% elif mp.suspensa_aghu %}
-              <button type="button" class="btn btn-sm btn-outline-danger" disabled title="Cirurgia já suspensa no AGHU"><i class="ri-close-circle-line me-1"></i>Suspensa no AGHU</button>
             {% elif perms.centrocirurgico.add_suspensaocirurgia %}
               <form method="post" action="{% url 'centrocirurgico:suspensao_nova' %}">
                 {% csrf_token %}<input type="hidden" name="mapa_token" value="{{ mp.suspensao_token }}"><button class="btn btn-sm btn-outline-danger"><i class="ri-close-circle-line me-1"></i>Suspender</button>
