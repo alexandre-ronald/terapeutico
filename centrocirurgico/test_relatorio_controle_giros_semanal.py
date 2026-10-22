@@ -60,6 +60,27 @@ class RelatorioControleGirosSemanalTests(TestCase):
         self.assertEqual(semana_3["inicio"]["noite"]["giro"], 1)
         self.assertEqual(response.context["totais"]["inicio"]["manha"]["percentual"], 50.0)
 
+    def test_outubro_2026_tem_cinco_semanas_domingo_a_sabado(self):
+        response = self.client.get(
+            reverse("centrocirurgico:relatorio_controle_giros_semanal"),
+            {"mes": "2026-10"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [semana["periodo"] for semana in response.context["semanas"]],
+            ["01 a 03", "04 a 10", "11 a 17", "18 a 24", "25 a 31"],
+        )
+
+    def test_mes_com_seis_semanas_nao_perde_dias(self):
+        response = self.client.get(
+            reverse("centrocirurgico:relatorio_controle_giros_semanal"),
+            {"mes": "2026-08"},
+        )
+        self.assertEqual(
+            [semana["periodo"] for semana in response.context["semanas"]],
+            ["01 a 01", "02 a 08", "09 a 15", "16 a 22", "23 a 29", "30 a 31"],
+        )
+
     def test_sem_denominador_mostra_percentual_vazio(self):
         self._giro(1, 8, self._momento(8, 13), self._momento(8, 15))
 
