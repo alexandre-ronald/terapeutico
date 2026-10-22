@@ -6,12 +6,12 @@
 .tp-home{max-width:none;width:100%;margin:0 auto}
 .tp-hero{background:linear-gradient(100deg,rgba(245,251,255,.98) 0%,rgba(227,244,253,.95) 49%,rgba(151,203,235,.68) 100%),url("{% static 'assets/images/auth-one-bg.jpg' %}") right center/cover no-repeat;color:#123f7e;border-radius:20px;padding:35px 46px;margin-bottom:27px;position:relative;overflow:hidden;min-height:285px;display:flex;align-items:center;box-shadow:0 6px 24px rgba(20,58,100,.06)}
 .tp-hero:after{content:"";position:absolute;width:320px;height:320px;background:rgba(0,158,181,.10);border-radius:50%;right:-70px;bottom:-180px;pointer-events:none}
-.tp-hero-content{position:relative;z-index:1;max-width:850px}
+.tp-hero-content{position:relative;z-index:1;width:100%;max-width:none}
 .tp-hero .eyebrow{display:flex;align-items:center;gap:12px;font-size:.8rem;font-weight:750;letter-spacing:.045em;color:#16728c;margin-bottom:23px}
 .tp-hero .hero-brand{display:inline-flex;align-items:center;gap:9px;color:#0d4a85;font-weight:800}
 .tp-hero .hero-brand img{height:48px;width:auto;max-width:280px;object-fit:contain}
 .tp-hero .hero-brand-separator{height:25px;width:1px;background:#a9c9df}
-.tp-hero h1{font-size:clamp(1.8rem,3vw,2.65rem);line-height:1.17;font-weight:800;color:#103e7c;margin-bottom:12px}
+.tp-hero h1{font-size:clamp(1.65rem,2.45vw,2.55rem);line-height:1.17;font-weight:800;color:#103e7c;margin-bottom:12px;white-space:nowrap}
 .tp-hero .hero-subtitle{font-size:1.15rem;color:#50749b;margin-bottom:14px}
 .tp-hero .hero-description{color:#56799d;font-size:.93rem;line-height:1.65;margin:0;max-width:660px}
 .tp-home .section-heading{font-size:1.08rem;font-weight:750;color:#233b5c;margin:0 0 5px}
@@ -36,7 +36,7 @@
 .tp-home .account-strip h3{font-size:.99rem;font-weight:750;color:#223853;margin:0 0 3px}
 .tp-home .account-strip p{color:#718198;font-size:.83rem;margin:0}
 .tp-home .account-strip .btn{border-radius:9px;font-weight:650}
-@media(max-width:575px){.tp-hero{padding:26px 22px;min-height:250px}.tp-hero .eyebrow{flex-wrap:wrap;gap:8px}.tp-hero .hero-subtitle{font-size:1rem}.tp-home .account-strip .btn{width:100%}}
+@media(max-width:1100px){.tp-hero h1{white-space:normal}}\n@media(max-width:575px){.tp-hero{padding:26px 22px;min-height:250px}.tp-hero .eyebrow{flex-wrap:wrap;gap:8px}.tp-hero .hero-subtitle{font-size:1rem}.tp-home .account-strip .btn{width:100%}}
 </style>
 <div class="container-fluid tp-home">
   <header class="tp-hero">
