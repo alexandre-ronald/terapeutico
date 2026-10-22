@@ -172,6 +172,10 @@ def relatorio_controle_giros(request):
     giros_por_prontuario_data = defaultdict(list)
     for giro in giros_por_cirurgia.values():
         dia = _data_operacional_giro(giro)
+        # A seleção por datas dos eventos pode recuperar cirurgias cuja
+        # data operacional pertence a outro período. Não as contabilizar.
+        if not data_inicio <= dia <= data_fim:
+            continue
         linha = por_dia.setdefault(dia, _linha_vazia(dia))
         linha["total"] += 1
 
@@ -209,7 +213,7 @@ def relatorio_controle_giros(request):
         # A data do mapa é a referência operacional. A data/hora programada
         # pode pertencer a um agendamento anterior e permanece informativa.
         dia = _data_aghu(cirurgia_aghu.get("data"))
-        if not dia:
+        if not dia or not data_inicio <= dia <= data_fim:
             continue
 
         situacao = _situacao_aghu(cirurgia_aghu)
