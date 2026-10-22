@@ -9,7 +9,7 @@
 .tp-hero-content{position:relative;z-index:1;max-width:850px}
 .tp-hero .eyebrow{display:flex;align-items:center;gap:12px;font-size:.8rem;font-weight:750;letter-spacing:.045em;color:#16728c;margin-bottom:23px}
 .tp-hero .hero-brand{display:inline-flex;align-items:center;gap:9px;color:#0d4a85;font-weight:800}
-.tp-hero .hero-brand img{height:39px;width:auto;max-width:180px;object-fit:contain}
+.tp-hero .hero-brand img{height:48px;width:auto;max-width:280px;object-fit:contain}
 .tp-hero .hero-brand-separator{height:25px;width:1px;background:#a9c9df}
 .tp-hero h1{font-size:clamp(1.8rem,3vw,2.65rem);line-height:1.17;font-weight:800;color:#103e7c;margin-bottom:12px}
 .tp-hero .hero-subtitle{font-size:1.15rem;color:#50749b;margin-bottom:14px}
@@ -41,7 +41,7 @@
 <div class="container-fluid tp-home">
   <header class="tp-hero">
     <div class="tp-hero-content">
-      <div class="eyebrow"><span class="hero-brand"><img src="{% static 'assets/images/logo-dark.png' %}" alt="TERAPÊUTICO"></span><span class="hero-brand-separator" aria-hidden="true"></span><span>HU-UFMA · CENTRO CIRÚRGICO</span></div>
+      <div class="eyebrow"><span class="hero-brand"><img src="/media/consignacoes/fotos/2026/05/25/logo_hu_sus_.png" alt="HU-UFMA · SUS"></span><span class="hero-brand-separator" aria-hidden="true"></span><span>HU-UFMA · CENTRO CIRÚRGICO</span></div>
       <h1>Bem-vindo ao TERAPÊUTICO, {{ user.first_name|default:user.username }}!</h1>
       <p class="hero-subtitle">Sistema Integrado de Gestão do Centro Cirúrgico do HU-UFMA</p>
       <p class="hero-description">Aqui você encontra os recursos para programar cirurgias, acompanhar o giro de sala e gerenciar os processos assistenciais, contribuindo para um atendimento mais seguro, ágil e de qualidade.</p>
