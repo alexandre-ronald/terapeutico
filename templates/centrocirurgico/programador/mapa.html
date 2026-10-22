@@ -70,7 +70,7 @@
       <article class="card programador-card{% if mp.suspensa_local %} programador-card--suspensa{% endif %}">
         <div class="card-header d-flex justify-content-between align-items-start gap-2">
           <div class="min-w-0"><div class="programador-paciente text-truncate">{{ mp.nome_paciente }}</div><small class="text-muted">Prontuário {{ mp.prontuario|default:"—" }}{% if mp.leito %} · Leito {{ mp.leito }}{% endif %}</small></div>
-          {% if mp.suspensa_aghu %}<span class="badge bg-danger">Suspensa no AGHU</span>{% elif mp.suspensa_local %}<span class="badge bg-danger-subtle text-danger">Suspensa</span>{% elif mp.ja_programada.status == "enviada" %}<span class="badge bg-success"><i class="ri-tv-line me-1"></i>No painel</span>{% elif mp.ja_programada.status == "finalizada" %}<span class="badge bg-secondary">Finalizada</span>{% elif mp.ja_programada %}<span class="badge bg-warning-subtle text-warning">Programada</span>{% else %}<span class="badge bg-light text-muted">Não programada</span>{% endif %}
+          {% if mp.suspensa_local %}<span class="badge bg-danger">Suspensa no sistema</span>{% elif mp.suspensa_aghu %}<span class="badge bg-danger">Suspensa no AGHU</span>{% elif mp.suspensa_local %}<span class="badge bg-danger-subtle text-danger">Suspensa</span>{% elif mp.ja_programada.status == "enviada" %}<span class="badge bg-success"><i class="ri-tv-line me-1"></i>No painel</span>{% elif mp.ja_programada.status == "finalizada" %}<span class="badge bg-secondary">Finalizada</span>{% elif mp.ja_programada %}<span class="badge bg-warning-subtle text-warning">Programada</span>{% else %}<span class="badge bg-light text-muted">Não programada</span>{% endif %}
         </div>
         <div class="card-body">
           <div class="programador-procedimento">{{ mp.procedimento|default:"Procedimento não informado" }}</div>
@@ -97,7 +97,11 @@
                 {% csrf_token %}<input type="hidden" name="mapa_token" value="{{ mp.programacao_token }}"><button class="btn btn-sm btn-primary"><i class="ri-calendar-check-line me-1"></i>Programar</button>
               </form>
             {% endif %}
-            {% if perms.centrocirurgico.add_suspensaocirurgia %}
+            {% if mp.suspensa_local %}
+              <button type="button" class="btn btn-sm btn-danger" disabled title="Suspensão já registrada no TERAPÊUTICO"><i class="ri-check-line me-1"></i>Suspensa</button>
+            {% elif mp.suspensa_aghu %}
+              <button type="button" class="btn btn-sm btn-outline-danger" disabled title="Cirurgia já suspensa no AGHU"><i class="ri-close-circle-line me-1"></i>Suspensa no AGHU</button>
+            {% elif perms.centrocirurgico.add_suspensaocirurgia %}
               <form method="post" action="{% url 'centrocirurgico:suspensao_nova' %}">
                 {% csrf_token %}<input type="hidden" name="mapa_token" value="{{ mp.suspensao_token }}"><button class="btn btn-sm btn-outline-danger"><i class="ri-close-circle-line me-1"></i>Suspender</button>
               </form>
