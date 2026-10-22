@@ -104,8 +104,10 @@ def _mes_filtro(valor, padrao):
 
 
 def _indice_semana(dia):
-    """Agrupa o mês em 1–7, 8–14, 15–21 e 22–fim."""
-    return min(((dia.day - 1) // 7), 3)
+    """Índice da semana no mês, de domingo a sábado (zero-based)."""
+    primeiro = dia.replace(day=1)
+    dias_antes_domingo = (primeiro.weekday() + 1) % 7
+    return (dias_antes_domingo + dia.day - 1) // 7
 
 
 def _percentual(numerador, denominador):
@@ -115,16 +117,21 @@ def _percentual(numerador, denominador):
 
 
 def _resumo_semanal_vazio(mes_referencia):
+    """Semanas de domingo a sábado, limitadas aos dias do mês."""
     ultimo_dia = calendar.monthrange(mes_referencia.year, mes_referencia.month)[1]
     semanas = []
-    for indice, dia_inicial in enumerate((1, 8, 15, 22), start=1):
-        dia_final = min(dia_inicial + 6, ultimo_dia)
+    dia_inicial = 1
+    while dia_inicial <= ultimo_dia:
+        dia = mes_referencia.replace(day=dia_inicial)
+        dias_ate_sabado = (5 - dia.weekday()) % 7
+        dia_final = min(dia_inicial + dias_ate_sabado, ultimo_dia)
         semanas.append({
-            "numero": indice,
+            "numero": len(semanas) + 1,
             "periodo": f"{dia_inicial:02d} a {dia_final:02d}",
             "inicio": {faixa: {"aghu": 0, "giro": 0, "percentual": None} for faixa in FAIXAS},
             "fim": {faixa: {"aghu": 0, "giro": 0, "percentual": None} for faixa in FAIXAS},
         })
+        dia_inicial = dia_final + 1
     return semanas
 
 
