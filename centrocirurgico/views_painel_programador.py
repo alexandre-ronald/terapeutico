@@ -31,7 +31,10 @@ def etapa_giro(giro):
 @require_GET
 def painel_programador(request):
     programacoes = list(
-        ProgramacaoCirurgia.objects.filter(\n            status=ProgramacaoCirurgia.ENVIADA,\n            cirurgia__data=timezone.localdate(),\n        )
+        ProgramacaoCirurgia.objects.filter(
+            status=ProgramacaoCirurgia.ENVIADA,
+            cirurgia__data=timezone.localdate(),
+        )
         .select_related("cirurgia__paciente")
         .prefetch_related("necessidades__necessidade")
         .order_by("sala_painel", "hora_painel")
