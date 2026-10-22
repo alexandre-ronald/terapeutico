@@ -70,7 +70,7 @@
       <article class="card programador-card{% if mp.suspensa_local %} programador-card--suspensa{% endif %}">
         <div class="card-header d-flex justify-content-between align-items-start gap-2">
           <div class="min-w-0"><div class="programador-paciente text-truncate">{{ mp.nome_paciente }}</div><small class="text-muted">Prontuário {{ mp.prontuario|default:"—" }}{% if mp.leito %} · Leito {{ mp.leito }}{% endif %}</small></div>
-          {% if mp.suspensa_local %}<span class="badge bg-danger">Suspensa no sistema</span>{% elif mp.suspensa_aghu %}<span class="badge bg-danger">Suspensa no AGHU</span>{% elif mp.ja_programada.status == "enviada" %}<span class="badge bg-success"><i class="ri-tv-line me-1"></i>No painel</span>{% elif mp.ja_programada.status == "finalizada" %}<span class="badge bg-secondary">Finalizada</span>{% elif mp.ja_programada %}<span class="badge bg-warning-subtle text-warning">Programada</span>{% else %}<span class="badge bg-light text-muted">Não programada</span>{% endif %}
+          {% if mp.suspensa_aghu %}<span class="badge bg-danger">Suspensa no AGHU</span>{% elif mp.suspensa_local %}<span class="badge bg-danger">Suspensa no sistema</span>{% elif mp.ja_programada.status == "enviada" %}<span class="badge bg-success"><i class="ri-tv-line me-1"></i>No painel</span>{% elif mp.ja_programada.status == "finalizada" %}<span class="badge bg-secondary">Finalizada</span>{% elif mp.ja_programada %}<span class="badge bg-warning-subtle text-warning">Programada</span>{% else %}<span class="badge bg-light text-muted">Não programada</span>{% endif %}
         </div>
         <div class="card-body">
           <div class="programador-procedimento">{{ mp.procedimento|default:"Procedimento não informado" }}</div>
