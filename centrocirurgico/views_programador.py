@@ -82,27 +82,34 @@ def programador_mapa(request):
     suspensoes = SuspensaoCirurgia.objects.filter(
         cirurgia__data=data_mapa
     ).select_related("cirurgia__paciente")
+    # A suspensão é associada à cirurgia pelo prontuário, data e
+    # procedimento; horário/sala podem ser alterados no mapa do AGHU.
+    def chave_suspensao(prontuario, data, procedimento):
+        return (
+            _texto(prontuario),
+            data,
+            " ".join(_texto(procedimento).casefold().split()),
+        )
+
     chaves_suspensas = {
-        (
-            _texto(susp.cirurgia.paciente.prontuario),
+        chave_suspensao(
+            susp.cirurgia.paciente.prontuario,
             susp.cirurgia.data,
-            susp.cirurgia.hora,
-            _texto(susp.cirurgia.sala),
-            _texto(susp.cirurgia.procedimento),
+            susp.cirurgia.procedimento,
         )
         for susp in suspensoes
     }
     for item in dados:
         inicio = item.get("data_inicio_cirurgia")
-        chave = (
-            _texto(item.get("prontuario")),
-            inicio.date() if inicio else None,
-            inicio.time() if inicio else None,
-            _texto(item.get("sala")),
-            _texto(item.get("procedimento")),
-        )
-        item["suspensa_aghu"] = _texto(item.get("situacao")).upper() in {"CANC", "CANCELADA", "CANCELADO", "SUSP", "SUSPENSA", "SUSPENSAO"}
-        item["suspensa_local"] = chave in chaves_suspensas
+        data_cirurgia = inicio.date() if inicio else None
+        if not data_cirurgia and item.get("data"):
+            data_cirurgia = item["data"]
+        item["suspensa_aghu"] = _texto(item.get("situacao")).upper() in {
+            "CANC", "CANCELADA", "CANCELADO", "SUSP", "SUSPENSA", "SUSPENSAO"
+        }
+        item["suspensa_local"] = chave_suspensao(
+            item.get("prontuario"), data_cirurgia, item.get("procedimento")
+        ) in chaves_suspensas
         item["programacao_token"] = _token(item)
         item["suspensao_token"] = _suspensao_token(item)
         inicio = item.get("data_inicio_cirurgia")
