@@ -167,16 +167,8 @@ def programacao_retirar_painel(request):
         messages.error(request, "Opção de retirada inválida.")
         return redirect("centrocirurgico:programador_mapa")
 
-    # Não permitir substituir um paciente sem a saída registrada no Giro.
-    pendentes = []
-    for atual in programacoes.select_related("cirurgia__paciente"):
-        giro = GiroSala.objects.filter(cirurgia=atual.cirurgia).order_by("-pk").first()
-        if not giro or not giro.dataSaidaSala:
-            pendentes.append(atual)
-    if pendentes:
-        messages.error(request, "Saída do Paciente da Sala Cirúrgica ainda não foi registrada no Giro de Sala.")
-        return redirect("centrocirurgico:programador_mapa")
-
+    # A retirada manual é uma ação administrativa; não representa saída
+    # clínica do paciente nem autoriza a substituição antes do Giro.
     quantidade = programacoes.update(
         status=ProgramacaoCirurgia.RASCUNHO,
         enviado_em=None,
