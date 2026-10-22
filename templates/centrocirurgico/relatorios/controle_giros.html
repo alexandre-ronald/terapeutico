@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Controle de Giros de Sala{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row mb-3">
+    <div class="col-12">
+      <p class="text-uppercase text-primary fw-semibold small mb-1">Centro Cirúrgico · Relatórios</p>
+      <h4 class="mb-1">Controle de Giros de Sala</h4>
+      <p class="text-muted mb-0">Comparativo diário entre os registros do Giro de Sala e as cirurgias do AGHU.</p>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-sm-6 col-lg-3">
+          <label for="data_inicio" class="form-label">Data inicial</label>
+          <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ data_inicio|date:'Y-m-d' }}">
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <label for="data_fim" class="form-label">Data final</label>
+          <input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ data_fim|date:'Y-m-d' }}">
+        </div>
+        <div class="col-lg-3">
+          <button type="submit" class="btn btn-primary"><i class="ri-filter-3-line me-1"></i>Aplicar período</button>
+          <a href="{% url 'centrocirurgico:relatorio_controle_giros' %}" class="btn btn-light ms-1">Mês atual</a>
+        </div>
+        <div class="col-lg-3 text-lg-end">
+          <span class="badge bg-light text-body border px-3 py-2">{{ data_inicio|date:'d/m/Y' }} a {{ data_fim|date:'d/m/Y' }}</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <style>
+    .cg-kpi{--cg-accent:#3655a5;--cg-soft:#e9edf8;position:relative;min-height:156px;background:#fff;border:1px solid #edf0f5;border-left:4px solid var(--cg-accent);border-radius:17px;padding:22px 20px;box-shadow:0 3px 7px rgba(27,39,66,.07);height:100%}
+    .cg-kpi--success{--cg-accent:#08b6a5;--cg-soft:#def7f1}
+    .cg-kpi--warning{--cg-accent:#d79a37;--cg-soft:#fff2df}
+    .cg-kpi--danger{--cg-accent:#f05d4d;--cg-soft:#ffe8e4}
+    .cg-kpi--info{--cg-accent:#2794b8;--cg-soft:#e1f5fb}
+    .cg-kpi .cg-kpi-tag{display:inline-block;background:var(--cg-soft);color:var(--cg-accent);font-size:.73rem;font-weight:700;padding:4px 11px;border-radius:30px;margin-bottom:10px}
+    .cg-kpi .cg-kpi-number{font-size:2.7rem;line-height:1.05;font-weight:800;color:var(--cg-accent);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+    .cg-kpi .cg-kpi-desc{font-size:.81rem;color:#8390a5;margin-top:10px;padding-right:35px}
+    .cg-kpi .cg-kpi-icon{position:absolute;right:19px;top:20px;color:var(--cg-accent);opacity:.34;font-size:1.9rem}
+  </style>
+  <div class="row g-3 mb-3">
+    <div class="col-sm-6 col-lg-4 col-xl">
+      <div class="cg-kpi cg-kpi--primary">
+        <span class="cg-kpi-tag">Total no AGHU</span>
+        <i class="ri-file-list-3-line cg-kpi-icon" aria-hidden="true"></i>
+        <div class="cg-kpi-number">{{ totais.aghu_total }}</div>
+        <div class="cg-kpi-desc">Cirurgias no mapa do período</div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-4 col-xl">
+      <div class="cg-kpi cg-kpi--success">
+        <span class="cg-kpi-tag">Realizadas no AGHU</span>
+        <i class="ri-checkbox-circle-line cg-kpi-icon" aria-hidden="true"></i>
+        <div class="cg-kpi-number">{{ totais.aghu_realizadas }}</div>
+        <div class="cg-kpi-desc">Cirurgias realizadas</div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-4 col-xl">
+      <div class="cg-kpi cg-kpi--danger">
+        <span class="cg-kpi-tag">Canceladas no AGHU</span>
+        <i class="ri-close-circle-line cg-kpi-icon" aria-hidden="true"></i>
+        <div class="cg-kpi-number">{{ totais.aghu_canceladas }}</div>
+        <div class="cg-kpi-desc">Cirurgias canceladas</div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-4 col-xl">
+      <div class="cg-kpi cg-kpi--info">
+        <span class="cg-kpi-tag">Giros iniciados</span>
+        <i class="ri-time-line cg-kpi-icon" aria-hidden="true"></i>
+        <div class="cg-kpi-number">{{ totais.iniciadas }}</div>
+        <div class="cg-kpi-desc">Inícios da anestesia registrados</div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-4 col-xl">
+      <div class="cg-kpi cg-kpi--primary">
+        <span class="cg-kpi-tag">Giros finalizados</span>
+        <i class="ri-check-double-line cg-kpi-icon" aria-hidden="true"></i>
+        <div class="cg-kpi-number">{{ totais.finalizadas }}</div>
+        <div class="cg-kpi-desc">Giros concluídos</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header">
+      <h5 class="card-title mb-1">Movimento diário</h5>
+      <small class="text-muted">Manhã: 00h–12h59 · Tarde: 13h–18h59 · Noite: 19h–23h59</small>
+    </div>
+    <div class="card-body p-0"><div class="table-responsive">
+      <table class="table table-hover table-bordered align-middle text-center mb-0">
+        <thead class="table-light">
+          <tr>
+            <th rowspan="2" class="align-middle text-start ps-3">Data</th>
+            <th colspan="3">AGHU</th>
+            <th colspan="3" class="text-info">Inícios da anestesia</th>
+            <th colspan="3" class="text-success">Finais do Giro</th>
+            <th rowspan="2" class="align-middle">Ações</th>
+          </tr>
+          <tr>
+            <th>Mapa</th><th class="text-success">Realizadas</th><th class="text-danger">Canceladas</th>
+            <th>Manhã</th><th>Tarde</th><th>Noite</th>
+            <th>Manhã</th><th>Tarde</th><th>Noite</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for linha in linhas %}
+            <tr>
+              <td class="text-start ps-3 fw-semibold">{{ linha.data|date:"d/m/Y" }}</td>
+              <td>{{ linha.aghu_total }}</td><td class="text-success fw-semibold">{{ linha.aghu_realizadas }}</td><td class="text-danger fw-semibold">{{ linha.aghu_canceladas }}</td>
+              <td>{{ linha.inicio_manha }}</td><td>{{ linha.inicio_tarde }}</td><td>{{ linha.inicio_noite }}</td>
+              <td>{{ linha.final_manha }}</td><td>{{ linha.final_tarde }}</td><td>{{ linha.final_noite }}</td>
+              <td>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#detalhe-dia-{{ forloop.counter }}" aria-expanded="false" aria-controls="detalhe-dia-{{ forloop.counter }}" {% if not linha.cirurgias %}disabled{% endif %}>
+                  <i class="ri-eye-line me-1"></i>Detalhar
+                </button>
+              </td>
+            </tr>
+            {% if linha.cirurgias %}
+              <tr>
+                <td colspan="11" class="p-0 border-0">
+                  <div class="collapse bg-light" id="detalhe-dia-{{ forloop.counter }}">
+                    <div class="p-3 text-start border-bottom">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                      <div>
+                        <h6 class="mb-0">Cirurgias de {{ linha.data|date:"d/m/Y" }}</h6>
+                        <small class="text-muted">Horários do Giro associados por prontuário, data e procedimento.</small>
+                      </div>
+                      <span class="badge bg-white text-body border">{{ linha.cirurgias|length }} cirurgia{{ linha.cirurgias|length|pluralize }}</span>
+                    </div>
+                    <div class="table-responsive border rounded bg-white">
+                      <table class="table table-sm table-hover align-middle mb-0">
+                        <thead class="table-light"><tr>
+                          <th>Sala</th><th>Paciente / prontuário</th><th>Cirurgia</th><th>Situação</th>
+                          <th>Prevista AGHU</th><th>Início AGHU</th><th>Fim AGHU</th><th>Início da anestesia</th><th>Fim da cirurgia</th><th>Ação</th>
+                        </tr></thead>
+                        <tbody>
+                          {% for cirurgia in linha.cirurgias %}
+                            <tr>
+                              <td>{{ cirurgia.sala|default:"—" }}</td>
+                              <td><strong>{{ cirurgia.paciente|default:"—" }}</strong><br><small class="text-muted">{{ cirurgia.prontuario|default:"Sem prontuário" }}</small></td>
+                              <td>{{ cirurgia.procedimento|default:"—" }}</td>
+                              <td><span class="badge bg-{{ cirurgia.situacao_classe }}">{{ cirurgia.situacao }}</span></td>
+                              <td class="text-nowrap">{{ cirurgia.aghu_prevista|date:"d/m/Y H:i"|default:"—" }}</td>
+                              <td class="text-nowrap">{{ cirurgia.aghu_inicio|date:"d/m/Y H:i"|default:"—" }}</td>
+                              <td class="text-nowrap">{{ cirurgia.aghu_fim|date:"d/m/Y H:i"|default:"—" }}</td>
+                              <td class="text-nowrap">{{ cirurgia.giro_inicio|date:"d/m/Y H:i"|default:"—" }}</td>
+                              <td class="text-nowrap">{{ cirurgia.giro_fim|date:"d/m/Y H:i"|default:"—" }}</td>
+                              <td class="text-nowrap">
+                                {% if cirurgia.giro %}
+                                  <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="collapse" data-bs-target="#giro-{{ cirurgia.giro.pk }}" aria-expanded="false" aria-controls="giro-{{ cirurgia.giro.pk }}">
+                                    <i class="ri-time-line me-1"></i>Ver giro
+                                  </button>
+                                {% else %}
+                                  <span class="badge bg-light text-muted border">Sem giro</span>
+                                {% endif %}
+                              </td>
+                            </tr>
+                            {% if cirurgia.giro %}
+                              <tr>
+                                <td colspan="10" class="p-0 border-0">
+                                  <div class="collapse bg-info-subtle" id="giro-{{ cirurgia.giro.pk }}">
+                                    <div class="p-3 border-bottom">
+                                      <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <div>
+                                          <strong>Giro registrado no sistema</strong>
+                                          <div class="small text-muted">{{ cirurgia.paciente|default:"Paciente não informado" }} · {{ linha.data|date:"d/m/Y" }}</div>
+                                        </div>
+                                        <span class="badge bg-info text-dark">{{ cirurgia.sala|default:"Sala não informada" }}</span>
+                                      </div>
+                                      <div class="row g-2">
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Início da anestesia</small><strong>{{ cirurgia.giro.dataInicioAnestesia|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Início da cirurgia</small><strong>{{ cirurgia.giro.dataInicioCirurgia|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Final da cirurgia</small><strong>{{ cirurgia.giro.dataFinalCirurgia|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Saída da sala</small><strong>{{ cirurgia.giro.dataSaidaSala|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Início da desmontagem</small><strong>{{ cirurgia.giro.dataInicioDesmontagemSala|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Final da desmontagem</small><strong>{{ cirurgia.giro.dataFinalDesmontagemSala|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Início da limpeza</small><strong>{{ cirurgia.giro.dataInicioLimpeza|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Final da limpeza</small><strong>{{ cirurgia.giro.dataFinalLimpeza|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Sala liberada</small><strong>{{ cirurgia.giro.dataSalaLiberada|date:"d/m/Y H:i"|default:"—" }}</strong></div>
+                                        <div class="col-sm-6 col-lg-3"><small class="text-muted d-block">Tipo de limpeza</small><strong>{{ cirurgia.giro.tipoLimpeza|default:"—" }}</strong></div>
+                                        <div class="col-12"><small class="text-muted d-block">Observação</small><span>{{ cirurgia.giro.observacao|default:"Sem observações." }}</span></div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            {% endif %}
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  </div>
+                </td>
+              </tr>
+            {% endif %}
+          {% empty %}
+            <tr><td colspan="11" class="py-5"><strong>Nenhum registro encontrado no período.</strong></td></tr>
+          {% endfor %}
+        </tbody>
+        {% if linhas %}
+          <tfoot class="table-light fw-semibold"><tr>
+            <td class="text-start ps-3">Total do período</td>
+            <td>{{ totais.aghu_total }}</td><td class="text-success">{{ totais.aghu_realizadas }}</td><td class="text-danger">{{ totais.aghu_canceladas }}</td>
+            <td>{{ totais.inicio_manha }}</td><td>{{ totais.inicio_tarde }}</td><td>{{ totais.inicio_noite }}</td>
+            <td>{{ totais.final_manha }}</td><td>{{ totais.final_tarde }}</td><td>{{ totais.final_noite }}</td>
+            <td></td>
+          </tr></tfoot>
+        {% endif %}
+      </table>
+    </div></div>
+  </div>
+
+</div>
+{% endblock %}

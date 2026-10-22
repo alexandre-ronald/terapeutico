@@ -23,6 +23,7 @@ from .models import (
     Cirurgia,
     MotivoSuspensao,
     Paciente,
+    ProgramacaoCirurgia,
     SuspensaoCirurgia,
     TipoSuspensao,
 )
@@ -372,6 +373,15 @@ def suspensao_nova(request):
         suspensao.registrado_por = request.user
         suspensao.full_clean()
         suspensao.save()
+        ProgramacaoCirurgia.objects.filter(
+            cirurgia=cirurgia,
+            status=ProgramacaoCirurgia.ENVIADA,
+        ).update(
+            status=ProgramacaoCirurgia.RASCUNHO,
+            enviado_em=None,
+            atualizado_por=request.user,
+            atualizado_em=timezone.now(),
+        )
         messages.success(request, "Suspensão da cirurgia registrada com sucesso.")
         return redirect("centrocirurgico:mapa_cirurgico_list")
 

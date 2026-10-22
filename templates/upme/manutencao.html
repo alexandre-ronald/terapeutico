@@ -1,184 +1,24 @@
 {% extends 'base.html' %}
-{% load static %}
-
-{% block title %}
-    {{ titulo }}
-{% endblock %}
-
-
-{% block breadcrumb %}Cadastros Básicos{% endblock %}
-{% block page_title %}{{ titulo }}{% endblock %}
-
+{% block title %}{{ titulo }}{% endblock %}
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card border">
-                <div class="card-header">
-                    <h5 class="mb-0 text-center"> {{ titulo }}</h5>
-                </div>
-                <div class="card-body">
-                   
-                    
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="row align-items-end">  
-                            <div class="form-group col-md-4 mb-0"> 
-                                <label class="form-label" for="{{ field_name }}">{{ coluna_name|title }}:</label>
-                                <input class="form-control" type="text" id="{{ field_name }}" name="{{ field_name }}" value="{{ edit_value }}" required>
-                                <input type="hidden" name="id" value="{{ edit_id|default_if_none:'' }}">
-                            </div>
-                            <div class="form-group col-md-4 mb-0">
-                                <button type="submit"  class="btn btn-success" name="action" value="{% if edit_id %}editar{% else %}incluir{% endif %}">
-                                    {% if edit_id %}Salvar{% else %}Incluir{% endif %}
-                                </button>
-                                {% if edit_id %}
-                                    <button type="submit"  class="btn btn-primary" formaction="{% url 'upme:'|add:url_name %}" formmethod="get">Cancelar</button>
-                                {% endif %}
-                            </div>
-
-                            
-                        </div>
-                    </form>
-
-                    <div class="col-md-12">
-                        <div class="card border mt-3">
-                            <div class="card-header">
-                                <h6 class="mb-0">{{ titulo }}</h6>
-                            </div>
-                            <div class="card-body">
-                  
-                                <table class="table table-striped mt-2">
-                                
-                                    <thead>
-                                        <tr>
-                                            <th>{{ coluna_name|title }}</th>
-                                            <th>Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for registro in registros %}
-                                            <tr>
-                                                <td>{{ registro }}</td>
-                                                
-                                                <td>
-                                                    <a href="#" class="btn btn-success btn-sm action-link" data-id="{{ registro.id }}" data-action="carregar_editar">Editar</a>
-                                                    <a href="#" class="btn btn-danger btn-sm action-link"  data-id="{{ registro.id }}" data-action="excluir" data-confirm="Deseja realmente excluir {{ registro }}?">Excluir</a>
-                                                </td>
-                                            </tr>
-                                        {% empty %}
-                                            <tr>
-                                                <td colspan="2" class="text-center">Nenhum registro encontrado.</td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-
-                                <!-- Paginação -->
-
-                                <nav>
-                                    <ul class="pagination justify-content-center">
-                                        {% if registros.has_previous %}
-                                            <li class="page-item">
-                                                <a class="page-link" href="?page=1{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">Primeira</a>
-                                            </li>
-                                            <li class="page-item">
-                                                <a class="page-link" href="?page={{ registros.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">Anterior</a>
-                                            </li>
-                                        {% else %}
-                                            <li class="page-item disabled">
-                                                <span class="page-link">Primeira</span>
-                                            </li>
-                                            <li class="page-item disabled">
-                                                <span class="page-link">Anterior</span>
-                                            </li>
-                                        {% endif %}
-                                
-                                        {% for num in registros.paginator.page_range %}
-                                            {% if registros.number == num %}
-                                                <li class="page-item active">
-                                                    <span class="page-link">{{ num }}</span>
-                                                </li>
-                                            {% elif num > registros.number|add:'-5' and num < registros.number|add:'5' %}
-                                                <li class="page-item">
-                                                    <a class="page-link" href="?page={{ num }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">{{ num }}</a>
-                                                </li>
-                                            {% endif %}
-                                        {% endfor %}
-                                
-                                        {% if registros.has_next %}
-                                            <li class="page-item">
-                                                <a class="page-link" href="?page={{ registros.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">Próxima</a>
-                                            </li>
-                                            <li class="page-item">
-                                                <a class="page-link" href="?page={{ registros.paginator.num_pages }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&page=' }}{% endif %}">Última</a>
-                                            </li>
-                                        {% else %}
-                                            <li class="page-item disabled">
-                                                <span class="page-link">Próxima</span>
-                                            </li>
-                                            <li class="page-item disabled">
-                                                <span class="page-link">Última</span>
-                                            </li>
-                                        {% endif %}
-                                    </ul>
-                                </nav>
-                                
-                                
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>    
+<style>
+.tp-cadastro{max-width:1440px;margin:0 auto}.tp-cadastro .heading{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px}.tp-cadastro .eyebrow{font-size:.75rem;color:#71829b;letter-spacing:.09em;font-weight:700;text-transform:uppercase}.tp-cadastro h1{font-size:1.65rem;font-weight:750;color:#172b4d;margin:4px 0}.tp-cadastro .subtitle{color:#64748b;margin:0}.tp-cadastro .panel{background:#fff;border:1px solid #e5eaf1;border-radius:16px;box-shadow:0 5px 22px rgba(31,45,61,.05);overflow:hidden;margin-bottom:20px}.tp-cadastro .panel-head{padding:18px 24px;border-bottom:1px solid #edf1f5;font-weight:700;color:#253858}.tp-cadastro .panel-body{padding:24px}.tp-cadastro .form-label{font-weight:650;color:#334155}.tp-cadastro .form-control{min-height:44px;border-radius:9px}.tp-cadastro .btn{border-radius:9px;font-weight:600}.tp-cadastro .table thead th{background:#f8fafc;color:#64748b;font-size:.79rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #e5eaf1}.tp-cadastro .table td{vertical-align:middle}.tp-cadastro .actions{display:flex;gap:8px;flex-wrap:wrap}.tp-cadastro .pagination{margin:18px 0 0}@media(max-width:575px){.tp-cadastro .panel-body{padding:16px}}
+</style>
+<div class="container-fluid tp-cadastro">
+ <div class="heading"><div><div class="eyebrow">Configurações / Cadastros Básicos</div><h1><i class="ri-list-settings-line me-2" aria-hidden="true"></i>Cadastro de {{ titulo }}</h1><p class="subtitle">Gerencie os registros de {{ titulo|lower }} utilizados pelo sistema.</p></div><a href="{% url 'usuarios:boas_vindas' %}" class="btn btn-outline-secondary"><i class="ri-arrow-left-line me-1"></i>Voltar</a></div>
+ <section class="panel"><div class="panel-head"><i class="ri-edit-line text-primary me-2"></i>{% if edit_id %}Editar registro{% else %}Novo registro{% endif %}</div><div class="panel-body">
+ <form method="post">{% csrf_token %}<div class="row g-3 align-items-end"><div class="col-12 col-lg-7"><label class="form-label" for="cadastro-nome">{{ coluna_name }}</label><input id="cadastro-nome" class="form-control" type="text" name="{{ field_name }}" value="{{ edit_value }}" required><input type="hidden" name="id" value="{{ edit_id|default_if_none:'' }}"></div><div class="col-12 col-lg-5"><div class="actions"><button class="btn btn-primary" type="submit" name="action" value="{% if edit_id %}editar{% else %}incluir{% endif %}"><i class="ri-save-line me-1"></i>{% if edit_id %}Salvar alterações{% else %}Adicionar{% endif %}</button>{% if edit_id %}<a href="{% url 'upme:'|add:url_name %}" class="btn btn-outline-secondary">Cancelar</a>{% endif %}</div></div></div></form>
+ </div></section>
+ <section class="panel"><div class="panel-head"><i class="ri-table-line text-primary me-2"></i>Registros cadastrados</div><div class="panel-body"><div class="table-responsive"><table class="table table-hover align-middle"><thead><tr><th>{{ coluna_name }}</th><th class="text-end">Ações</th></tr></thead><tbody>{% for registro in registros %}<tr><td>{{ registro }}</td><td><div class="actions justify-content-end"><button type="button" class="btn btn-sm btn-outline-primary action-link" data-id="{{ registro.id }}" data-action="carregar_editar"><i class="ri-edit-line me-1"></i>Editar</button><button type="button" class="btn btn-sm btn-outline-danger action-link" data-id="{{ registro.id }}" data-action="excluir" data-confirm="Deseja realmente excluir este registro?"><i class="ri-delete-bin-line me-1"></i>Excluir</button></div></td></tr>{% empty %}<tr><td colspan="2" class="text-center text-muted py-4">Nenhum registro encontrado.</td></tr>{% endfor %}</tbody></table></div>
+ {% if registros.paginator.num_pages > 1 %}<nav aria-label="Paginação"><ul class="pagination justify-content-center flex-wrap">{% if registros.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ registros.previous_page_number }}">Anterior</a></li>{% endif %}<li class="page-item disabled"><span class="page-link">{{ registros.number }} de {{ registros.paginator.num_pages }}</span></li>{% if registros.has_next %}<li class="page-item"><a class="page-link" href="?page={{ registros.next_page_number }}">Próxima</a></li>{% endif %}</ul></nav>{% endif %}
+ </div></section>
 </div>
-
 <script>
-    document.querySelectorAll('.action-link').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const id = this.getAttribute('data-id');
-            const action = this.getAttribute('data-action');
-            const confirmMessage = this.getAttribute('data-confirm');
-            
-            // Verifica se há mensagem de confirmação e se o usuário confirmou
-            if (confirmMessage && !confirm(confirmMessage)) {
-                return;
-            }
-            
-            // Cria um formulário temporário para enviar a requisição POST
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = window.location.href;
-            
-            // Adiciona o token CSRF
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = 'csrfmiddlewaretoken';
-            csrfInput.value = csrfToken;
-            form.appendChild(csrfInput);
-            
-            // Adiciona o campo id
-            const idInput = document.createElement('input');
-            idInput.type = 'hidden';
-            idInput.name = 'id';
-            idInput.value = id;
-            form.appendChild(idInput);
-            
-            // Adiciona o campo action
-            const actionInput = document.createElement('input');
-            actionInput.type = 'hidden';
-            actionInput.name = 'action';
-            actionInput.value = action;
-            form.appendChild(actionInput);
-            
-            // Adiciona o formulário ao DOM e submete
-            document.body.appendChild(form);
-            form.submit();
-        });
-    });
+document.querySelectorAll('.tp-cadastro .action-link').forEach(button=>button.addEventListener('click',()=>{
+ const msg=button.dataset.confirm;if(msg&&!window.confirm(msg))return;
+ const form=document.createElement('form');form.method='POST';form.action=window.location.pathname;
+ for(const [name,value] of Object.entries({csrfmiddlewaretoken:document.querySelector('[name=csrfmiddlewaretoken]').value,id:button.dataset.id,action:button.dataset.action})){const input=document.createElement('input');input.type='hidden';input.name=name;input.value=value;form.appendChild(input)}
+ document.body.appendChild(form);form.submit();
+}));
 </script>
-
 {% endblock %}

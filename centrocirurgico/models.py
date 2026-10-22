@@ -31,6 +31,7 @@ class Cirurgia(models.Model):
 class GiroSala(models.Model):
     paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)
     cirurgia = models.ForeignKey(Cirurgia, on_delete=models.CASCADE)
+    dataInicioAnestesia = models.DateTimeField(null=True)
     dataInicioCirurgia = models.DateTimeField(null=True)
     dataFinalCirurgia = models.DateTimeField(null=True)
     dataSaidaSala = models.DateTimeField(null=True)
@@ -201,6 +202,12 @@ class NecessidadeCirurgica(models.Model):
 
 class ProgramacaoCirurgia(models.Model):
     SALAS = tuple((str(numero), f"Sala {numero}") for numero in range(1, 10))
+    ELETIVA = "eletiva"
+    EXTRA_MAPA = "extra_mapa"
+    TIPOS_CIRURGIA = (
+        (ELETIVA, "Eletiva"),
+        (EXTRA_MAPA, "Extra Mapa"),
+    )
     RASCUNHO = "rascunho"
     ENVIADA = "enviada"
     FINALIZADA = "finalizada"
@@ -213,6 +220,8 @@ class ProgramacaoCirurgia(models.Model):
     cirurgia = models.OneToOneField(Cirurgia, on_delete=models.PROTECT, related_name="programacao")
     sala_painel = models.CharField(max_length=2, choices=SALAS)
     hora_painel = models.TimeField(null=True, blank=True)
+    leito_paciente = models.CharField(max_length=50, blank=True)
+    tipo_cirurgia = models.CharField(max_length=20, choices=TIPOS_CIRURGIA)
     anestesistas = models.TextField(blank=True)
     instrumentador = models.CharField(max_length=250, blank=True)
     circulante = models.CharField(max_length=250, blank=True)
@@ -220,6 +229,7 @@ class ProgramacaoCirurgia(models.Model):
     enfermeiro = models.CharField(max_length=250, blank=True)
     outros_profissionais = models.TextField(blank=True)
     observacao = models.TextField(blank=True)
+    motivo_atraso = models.TextField(blank=True, verbose_name="Motivo do atraso")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=RASCUNHO)
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="programacoes_criadas")
     criado_em = models.DateTimeField(auto_now_add=True)

@@ -1,0 +1,6 @@
+<tr>
+  <td class="text-start ps-3"><strong>Semana {{ semana.numero }}</strong><br><small class="text-muted">Dias {{ semana.periodo }}</small></td>
+  <td>{{ dados.manha.aghu }}</td><td>{{ dados.manha.giro }}</td><td>{% if dados.manha.percentual is not None %}{{ dados.manha.percentual|floatformat:1 }}%{% else %}—{% endif %}</td>
+  <td>{{ dados.tarde.aghu }}</td><td>{{ dados.tarde.giro }}</td><td>{% if dados.tarde.percentual is not None %}{{ dados.tarde.percentual|floatformat:1 }}%{% else %}—{% endif %}</td>
+  <td>{{ dados.noite.aghu }}</td><td>{{ dados.noite.giro }}</td><td>{% if dados.noite.percentual is not None %}{{ dados.noite.percentual|floatformat:1 }}%{% else %}—{% endif %}</td>
+</tr>

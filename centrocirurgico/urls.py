@@ -3,14 +3,21 @@ from . import views
 from . import views_suspensao
 from . import views_necessidade
 from . import views_programador
+from . import views_painel_programador
+from . import views_relatorio_giros
 
 app_name = 'centrocirurgico'
 
 urlpatterns = [
+    path("relatorios/controle-giros-semanal/", views_relatorio_giros.relatorio_controle_giros_semanal, name="relatorio_controle_giros_semanal"),
+    path("relatorios/controle-giros/", views_relatorio_giros.relatorio_controle_giros, name="relatorio_controle_giros"),
+    path("painel-programador/", views_painel_programador.painel_programador, name="painel_programador"),
+    path("painel-programador/sistema/", views_painel_programador.painel_programador, name="painel_programador_sistema"),
     path("programador/", views_programador.programador_mapa, name="programador_mapa"),
     path("programador/abrir/", views_programador.programacao_abrir, name="programacao_abrir"),
     path("programador/<int:pk>/", views_programador.programacao_editar, name="programacao_editar"),
     path("programador/<int:pk>/enviar/", views_programador.programacao_enviar, name="programacao_enviar"),
+    path("programador/retirar-painel/", views_programador.programacao_retirar_painel, name="programacao_retirar_painel"),
     path("necessidades/", views_necessidade.necessidade_lista, name="necessidade_lista"),
     path("necessidades/salvar/", views_necessidade.necessidade_salvar, name="necessidade_salvar"),
     path("necessidades/<int:pk>/alternar/", views_necessidade.necessidade_alternar, name="necessidade_alternar"),
@@ -58,6 +65,7 @@ urlpatterns = [
     path('giro/', views.registrar_giro, name='registrar_giro'),
     path('giro/<int:pk>/<str:etapa>/', views.registrar_etapa, name='registrar_etapa'),
 
+    path('<int:pk>/inicio-anestesia/', views.registrar_inicio_anestesia, name="inicio_anestesia"),
     path('<int:pk>/inicio-cirurgia/', views.registrar_inicio_cirurgia, name="inicio_cirurgia"),
     path('<int:pk>/fim-cirurgia/', views.registrar_final_cirurgia, name="fim_cirurgia"),
     path('<int:pk>/saida-sala/', views.registrar_saida_sala, name="saida_sala"),
