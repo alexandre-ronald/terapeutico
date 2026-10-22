@@ -3,7 +3,7 @@
 {% block head %}
 <style>
   .programador-card { border:1px solid #e9edf2; border-radius:14px; height:100%; transition:.18s ease; }
-  .programador-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(15,23,42,.10); }
+  .programador-card--suspensa { border:2px solid #e55353; box-shadow:0 0 0 1px rgba(229,83,83,.08); }\n  .programador-card--suspensa .card-header { background:#fff3f2; }\n  .programador-alerta-suspensa { padding:.55rem .75rem; background:#fff0ee; color:#b42318; font-weight:750; border-bottom:1px solid #ffd1ca; }\n  .programador-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(15,23,42,.10); }
   .programador-card .card-header { background:#f8fafc; border-bottom:1px solid #edf0f2; }
   .programador-paciente { font-size:1rem; font-weight:700; color:#212529; }
   .programador-procedimento { min-height:2.5rem; color:#343a40; font-weight:600; }
@@ -67,10 +67,10 @@
   <div class="row g-3">
     {% for mp in mapa %}
     <div class="col-12 col-md-6 col-xl-4">
-      <article class="card programador-card">
+      <article class="card programador-card{% if mp.suspensa_local %} programador-card--suspensa{% endif %}">
         <div class="card-header d-flex justify-content-between align-items-start gap-2">
           <div class="min-w-0"><div class="programador-paciente text-truncate">{{ mp.nome_paciente }}</div><small class="text-muted">Prontuário {{ mp.prontuario|default:"—" }}{% if mp.leito %} · Leito {{ mp.leito }}{% endif %}</small></div>
-          {% if mp.ja_programada.status == "enviada" %}<span class="badge bg-success"><i class="ri-tv-line me-1"></i>No painel</span>{% elif mp.ja_programada.status == "finalizada" %}<span class="badge bg-secondary">Finalizada</span>{% elif mp.ja_programada %}<span class="badge bg-warning-subtle text-warning">Programada</span>{% else %}<span class="badge bg-light text-muted">Não programada</span>{% endif %}
+          {% if mp.suspensa_aghu %}<span class="badge bg-danger">Suspensa no AGHU</span>{% elif mp.suspensa_local %}<span class="badge bg-danger-subtle text-danger">Suspensa</span>{% elif mp.ja_programada.status == "enviada" %}<span class="badge bg-success"><i class="ri-tv-line me-1"></i>No painel</span>{% elif mp.ja_programada.status == "finalizada" %}<span class="badge bg-secondary">Finalizada</span>{% elif mp.ja_programada %}<span class="badge bg-warning-subtle text-warning">Programada</span>{% else %}<span class="badge bg-light text-muted">Não programada</span>{% endif %}
         </div>
         <div class="card-body">
           <div class="programador-procedimento">{{ mp.procedimento|default:"Procedimento não informado" }}</div>
